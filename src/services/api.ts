@@ -11,3 +11,24 @@ export async function getFeed(): Promise<FeedResponse> {
 
   return response.json()
 }
+
+// 🔥 NOVO
+export async function getTurns(rpgId: number) {
+  const response = await fetch(`${API_URL}/rpg-turns/${rpgId}`)
+  return response.json()
+}
+
+export async function createTurn(rpgId: number, content: string) {
+  const token = localStorage.getItem("token")
+
+  const response = await fetch(`${API_URL}/rpg-turns/${rpgId}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ content }),
+  })
+
+  return response.json()
+}
