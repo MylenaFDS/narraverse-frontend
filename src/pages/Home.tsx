@@ -7,8 +7,11 @@ export default function Home() {
   const [feed, setFeed] = useState<FeedResponse | null>(null)
 
   useEffect(() => {
-    getFeed().then(setFeed)
-  }, [])
+  getFeed().then((data) => {
+    console.log("FEED FRONT:", data)
+    setFeed(data)
+  })
+}, [])
 
   if (!feed) {
     return <p className="p-4">Carregando...</p>

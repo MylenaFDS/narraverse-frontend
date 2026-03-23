@@ -1,82 +1,36 @@
 import { useParams } from "react-router-dom"
-import { useEffect, useState } from "react"
-import { getTurns, createTurn } from "../services/api"
-import type { RPGTurn } from "../types/turn"
+import { useState } from "react"
+
+import Turns from "../components/RPG/Turns"
+import Lore from "../components/RPG/Lore"
 
 export default function RPG() {
   const { id } = useParams()
   const rpgId = Number(id)
 
-  const [turns, setTurns] = useState<RPGTurn[]>([])
-  const [content, setContent] = useState("")
-
-  async function loadTurns() {
-  const data = await getTurns(rpgId)
-  setTurns(data)
-}
-
- useEffect(() => {
-  async function fetchTurns() {
-    const data = await getTurns(rpgId)
-    setTurns(data)
-  }
-
-  fetchTurns()
-}, [rpgId])
-
-  async function handleCreateTurn() {
-    if (!content) return
-
-    await createTurn(rpgId, content)
-    setContent("")
-    loadTurns()
-  }
+  const [activeTab, setActiveTab] = useState("turns")
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-3xl mx-auto text-white">
 
       <h2 className="text-2xl mb-4">RPG #{id}</h2>
 
-      {/* Criar turno */}
-      <div className="mb-6">
-        <textarea
-          className="w-full p-3 rounded bg-gray-800"
-          placeholder="Escreva seu turno..."
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-        />
-
-        <button
-          onClick={handleCreateTurn}
-          className="mt-2 bg-purple-600 px-4 py-2 rounded hover:bg-purple-500"
-        >
-          Enviar turno
-        </button>
+      {/* MENU */}
+      <div className="flex gap-3 mb-6 flex-wrap">
+        <button onClick={() => setActiveTab("turns")} className="tab">Turnos</button>
+        <button onClick={() => setActiveTab("chat")} className="tab">Chat</button>
+        <button onClick={() => setActiveTab("characters")} className="tab">Fichas</button>
+        <button onClick={() => setActiveTab("lore")} className="tab">Enciclopédia</button>
+        <button onClick={() => setActiveTab("notes")} className="tab">Anotações</button>
       </div>
 
-      {/* Lista de turnos */}
-      <div className="space-y-4">
-        {turns.map((turn) => (
-          <div
-            key={turn.id}
-            className="bg-gray-800 p-4 rounded-xl"
-          >
-            <p>{turn.content}</p>
+      {/* CONTEÚDO */}
+      {activeTab === "turns" && <Turns rpgId={rpgId} />}
 
-            <span className="text-sm text-gray-400">
-              Usuário: {turn.user_id}
-            </span>
-
-            {/* 🔥 resposta */}
-            {turn.reply_to_turn_id && (
-              <p className="text-xs text-purple-400">
-                Respondendo ao turno #{turn.reply_to_turn_id}
-              </p>
-            )}
-          </div>
-        ))}
-      </div>
-
+      {activeTab === "chat" && <div>Chat em construção...</div>}
+      {activeTab === "characters" && <div>Fichas em construção...</div>}
+      {activeTab === "lore" && <Lore rpgId={rpgId} />}
+      {activeTab === "notes" && <div>Anotações em construção...</div>}
     </div>
   )
 }

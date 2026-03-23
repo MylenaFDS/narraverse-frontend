@@ -1,3 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.tab {
+  @apply px-4 py-2 rounded bg-white/5 hover:bg-white/10 transition;
+}
