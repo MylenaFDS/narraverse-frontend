@@ -1,16 +1,58 @@
-import { Link } from "react-router-dom"
+import { useEffect, useState } from "react"
+import { getMe } from "../services/api"
+import { Link, useNavigate } from "react-router-dom"
+
+type User = {
+  id: number
+  username: string
+  email: string
+}
 
 export default function Navbar() {
-  return (
-    <nav className="bg-gray-800 p-4 flex justify-between">
-      <h1 className="font-bold text-xl text-purple-400">
-        Narraverse
-      </h1>
+  const [user, setUser] = useState<User | null>(null)
+  const navigate = useNavigate()
 
-      <div className="flex gap-4">
-        <Link to="/" className="hover:text-purple-400">Home</Link>
-        <Link to="/search" className="hover:text-purple-400">Buscar</Link>
+  useEffect(() => {
+    async function loadUser() {
+      const token = localStorage.getItem("token")
+      if (!token) return
+
+      const data = await getMe()
+      setUser(data)
+    }
+
+    loadUser()
+  }, [])
+
+  function handleLogout() {
+    localStorage.removeItem("token")
+    navigate("/login")
+  }
+
+  return (
+    <div className="bg-gray-800 p-4 flex justify-between items-center">
+      <Link to="/home" className="text-xl font-bold">
+        Narraverse
+      </Link>
+
+      <div className="flex gap-4 items-center">
+        <Link to="/search">Buscar</Link>
+
+        {user && (
+          <>
+            <span className="text-sm text-gray-300">
+              👤 {user.username}
+            </span>
+
+            <button
+              onClick={handleLogout}
+              className="bg-red-600 px-3 py-1 rounded"
+            >
+              Sair
+            </button>
+          </>
+        )}
       </div>
-    </nav>
+    </div>
   )
 }
