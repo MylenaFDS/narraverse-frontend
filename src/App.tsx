@@ -5,6 +5,7 @@ import RPG from "./pages/RPG"
 import Search from "./pages/Search"
 import Login from "./pages/Login"
 import Register from "./pages/Register"
+import Profile from "./pages/Profile"
 
 import Navbar from "./components/Navbar"
 import PrivateRoute from "./components/PrivateRoute"
@@ -51,6 +52,15 @@ export default function App() {
             element={
               <PrivateRoute>
                 <RPG />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/profile"
+            element={
+              <PrivateRoute>
+                <Profile />
               </PrivateRoute>
             }
           />

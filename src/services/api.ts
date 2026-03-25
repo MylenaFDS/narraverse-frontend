@@ -61,6 +61,29 @@ export async function getMe() {
 
   return response.json()
 }
+
+export async function getUserProfile(userId: number) {
+  const response = await fetch(`http://127.0.0.1:8000/users/${userId}`)
+  return response.json()
+}
+
+export async function updateProfile(data: {
+  username?: string
+  bio?: string
+}) {
+  const token = localStorage.getItem("token")
+
+  const response = await fetch("http://127.0.0.1:8000/users/me", {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  })
+
+  return response.json()
+}
 // 📡 FEED
 export async function getFeed(): Promise<FeedResponse> {
   const response = await fetch(`${API_URL}/feed`)

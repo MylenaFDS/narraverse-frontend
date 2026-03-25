@@ -40,10 +40,7 @@ export default function Navbar() {
 
         {user && (
           <>
-            <span className="text-sm text-gray-300">
-              👤 {user.username}
-            </span>
-
+           <Link to="/profile">Perfil</Link>
             <button
               onClick={handleLogout}
               className="bg-red-600 px-3 py-1 rounded"
