@@ -1,4 +1,9 @@
 import type { FeedResponse } from "../types/feed"
+import axios from "axios"
+
+export const api = axios.create({
+  baseURL: "http://localhost:8000",
+})
 
 const API_URL = "http://127.0.0.1:8000"
 
@@ -86,7 +91,7 @@ export async function updateProfile(data: {
 }
 // 📡 FEED
 export async function getFeed(): Promise<FeedResponse> {
-  const response = await fetch(`${API_URL}/feed`)
+  const response = await fetch(`${API_URL}/feed/`)
 
   if (!response.ok) {
     throw new Error("Erro ao buscar feed")
@@ -128,4 +133,9 @@ export async function createLore(
   })
 
   return response.json()
+}
+
+export async function getRPG(id: number) {
+  const res = await api.get(`/rpgs/${id}`)
+  return res.data
 }

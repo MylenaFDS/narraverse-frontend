@@ -4,16 +4,21 @@ import { useState } from "react"
 import Turns from "../components/RPG/Turns"
 import Lore from "../components/RPG/Lore"
 
+type Tab = "turns" | "chat" | "characters" | "lore" | "notes"
+
 export default function RPG() {
   const { id } = useParams()
   const rpgId = Number(id)
 
-  const [activeTab, setActiveTab] = useState("turns")
+  const [activeTab, setActiveTab] = useState<Tab>("turns")
+
+  if (!id || isNaN(rpgId)) {
+    return <div>RPG inválido</div>
+  }
 
   return (
     <div className="max-w-3xl mx-auto text-white">
-
-      <h2 className="text-2xl mb-4">RPG #{id}</h2>
+      <h2 className="text-2xl mb-4">RPG #{rpgId}</h2>
 
       {/* MENU */}
       <div className="flex gap-3 mb-6 flex-wrap">
