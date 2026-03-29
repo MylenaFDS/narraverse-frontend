@@ -170,4 +170,44 @@ body {
   .rpg-btn:hover {
     background: linear-gradient(145deg, #7a2f3c, #5a1d26);
   }
+
+  /* 🧭 Layout do RPG */
+  .rpg-layout {
+    @apply grid gap-6;
+    grid-template-columns: 2fr 1fr;
+  }
+
+  /* 📜 Turno */
+  .rpg-turn {
+    @apply p-4 rounded-lg;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(212, 175, 55, 0.2);
+  }
+
+  /* 👤 Header do turno */
+  .rpg-turn-header {
+    @apply flex justify-between items-center mb-2;
+  }
+
+  /* 🧑 Avatar */
+  .rpg-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 9999px;
+    background: #5a1d26;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+  }
+
+  /* 🧱 Sidebar */
+  .rpg-sidebar {
+    @apply space-y-4;
+  }
+
+  /* ✏️ Input ação */
+  .rpg-action {
+    @apply flex gap-2;
+  }
 }
