@@ -102,18 +102,37 @@ export async function getFeed(): Promise<FeedResponse> {
 
 // 🎭 TURNOS
 export async function getTurns(rpgId: number) {
-  const response = await fetch(`${API_URL}/rpg-turns/${rpgId}`)
-  return response.json()
-}
+  const token = localStorage.getItem("token")
 
-export async function createTurn(rpgId: number, content: string) {
-  const response = await fetch(`${API_URL}/rpg-turns/${rpgId}`, {
-    method: "POST",
-    headers: getAuthHeaders(),
-    body: JSON.stringify({ content }),
+  const res = await fetch(`http://localhost:8000/rpg-turns/${rpgId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   })
 
-  return response.json()
+  return res.json()
+}
+
+export async function createTurn(
+  rpgId: number,
+  content: string,
+  replyTo?: number | null
+) {
+  const token = localStorage.getItem("token")
+
+  const res = await fetch(`http://localhost:8000/rpg-turns/${rpgId}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      content,
+      reply_to_turn_id: replyTo ?? null,
+    }),
+  })
+
+  return res.json()
 }
 
 // 📚 LORE
@@ -139,3 +158,4 @@ export async function getRPG(id: number) {
   const res = await api.get(`/rpgs/${id}`)
   return res.data
 }
+

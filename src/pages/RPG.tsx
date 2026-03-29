@@ -1,5 +1,7 @@
 import { useParams } from "react-router-dom"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { getTurns, createTurn } from "../services/api"
+import type { RPGTurn } from "../types/turn"
 
 type Tab = "turns" | "chat" | "characters" | "lore"
 
@@ -8,7 +10,43 @@ export default function RPG() {
   const rpgId = Number(id)
 
   const [activeTab, setActiveTab] = useState<Tab>("turns")
+  const [turns, setTurns] = useState<RPGTurn[]>([])
+  const [newTurn, setNewTurn] = useState("")
+  const [loading, setLoading] = useState(true)
 
+  // ✅ Hook SEMPRE no topo
+  useEffect(() => {
+    async function fetchTurns() {
+      if (!id || isNaN(rpgId)) return
+
+      try {
+        const data = await getTurns(rpgId)
+        setTurns(data)
+      } catch (err) {
+        console.error("Erro ao buscar turnos:", err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchTurns()
+  }, [id, rpgId])
+
+  async function handleSendTurn() {
+    if (!newTurn.trim()) return
+
+    try {
+      const created = await createTurn(rpgId, newTurn)
+
+      // adiciona no topo
+      setTurns((prev) => [created, ...prev])
+      setNewTurn("")
+    } catch (err) {
+      console.error("Erro ao enviar turno:", err)
+    }
+  }
+
+  // ✅ AGORA sim pode validar
   if (!id || isNaN(rpgId)) {
     return <div>RPG inválido</div>
   }
@@ -19,10 +57,10 @@ export default function RPG() {
       {/* HEADER */}
       <div className="rpg-panel max-w-5xl mx-auto mb-6">
         <h2 className="text-3xl font-display text-accent">
-          Império das Sombras
+          RPG #{rpgId}
         </h2>
         <p className="text-textSoft">
-          Intrigas políticas em um reino decadente.
+          História em andamento...
         </p>
 
         {/* TABS */}
@@ -46,47 +84,47 @@ export default function RPG() {
                 Turnos
               </h3>
 
-              {/* Lista de turnos */}
-              <div className="space-y-4">
+              {loading ? (
+                <p className="text-textSoft">Carregando...</p>
+              ) : (
+                <div className="space-y-4">
+                  {turns.map((turn) => (
+                    <div key={turn.id} className="rpg-turn">
+                      <div className="rpg-turn-header">
+                        <div className="flex items-center gap-2">
+                          <div className="rpg-avatar">
+                            {turn.user_id}
+                          </div>
+                          <span className="font-bold">
+                            Usuário {turn.user_id}
+                          </span>
+                        </div>
 
-                <div className="rpg-turn">
-                  <div className="rpg-turn-header">
-                    <div className="flex items-center gap-2">
-                      <div className="rpg-avatar">R</div>
-                      <span className="font-bold">Ragnar</span>
+                        <span className="text-xs text-textSoft">
+                          {new Date(turn.created_at).toLocaleTimeString()}
+                        </span>
+                      </div>
+
+                      <p className="text-sm text-textSoft">
+                        {turn.content}
+                      </p>
                     </div>
-                    <span className="text-xs text-textSoft">3 min</span>
-                  </div>
-
-                  <p className="text-sm text-textSoft">
-                    Com a tocha em punho, Ragnar avança pela caverna sombria.
-                    Ele ouve um ruído à frente, um baixo rosnado...
-                  </p>
+                  ))}
                 </div>
+              )}
 
-                <div className="rpg-turn">
-                  <div className="rpg-turn-header">
-                    <div className="flex items-center gap-2">
-                      <div className="rpg-avatar">Y</div>
-                      <span className="font-bold">Your turn</span>
-                    </div>
-                    <span className="text-xs text-accent">Agora</span>
-                  </div>
-
-                  <p className="text-sm text-textSoft">
-                    Sua ação aqui...
-                  </p>
-                </div>
-
-              </div>
-
-              {/* Input ação */}
+              {/* INPUT */}
               <div className="mt-6 rpg-action">
                 <input
+                  value={newTurn}
+                  onChange={(e) => setNewTurn(e.target.value)}
                   placeholder="Digite sua ação..."
                   className="rpg-input flex-1"
                 />
-                <button className="rpg-btn">Enviar</button>
+
+                <button onClick={handleSendTurn} className="rpg-btn">
+                  Enviar
+                </button>
               </div>
             </>
           )}
@@ -100,7 +138,6 @@ export default function RPG() {
         {/* DIREITA */}
         <div className="rpg-sidebar">
 
-          {/* Jogadores */}
           <div className="rpg-panel">
             <h3 className="font-display text-accent mb-3">
               Jogadores
@@ -108,18 +145,12 @@ export default function RPG() {
 
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <div className="rpg-avatar">R</div>
-                <span>Ragnar</span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <div className="rpg-avatar">Y</div>
-                <span>Você</span>
+                <div className="rpg-avatar">U</div>
+                <span>Usuário</span>
               </div>
             </div>
           </div>
 
-          {/* Anotações */}
           <div className="rpg-panel">
             <h3 className="font-display text-accent mb-3">
               Anotações
