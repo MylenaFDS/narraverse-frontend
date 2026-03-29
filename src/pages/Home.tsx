@@ -7,40 +7,39 @@ export default function Home() {
   const [feed, setFeed] = useState<FeedResponse | null>(null)
 
   useEffect(() => {
-  getFeed().then((data) => {
-    console.log("FEED FRONT:", data)
-    setFeed(data)
-  })
-}, [])
+    getFeed().then(setFeed)
+  }, [])
 
   if (!feed) {
-    return <p className="p-4">Carregando...</p>
+    return <p>Carregando...</p>
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-4">
-      <h2 className="text-2xl mb-6 font-bold">Feed de RPGs</h2>
+    <div className="max-w-2xl mx-auto">
+      <h2 className="title mb-6">Feed de RPGs</h2>
 
       <div className="space-y-4">
         {feed.recent.map((rpg) => (
           <Link key={rpg.id} to={`/rpg/${rpg.id}`}>
-            <div className="bg-gray-800 p-4 rounded-xl shadow hover:bg-gray-700 transition cursor-pointer">
+            <div className="card cursor-pointer">
 
               <div className="flex justify-between items-center mb-2">
-                <h3 className="text-xl font-bold">{rpg.name}</h3>
+                <h3 className="text-lg font-bold text-[#e0a96d]">
+                  {rpg.name}
+                </h3>
 
                 {rpg.recent_activity && (
-                  <span className="text-xs bg-green-600 px-2 py-1 rounded">
+                  <span className="text-xs bg-green-700 px-2 py-1 rounded">
                     🔥 Ativo
                   </span>
                 )}
               </div>
 
-              <p className="text-gray-400 mb-2">
+              <p className="text-sm text-[#c9ada7] mb-2">
                 {rpg.description || "Sem descrição"}
               </p>
 
-              <span className="text-sm text-gray-500">
+              <span className="text-xs text-[#9a7b75]">
                 👥 {rpg.participants_count} participantes
               </span>
 

@@ -1,3 +1,7 @@
 export default function Search() {
-  return <h2 className="text-2xl">Buscar RPGs</h2>
+  return (
+    <div>
+      <h2 className="title">Buscar RPGs</h2>
+    </div>
+  )
 }

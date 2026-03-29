@@ -30,26 +30,26 @@ export default function Navbar() {
   }
 
   return (
-    <div className="bg-gray-800 p-4 flex justify-between items-center">
-      <Link to="/home" className="text-xl font-bold">
-        Narraverse
+    <div className="flex gap-4 items-center text-[#c9ada7]">
+
+      <Link to="/search" className="hover:text-[#e0a96d] transition">
+        Buscar
       </Link>
 
-      <div className="flex gap-4 items-center">
-        <Link to="/search">Buscar</Link>
+      {user && (
+        <>
+          <Link to="/profile" className="hover:text-[#e0a96d] transition">
+            Perfil
+          </Link>
 
-        {user && (
-          <>
-           <Link to="/profile">Perfil</Link>
-            <button
-              onClick={handleLogout}
-              className="bg-red-600 px-3 py-1 rounded"
-            >
-              Sair
-            </button>
-          </>
-        )}
-      </div>
+          <button
+            onClick={handleLogout}
+            className="bg-[#8b1e3f] hover:bg-[#a8324a] px-3 py-1 rounded-lg transition"
+          >
+            Sair
+          </button>
+        </>
+      )}
     </div>
   )
 }
