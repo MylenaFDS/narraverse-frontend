@@ -33,4 +33,141 @@ body {
     @apply px-4 py-2 rounded-lg bg-surface border border-border hover:bg-primary transition;
   }
 
+  /* 🧱 CONTAINER PRINCIPAL (painel decorado) */
+  .panel {
+    @apply bg-[#2a1418] border border-[#5a2a2f] rounded-2xl p-6 shadow-lg;
+    background-image: radial-gradient(circle at top, rgba(255,255,255,0.05), transparent);
+  }
+
+  /* ✨ DIVISOR DECORATIVO */
+  .divider {
+    @apply my-6 border-t border-[#6b2e35] relative;
+  }
+
+  .divider::after {
+    content: "✦";
+    @apply absolute left-1/2 -top-3 -translate-x-1/2 text-[#c9a96e] bg-[#2a1418] px-2;
+  }
+
+  /* 🧾 CARD RPG */
+  .rpg-card {
+    @apply bg-[#1f0e12] border border-[#5a2a2f] rounded-xl p-4;
+  }
+
+  /* 📝 TEXTAREA */
+  .textarea {
+    @apply w-full p-3 rounded-lg bg-[#1f0e12] border border-[#5a2a2f] text-[#f5e9e2];
+  }
+
+  /* 🎮 TÍTULO COM ÍCONE */
+  .section-title {
+    @apply text-lg text-[#e7c48b] flex items-center gap-2;
+  }
+
+  /* 📜 CONTAINER RPG */
+  .rpg-container {
+    @apply bg-[#2a1418] border border-[#5a2a2f] rounded-2xl p-6 shadow-xl;
+  }
+
+  /* 🏰 HEADER RPG */
+  .rpg-header {
+    @apply mb-4;
+  }
+
+  .rpg-title {
+    @apply text-3xl text-[#f5e9e2] font-serif;
+  }
+
+  .rpg-description {
+    @apply text-[#cbbab0] text-sm mt-1;
+  }
+
+  /* 📑 TABS RPG */
+  .rpg-tab {
+    @apply px-4 py-2 rounded-lg border border-[#5a2a2f] bg-[#1f0e12] text-[#cbbab0] hover:bg-[#3a1b20] transition;
+  }
+
+  .rpg-tab-active {
+    @apply bg-[#5a2a2f] text-white;
+  }
+
+  /* 💬 TURNO */
+  .turn-card {
+    @apply bg-[#1f0e12] border border-[#5a2a2f] rounded-xl p-4;
+  }
+
+  /* 👤 PLAYER */
+  .player-name {
+    @apply text-[#e7c48b] font-semibold;
+  }
+
+  .turn-text {
+    @apply text-[#cbbab0] text-sm mt-2 leading-relaxed;
+  }
+
+  /* ➕ BOTÃO ADICIONAR */
+  .add-btn {
+    @apply border border-[#5a2a2f] px-4 py-2 rounded-lg text-[#e7c48b] hover:bg-[#3a1b20] transition;
+  }
+/* 🌌 FUNDO RPG */
+  .rpg-bg {
+    background: radial-gradient(circle at top, #3a0f16, #1a0f12 70%);
+  }
+
+  /* 🪶 CARD PRINCIPAL (com borda elegante) */
+  .rpg-panel {
+    @apply relative p-6 rounded-xl;
+    background: linear-gradient(145deg, #3a0f16, #2a0c12);
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+  }
+
+  /* ✨ BORDA DECORATIVA */
+  .rpg-panel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    padding: 1px;
+    background: linear-gradient(135deg, #d4af37, transparent, #d4af37);
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  /* 🧾 DIVISOR */
+  .rpg-divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, #d4af37, transparent);
+    margin: 20px 0;
+  }
+
+  /* 🧱 CARD INTERNO */
+  .rpg-card {
+    @apply p-4 rounded-lg;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(212, 175, 55, 0.15);
+  }
+
+  /* ✍️ TEXTAREA RPG */
+  .rpg-input {
+    @apply w-full p-3 rounded-lg;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    color: #f5e9e2;
+  }
+
+  /* 🔘 BOTÃO RPG */
+  .rpg-btn {
+    @apply px-4 py-2 rounded-lg transition;
+    background: linear-gradient(145deg, #6e2a35, #4a1820);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+  }
+
+  .rpg-btn:hover {
+    background: linear-gradient(145deg, #7a2f3c, #5a1d26);
+  }
 }

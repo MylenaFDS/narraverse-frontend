@@ -46,11 +46,15 @@ export default function Profile() {
     ) || []
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <h2 className="title mb-4">{user.username}</h2>
+  <div className="rpg-bg min-h-screen flex items-center justify-center p-6">
+    <div className="rpg-panel w-full max-w-3xl">
+
+      <h2 className="text-2xl font-display text-accent mb-4">
+        {user.username}
+      </h2>
 
       <textarea
-        className="w-full p-3 bg-surface border border-border rounded text-text"
+        className="rpg-input mb-3"
         value={bio}
         onChange={(e) => setBio(e.target.value)}
       />
@@ -58,34 +62,44 @@ export default function Profile() {
       <button
         onClick={handleSave}
         disabled={saving}
-        className="btn mt-2"
+        className="rpg-btn"
       >
         {saving ? "Salvando..." : "Salvar"}
       </button>
 
-      {/* RPGs criados */}
-      <h3 className="title mt-6 mb-2">🎮 RPGs criados</h3>
+      <div className="rpg-divider" />
 
-      <div className="space-y-2">
-        {user.owned_rpgs && user.owned_rpgs.length > 0 ? (
+      {/* RPGs criados */}
+      <h3 className="text-xl font-display text-accent mb-3">
+        🎮 RPGs criados
+      </h3>
+
+      <div className="space-y-3">
+        {user.owned_rpgs?.length ? (
           user.owned_rpgs.map((rpg: RPG) => (
-            <div key={rpg.id} className="card">
+            <div key={rpg.id} className="rpg-card">
               <p className="font-bold text-accent">{rpg.name}</p>
               <p className="text-sm text-textSoft">{rpg.description}</p>
             </div>
           ))
         ) : (
-          <p className="text-textSoft">Você ainda não criou RPGs</p>
+          <p className="text-textSoft">
+            Você ainda não criou RPGs
+          </p>
         )}
       </div>
 
-      {/* Participando */}
-      <h3 className="title mt-6 mb-2">👥 Participando</h3>
+      <div className="rpg-divider" />
 
-      <div className="space-y-2">
-        {participatingFiltered.length > 0 ? (
+      {/* Participando */}
+      <h3 className="text-xl font-display text-accent mb-3">
+        👥 Participando
+      </h3>
+
+      <div className="space-y-3">
+        {participatingFiltered.length ? (
           participatingFiltered.map((rpg: RPG) => (
-            <div key={rpg.id} className="card">
+            <div key={rpg.id} className="rpg-card">
               <p className="font-bold text-accent">{rpg.name}</p>
               <p className="text-sm text-textSoft">{rpg.description}</p>
             </div>
@@ -96,6 +110,11 @@ export default function Profile() {
           </p>
         )}
       </div>
+
     </div>
-  )
+  </div>
+)
 }
+
+
+
