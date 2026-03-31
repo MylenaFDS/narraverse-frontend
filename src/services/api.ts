@@ -101,6 +101,39 @@ export async function getFeed(): Promise<FeedResponse> {
 }
 
 // 🎭 TURNOS
+// 
+export async function createTurn(
+  rpgId: number,
+  data: {
+    content: string
+    reply_to_turn_id?: number | null
+  }
+) {
+  const token = localStorage.getItem("token")
+
+  console.log("Enviando turno:", data)
+  console.log("Token:", token)
+
+  const res = await fetch(`http://localhost:8000/rpg-turns/${rpgId}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  })
+
+  if (!res.ok) {
+    const error = await res.text()
+    console.error("Erro API:", error)
+    throw new Error("Erro ao criar turno")
+  }
+
+  const json = await res.json()
+  console.log("Resposta API:", json)
+
+  return json
+}
 export async function getTurns(rpgId: number) {
   const token = localStorage.getItem("token")
 
@@ -113,27 +146,7 @@ export async function getTurns(rpgId: number) {
   return res.json()
 }
 
-export async function createTurn(
-  rpgId: number,
-  content: string,
-  replyTo?: number | null
-) {
-  const token = localStorage.getItem("token")
 
-  const res = await fetch(`http://localhost:8000/rpg-turns/${rpgId}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      content,
-      reply_to_turn_id: replyTo ?? null,
-    }),
-  })
-
-  return res.json()
-}
 
 // 📚 LORE
 export async function getLore(rpgId: number) {
@@ -159,3 +172,44 @@ export async function getRPG(id: number) {
   return res.data
 }
 
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true
+
+      const refreshToken = localStorage.getItem("refresh_token")
+
+      if (!refreshToken) {
+        window.location.href = "/login"
+        return Promise.reject(error)
+      }
+
+      try {
+        const res = await fetch("http://127.0.0.1:8000/auth/refresh", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ refresh_token: refreshToken }),
+        })
+
+        const data = await res.json()
+
+        localStorage.setItem("token", data.access_token)
+
+        originalRequest.headers.Authorization = `Bearer ${data.access_token}`
+
+        return api(originalRequest)
+      } catch (err) {
+        console.error("Erro ao renovar token:", err)
+        localStorage.clear()
+        window.location.href = "/login"
+      }
+    }
+
+    return Promise.reject(error)
+  }
+)

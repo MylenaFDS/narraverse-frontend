@@ -74,7 +74,7 @@ export default function Profile() {
         🎮 RPGs criados
       </h3>
 
-      <div className="space-y-3">
+      <div className="space-y-3 cursor-pointer">
         {user.owned_rpgs?.length ? (
           user.owned_rpgs.map((rpg: RPG) => (
             <div key={rpg.id} className="rpg-card">

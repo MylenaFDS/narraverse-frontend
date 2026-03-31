@@ -210,4 +210,6 @@ body {
   .rpg-action {
     @apply flex gap-2;
   }
+
+  
 }

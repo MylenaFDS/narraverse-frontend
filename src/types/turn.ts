@@ -5,4 +5,9 @@ export interface RPGTurn {
   created_at: string
   reply_to_turn_id?: number | null
   mentioned_participants?: number[]
+
+  user?: {
+    id: number
+    username: string
+  }
 }
