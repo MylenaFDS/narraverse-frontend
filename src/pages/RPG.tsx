@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 
 import { getTurns, createTurn } from "../services/api"
 import type { RPGTurn } from "../types/turn"
@@ -18,11 +18,16 @@ export default function RPG() {
   const [turns, setTurns] = useState<RPGTurn[]>([])
   const [newTurn, setNewTurn] = useState("")
   const [replyTo, setReplyTo] = useState<number | null>(null)
+  const [replyContent, setReplyContent] = useState("")
   const [loading, setLoading] = useState(true)
+
+  const wsRef = useRef<WebSocket | null>(null)
 
   const isValid = id && !isNaN(rpgId)
 
-  // 🔥 FETCH
+  // ===============================
+  // 🔥 FETCH INICIAL
+  // ===============================
   useEffect(() => {
     if (!isValid) return
 
@@ -40,25 +45,89 @@ export default function RPG() {
     fetchTurns()
   }, [rpgId, isValid])
 
-  // 🔥 SEND
+  // ===============================
+  // 🔥 WEBSOCKET REALTIME
+  // ===============================
+  useEffect(() => {
+    if (!isValid) return
+
+    const ws = new WebSocket(`ws://localhost:8000/ws/rpg/${rpgId}`)
+    wsRef.current = ws
+
+    ws.onopen = () => {
+      console.log("🟢 WebSocket conectado")
+    }
+
+    ws.onmessage = (event) => {
+      const message = JSON.parse(event.data)
+
+      if (message.type === "new_turn") {
+        const turn = message.data
+
+        setTurns((prev) => {
+          if (prev.some((t) => t.id === turn.id)) return prev
+          return [...prev, turn]
+        })
+      }
+    }
+
+    ws.onerror = (err) => {
+      console.log("🔴 Erro WS:", err)
+    }
+
+    ws.onclose = () => {
+      console.log("⚠️ WebSocket fechado")
+    }
+
+    return () => {
+      ws.close()
+    }
+  }, [rpgId, isValid])
+
+  // ===============================
+  // 🔥 ENVIAR TURNO PRINCIPAL
+  // ===============================
   async function handleSendTurn() {
     if (!newTurn.trim()) return
 
     try {
-      const created = await createTurn(rpgId, {
+      await createTurn(rpgId, {
         content: newTurn,
-        reply_to_turn_id: replyTo,
+        reply_to_turn_id: null,
       })
 
-      setTurns((prev) => [created, ...prev])
       setNewTurn("")
-      setReplyTo(null)
     } catch (err) {
       console.error("Erro ao enviar turno:", err)
     }
   }
 
+  // ===============================
+  // 🔥 ENVIAR RESPOSTA
+  // ===============================
+  async function handleSendReply(parentId: number) {
+    if (!replyContent.trim()) return
+
+    try {
+      await createTurn(rpgId, {
+        content: replyContent,
+        reply_to_turn_id: parentId,
+      })
+
+      // fallback (caso WS não chegue)
+      const data = await getTurns(rpgId)
+      setTurns(data)
+
+      setReplyContent("")
+      setReplyTo(null)
+    } catch (err) {
+      console.error("Erro ao responder turno:", err)
+    }
+  }
+
+  // ===============================
   // 🔥 THREAD BUILDER
+  // ===============================
   function buildThreads(turns: RPGTurn[]): TurnWithReplies[] {
     const map = new Map<number, TurnWithReplies>()
 
@@ -82,12 +151,13 @@ export default function RPG() {
 
   const threadedTurns = buildThreads(turns)
 
-  // 🔥 RENDER TURN (DISCORD STYLE)
+  // ===============================
+  // 🔥 RENDER TURN
+  // ===============================
   function renderTurn(turn: TurnWithReplies, depth = 0) {
     return (
       <div key={turn.id} className="relative">
 
-        {/* linha lateral */}
         {depth > 0 && (
           <div
             className="absolute left-2 top-0 bottom-0 w-[2px] bg-border"
@@ -95,17 +165,13 @@ export default function RPG() {
           />
         )}
 
-        <div
-          style={{ marginLeft: depth * 20 }}
-          className="space-y-1"
-        >
-          <div className="rpg-turn">
+        <div style={{ marginLeft: depth * 20 }} className="space-y-1">
+
+          <div className="rpg-turn hover:bg-[#2b2d31] transition p-2 rounded">
 
             <div className="rpg-turn-header">
               <div className="flex items-center gap-2">
-                <div className="rpg-avatar">
-                  {turn.user_id}
-                </div>
+                <div className="rpg-avatar">{turn.user_id}</div>
 
                 <span className="font-bold">
                   Usuário {turn.user_id}
@@ -117,7 +183,6 @@ export default function RPG() {
               </span>
             </div>
 
-            {/* preview de reply */}
             {turn.reply_to_turn_id && (
               <div className="text-xs text-accent mb-1">
                 ↳ respondendo a #{turn.reply_to_turn_id}
@@ -129,15 +194,43 @@ export default function RPG() {
             </p>
           </div>
 
-          {/* botão fora do card */}
+          {/* BOTÃO RESPONDER */}
           <button
-            onClick={() => setReplyTo(turn.id)}
+            onClick={() => {
+              setReplyTo(turn.id)
+              setReplyContent("")
+            }}
             className="text-xs text-accent hover:underline ml-2"
           >
             Responder
           </button>
 
-          {/* replies */}
+          {/* INPUT DE RESPOSTA INLINE */}
+          {replyTo === turn.id && (
+            <div className="mt-2 flex gap-2 ml-2">
+              <input
+                value={replyContent}
+                onChange={(e) => setReplyContent(e.target.value)}
+                placeholder="Escreva sua resposta..."
+                className="rpg-input flex-1"
+              />
+
+              <button
+                onClick={() => handleSendReply(turn.id)}
+                className="rpg-btn"
+              >
+                Enviar
+              </button>
+
+              <button
+                onClick={() => setReplyTo(null)}
+                className="text-red-400 text-xs"
+              >
+                Cancelar
+              </button>
+            </div>
+          )}
+
           {turn.replies.map((reply) =>
             renderTurn(reply, depth + 1)
           )}
@@ -163,7 +256,6 @@ export default function RPG() {
           História em andamento...
         </p>
 
-        {/* TABS */}
         <div className="flex gap-3 mt-4 flex-wrap">
           <button onClick={() => setActiveTab("turns")} className="tab">Turnos</button>
           <button onClick={() => setActiveTab("chat")} className="tab">Chat</button>
@@ -172,7 +264,6 @@ export default function RPG() {
         </div>
       </div>
 
-      {/* CONTEÚDO */}
       <div className="rpg-layout max-w-5xl mx-auto">
 
         {/* ESQUERDA */}
@@ -198,29 +289,12 @@ export default function RPG() {
                 </div>
               )}
 
-              {/* 🔥 MOSTRA RESPOSTA ATIVA */}
-              {replyTo && (
-                <div className="text-sm text-accent mt-3">
-                  Respondendo ao turno #{replyTo}
-                  <button
-                    onClick={() => setReplyTo(null)}
-                    className="ml-2 text-red-400"
-                  >
-                    Cancelar
-                  </button>
-                </div>
-              )}
-
-              {/* INPUT */}
+              {/* INPUT PRINCIPAL (APENAS TURNO NOVO) */}
               <div className="mt-6 rpg-action">
                 <input
                   value={newTurn}
                   onChange={(e) => setNewTurn(e.target.value)}
-                  placeholder={
-                    replyTo
-                      ? `Respondendo ao turno #${replyTo}...`
-                      : "Digite sua ação..."
-                  }
+                  placeholder="Digite sua ação..."
                   className="rpg-input flex-1"
                 />
 
