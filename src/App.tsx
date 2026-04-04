@@ -5,6 +5,7 @@ import PrivateRoute from "./components/PrivateRoute"
 
 import Home from "./pages/Home"
 import RPG from "./pages/RPG"
+import RPGSheets from "./pages/RPGSheets"
 import Search from "./pages/Search"
 import Login from "./pages/Login"
 import Register from "./pages/Register"
@@ -46,7 +47,14 @@ export default function App() {
             </PrivateRoute>
           }
         />
-
+        <Route
+  path="/rpg/:id/sheets"
+  element={
+    <PrivateRoute>
+      <RPGSheets />
+    </PrivateRoute>
+  }
+/>
         <Route
           path="/profile"
           element={

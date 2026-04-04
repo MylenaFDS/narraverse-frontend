@@ -1,22 +1,8 @@
-import { useParams } from "react-router-dom"
-import { useEffect, useState, useRef } from "react"
+import { useParams, useNavigate } from "react-router-dom"
+import { useEffect, useState, useRef, type ReactNode } from "react"
 
-import { getTurns, createTurn, getMe } from "../services/api"
+import { getTurns, createTurn, deleteTurn } from "../services/api"
 import type { RPGTurn } from "../types/turn"
-import {
-  getCharacters,
-  createCharacter,
-  getSheetFields,
-  getCharacterSheet,
-  saveCharacterSheet,
-} from "../services/characters"
-
-import type {
-  Character,
-  CharacterSheetField,
-  CharacterSheetValue,
-} from "../types/character"
-
 
 type Tab = "turns" | "chat" | "characters" | "lore"
 
@@ -26,44 +12,23 @@ type TurnWithReplies = RPGTurn & {
 
 export default function RPG() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const rpgId = Number(id)
 
   const [activeTab, setActiveTab] = useState<Tab>("turns")
+
   const [turns, setTurns] = useState<RPGTurn[]>([])
   const [newTurn, setNewTurn] = useState("")
   const [replyTo, setReplyTo] = useState<number | null>(null)
   const [replyContent, setReplyContent] = useState("")
   const [loading, setLoading] = useState(true)
-  const [currentUserId, setCurrentUserId] = useState<number | null>(null)
 
   const wsRef = useRef<WebSocket | null>(null)
-  const replyInputRef = useRef<HTMLInputElement | null>(null)
-  const listRef = useRef<HTMLDivElement | null>(null)
 
   const isValid = id && !isNaN(rpgId)
-const [characters, setCharacters] = useState<Character[]>([])
-const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null)
-const [newCharacterName, setNewCharacterName] = useState("")
-
-const [fields, setFields] = useState<CharacterSheetField[]>([])
-const [sheetValues, setSheetValues] = useState<Record<number, string>>({})
-  // ===============================
-  // 🔥 GET USER
-  // ===============================
-  useEffect(() => {
-    async function fetchUser() {
-      try {
-        const user = await getMe()
-        setCurrentUserId(user.id)
-      } catch (err) {
-  console.error("Erro ao buscar usuário:", err)
-}
-    }
-    fetchUser()
-  }, [])
 
   // ===============================
-  // 🔥 FETCH INICIAL
+  // 🔥 FETCH
   // ===============================
   useEffect(() => {
     if (!isValid) return
@@ -83,25 +48,6 @@ const [sheetValues, setSheetValues] = useState<Record<number, string>>({})
   }, [rpgId, isValid])
 
   // ===============================
-  // 🔥 SCROLL AUTO
-  // ===============================
-  useEffect(() => {
-    listRef.current?.scrollTo({
-      top: listRef.current.scrollHeight,
-      behavior: "smooth",
-    })
-  }, [turns])
-  useEffect(() => {
-  if (!isValid) return
-
-  async function loadCharacters() {
-    const data = await getCharacters(rpgId)
-    setCharacters(data)
-  }
-
-  loadCharacters()
-}, [rpgId,isValid])
-  // ===============================
   // 🔥 WEBSOCKET
   // ===============================
   useEffect(() => {
@@ -111,20 +57,17 @@ const [sheetValues, setSheetValues] = useState<Record<number, string>>({})
     wsRef.current = ws
 
     ws.onmessage = (event) => {
-      const message = JSON.parse(event.data)
+      const msg = JSON.parse(event.data)
 
-      if (message.type === "new_turn") {
-        const turn = message.data
-
+      if (msg.type === "new_turn") {
         setTurns((prev) => {
-          if (prev.some((t) => t.id === turn.id)) return prev
-          return [...prev, turn]
+          if (prev.some((t) => t.id === msg.data.id)) return prev
+          return [...prev, msg.data]
         })
       }
 
-      if (message.type === "delete_turn") {
-        const id = message.data
-        setTurns((prev) => prev.filter((t) => t.id !== id))
+      if (msg.type === "delete_turn") {
+        setTurns((prev) => prev.filter((t) => t.id !== msg.turn_id))
       }
     }
 
@@ -132,25 +75,7 @@ const [sheetValues, setSheetValues] = useState<Record<number, string>>({})
   }, [rpgId, isValid])
 
   // ===============================
-  // 🔥 ENTER = SEND
-  // ===============================
-  function handleKeyDown(
-    e: React.KeyboardEvent<HTMLInputElement>,
-    isReply = false,
-    parentId?: number
-  ) {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault()
-      if (isReply && parentId) {
-  handleSendReply(parentId)
-} else {
-  handleSendTurn()
-}
-    }
-  }
-
-  // ===============================
-  // 🔥 SEND TURN
+  // 🔥 AÇÕES
   // ===============================
   async function handleSendTurn() {
     if (!newTurn.trim()) return
@@ -163,9 +88,6 @@ const [sheetValues, setSheetValues] = useState<Record<number, string>>({})
     setNewTurn("")
   }
 
-  // ===============================
-  // 🔥 SEND REPLY
-  // ===============================
   async function handleSendReply(parentId: number) {
     if (!replyContent.trim()) return
 
@@ -178,64 +100,13 @@ const [sheetValues, setSheetValues] = useState<Record<number, string>>({})
     setReplyTo(null)
   }
 
-  // ===============================
-  // 🔥 DELETE TURN
-  // ===============================
   async function handleDeleteTurn(turnId: number) {
-    try {
-      await fetch(`http://localhost:8000/rpg-turns/${turnId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      })
-
-      setTurns((prev) => prev.filter((t) => t.id !== turnId))
-    } catch (err) {
-      console.error("Erro ao deletar:", err)
-    }
+    await deleteTurn(turnId)
+    setTurns((prev) => prev.filter((t) => t.id !== turnId))
   }
-  async function selectCharacter(char: Character) {
-  setSelectedCharacter(char)
-
-  const fieldsData = await getSheetFields(rpgId)
-  setFields(fieldsData)
-
-  const values = await getCharacterSheet(char.id)
-
-  const map: Record<number, string> = {}
-
-  values.forEach((v: CharacterSheetValue) => {
-    map[v.field_id] = v.value
-  })
-
-  setSheetValues(map)
-}
-
-async function handleCreateCharacter() {
-  if (!newCharacterName.trim()) return
-
-  const char = await createCharacter(rpgId, {
-    name: newCharacterName,
-  })
-
-  setCharacters((prev) => [...prev, char])
-  setNewCharacterName("")
-}
-
-async function handleSaveSheet() {
-  if (!selectedCharacter) return
-
-  const payload = Object.entries(sheetValues).map(([field_id, value]) => ({
-    field_id: Number(field_id),
-    value,
-  }))
-
-  await saveCharacterSheet(selectedCharacter.id, payload)
-}
 
   // ===============================
-  // 🔥 THREADS
+  // 🧠 THREAD
   // ===============================
   function buildThreads(turns: RPGTurn[]): TurnWithReplies[] {
     const map = new Map<number, TurnWithReplies>()
@@ -246,11 +117,11 @@ async function handleSaveSheet() {
 
     const roots: TurnWithReplies[] = []
 
-    map.forEach((turn) => {
-      if (turn.reply_to_turn_id) {
-        map.get(turn.reply_to_turn_id)?.replies.push(turn)
+    map.forEach((t) => {
+      if (t.reply_to_turn_id) {
+        map.get(t.reply_to_turn_id)?.replies.push(t)
       } else {
-        roots.push(turn)
+        roots.push(t)
       }
     })
 
@@ -259,46 +130,22 @@ async function handleSaveSheet() {
 
   const threadedTurns = buildThreads(turns)
 
-  // ===============================
-  // 🔥 AUTO FOCUS REPLY
-  // ===============================
-  useEffect(() => {
-    if (replyTo) {
-      replyInputRef.current?.focus()
-    }
-  }, [replyTo])
-
-  // ===============================
-  // 🔥 RENDER TURN
-  // ===============================
-  function renderTurn(turn: TurnWithReplies, depth = 0) {
+  function renderTurn(turn: TurnWithReplies, depth = 0): ReactNode {
     return (
       <div key={turn.id} style={{ marginLeft: depth * 20 }}>
-
-        <div className="rpg-turn hover:bg-[#2b2d31] p-2 rounded">
+        <div className="rpg-turn p-2 rounded hover:bg-[#2b2d31]">
           <div className="flex justify-between">
+            <span>Usuário {turn.user_id}</span>
 
-            <span className="font-bold">
-              Usuário {turn.user_id}
-            </span>
-
-            <div className="flex gap-2 items-center">
-              <span className="text-xs text-textSoft">
-                {new Date(turn.created_at).toLocaleTimeString()}
-              </span>
-
-              {turn.user_id === currentUserId && (
-                <button
-                  onClick={() => handleDeleteTurn(turn.id)}
-                  className="text-xs text-red-400 hover:underline"
-                >
-                  Excluir
-                </button>
-              )}
-            </div>
+            <button
+              onClick={() => handleDeleteTurn(turn.id)}
+              className="text-red-400 text-xs"
+            >
+              Deletar
+            </button>
           </div>
 
-          <p className="text-sm mt-1">{turn.content}</p>
+          <p>{turn.content}</p>
         </div>
 
         <button
@@ -306,22 +153,18 @@ async function handleSaveSheet() {
             setReplyTo(turn.id)
             setReplyContent("")
           }}
-          className="text-xs text-accent ml-2"
+          className="text-xs text-accent"
         >
           Responder
         </button>
 
         {replyTo === turn.id && (
-          <div className="mt-2 flex gap-2 ml-2">
+          <div className="flex gap-2 mt-2">
             <input
-              ref={replyInputRef}
               value={replyContent}
               onChange={(e) => setReplyContent(e.target.value)}
-              onKeyDown={(e) => handleKeyDown(e, true, turn.id)}
               className="rpg-input flex-1"
-              placeholder="Responder..."
             />
-
             <button onClick={() => handleSendReply(turn.id)} className="rpg-btn">
               Enviar
             </button>
@@ -339,15 +182,20 @@ async function handleSaveSheet() {
     <div className="rpg-bg min-h-screen p-6">
 
       <div className="rpg-panel max-w-5xl mx-auto mb-6">
-        <h2 className="text-3xl font-display text-accent">
-          RPG #{rpgId}
-        </h2>
+        <h2>RPG #{rpgId}</h2>
 
-        <div className="flex gap-3 mt-4 flex-wrap">
-          <button onClick={() => setActiveTab("turns")} className="tab">Turnos</button>
-          <button onClick={() => setActiveTab("chat")} className="tab">Chat</button>
-          <button onClick={() => setActiveTab("characters")} className="tab">Fichas</button>
-          <button onClick={() => setActiveTab("lore")} className="tab">Enciclopédia</button>
+        <div className="flex gap-3 mt-4">
+          <button onClick={() => setActiveTab("turns")}>Turnos</button>
+          <button onClick={() => setActiveTab("chat")}>Chat</button>
+
+          {/* 👉 REDIRECIONA */}
+          <button onClick={() => navigate(`/rpg/${rpgId}/sheets`)}>
+            Fichas
+          </button>
+
+          <button onClick={() => setActiveTab("lore")}>
+            Enciclopédia
+          </button>
         </div>
       </div>
 
@@ -360,20 +208,15 @@ async function handleSaveSheet() {
               {loading ? (
                 <p>Carregando...</p>
               ) : (
-                <div ref={listRef} className="space-y-4 max-h-[500px] overflow-y-auto">
-                  {threadedTurns.map((t) => renderTurn(t))}
-                </div>
+                threadedTurns.map((t) => renderTurn(t))
               )}
 
-              <div className="mt-6 flex gap-2">
+              <div className="mt-4 flex gap-2">
                 <input
                   value={newTurn}
                   onChange={(e) => setNewTurn(e.target.value)}
-                  onKeyDown={(e) => handleKeyDown(e)}
                   className="rpg-input flex-1"
-                  placeholder="Digite sua ação..."
                 />
-
                 <button onClick={handleSendTurn} className="rpg-btn">
                   Enviar
                 </button>
@@ -381,90 +224,14 @@ async function handleSaveSheet() {
             </>
           )}
 
-        </div>
-          {activeTab === "characters" && (
-  <div className="space-y-6">
-
-    {/* 🔥 CRIAR PERSONAGEM */}
-    <div className="rpg-panel">
-      <h3 className="text-accent mb-2">Seus personagens</h3>
-
-      <div className="flex gap-2">
-        <input
-          value={newCharacterName}
-          onChange={(e) => setNewCharacterName(e.target.value)}
-          placeholder="Nome do personagem..."
-          className="rpg-input flex-1"
-        />
-
-        <button onClick={handleCreateCharacter} className="rpg-btn">
-          Criar
-        </button>
-      </div>
-
-      <div className="mt-4 space-y-2">
-        {characters.map((char) => (
-          <div
-            key={char.id}
-            onClick={() => selectCharacter(char)}
-            className={`p-2 rounded cursor-pointer ${
-              selectedCharacter?.id === char.id
-                ? "bg-accent/20"
-                : "hover:bg-[#2b2d31]"
-            }`}
-          >
-            {char.name}
-          </div>
-        ))}
-      </div>
-    </div>
-
-    {/* 🔥 FICHA DINÂMICA */}
-    {selectedCharacter && (
-      <div className="rpg-panel">
-        <h3 className="text-accent mb-3">
-          Ficha de {selectedCharacter.name}
-        </h3>
-
-        <div className="space-y-3">
-          {fields.map((field) => (
-            <div key={field.id}>
-              <label className="text-sm">{field.name}</label>
-
-              <input
-                value={sheetValues[field.id] || ""}
-                onChange={(e) =>
-                  setSheetValues((prev) => ({
-                    ...prev,
-                    [field.id]: e.target.value,
-                  }))
-                }
-                className="rpg-input w-full"
-              />
-            </div>
-          ))}
+          {activeTab === "chat" && <div>Chat em construção...</div>}
+          {activeTab === "lore" && <div>Enciclopédia em construção...</div>}
         </div>
 
-        <button
-          onClick={handleSaveSheet}
-          className="rpg-btn mt-4 w-full"
-        >
-          Salvar ficha
-        </button>
-      </div>
-    )}
-
-  </div>
-)}
-        {/* SIDEBAR intacta */}
+        {/* SIDEBAR */}
         <div className="rpg-sidebar">
-          <div className="rpg-panel">
-            <h3>Jogadores</h3>
-          </div>
-
-          <div className="rpg-panel">
-            <h3>Anotações</h3>
-          </div>
+          <div className="rpg-panel">Jogadores</div>
+          <div className="rpg-panel">Anotações</div>
         </div>
 
       </div>

@@ -213,3 +213,20 @@ api.interceptors.response.use(
     return Promise.reject(error)
   }
 )
+
+export async function deleteTurn(turnId: number) {
+  await api.delete(`/rpg-turns/${turnId}`)
+}
+
+export async function getSheetFields(rpgId: number) {
+  const res = await api.get(`/rpg-sheet-fields/${rpgId}`)
+  return res.data
+}
+
+export async function createSheetField(rpgId: number, data: {
+  name: string
+  field_type: string
+}) {
+  const res = await api.post(`/rpg-sheet-fields/${rpgId}`, data)
+  return res.data
+}
