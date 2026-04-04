@@ -3,6 +3,20 @@ import { useEffect, useState, useRef } from "react"
 
 import { getTurns, createTurn, getMe } from "../services/api"
 import type { RPGTurn } from "../types/turn"
+import {
+  getCharacters,
+  createCharacter,
+  getSheetFields,
+  getCharacterSheet,
+  saveCharacterSheet,
+} from "../services/characters"
+
+import type {
+  Character,
+  CharacterSheetField,
+  CharacterSheetValue,
+} from "../types/character"
+
 
 type Tab = "turns" | "chat" | "characters" | "lore"
 
@@ -27,7 +41,12 @@ export default function RPG() {
   const listRef = useRef<HTMLDivElement | null>(null)
 
   const isValid = id && !isNaN(rpgId)
+const [characters, setCharacters] = useState<Character[]>([])
+const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null)
+const [newCharacterName, setNewCharacterName] = useState("")
 
+const [fields, setFields] = useState<CharacterSheetField[]>([])
+const [sheetValues, setSheetValues] = useState<Record<number, string>>({})
   // ===============================
   // 🔥 GET USER
   // ===============================
@@ -72,7 +91,16 @@ export default function RPG() {
       behavior: "smooth",
     })
   }, [turns])
+  useEffect(() => {
+  if (!isValid) return
 
+  async function loadCharacters() {
+    const data = await getCharacters(rpgId)
+    setCharacters(data)
+  }
+
+  loadCharacters()
+}, [rpgId,isValid])
   // ===============================
   // 🔥 WEBSOCKET
   // ===============================
@@ -167,6 +195,44 @@ export default function RPG() {
       console.error("Erro ao deletar:", err)
     }
   }
+  async function selectCharacter(char: Character) {
+  setSelectedCharacter(char)
+
+  const fieldsData = await getSheetFields(rpgId)
+  setFields(fieldsData)
+
+  const values = await getCharacterSheet(char.id)
+
+  const map: Record<number, string> = {}
+
+  values.forEach((v: CharacterSheetValue) => {
+    map[v.field_id] = v.value
+  })
+
+  setSheetValues(map)
+}
+
+async function handleCreateCharacter() {
+  if (!newCharacterName.trim()) return
+
+  const char = await createCharacter(rpgId, {
+    name: newCharacterName,
+  })
+
+  setCharacters((prev) => [...prev, char])
+  setNewCharacterName("")
+}
+
+async function handleSaveSheet() {
+  if (!selectedCharacter) return
+
+  const payload = Object.entries(sheetValues).map(([field_id, value]) => ({
+    field_id: Number(field_id),
+    value,
+  }))
+
+  await saveCharacterSheet(selectedCharacter.id, payload)
+}
 
   // ===============================
   // 🔥 THREADS
@@ -316,7 +382,80 @@ export default function RPG() {
           )}
 
         </div>
+          {activeTab === "characters" && (
+  <div className="space-y-6">
 
+    {/* 🔥 CRIAR PERSONAGEM */}
+    <div className="rpg-panel">
+      <h3 className="text-accent mb-2">Seus personagens</h3>
+
+      <div className="flex gap-2">
+        <input
+          value={newCharacterName}
+          onChange={(e) => setNewCharacterName(e.target.value)}
+          placeholder="Nome do personagem..."
+          className="rpg-input flex-1"
+        />
+
+        <button onClick={handleCreateCharacter} className="rpg-btn">
+          Criar
+        </button>
+      </div>
+
+      <div className="mt-4 space-y-2">
+        {characters.map((char) => (
+          <div
+            key={char.id}
+            onClick={() => selectCharacter(char)}
+            className={`p-2 rounded cursor-pointer ${
+              selectedCharacter?.id === char.id
+                ? "bg-accent/20"
+                : "hover:bg-[#2b2d31]"
+            }`}
+          >
+            {char.name}
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {/* 🔥 FICHA DINÂMICA */}
+    {selectedCharacter && (
+      <div className="rpg-panel">
+        <h3 className="text-accent mb-3">
+          Ficha de {selectedCharacter.name}
+        </h3>
+
+        <div className="space-y-3">
+          {fields.map((field) => (
+            <div key={field.id}>
+              <label className="text-sm">{field.name}</label>
+
+              <input
+                value={sheetValues[field.id] || ""}
+                onChange={(e) =>
+                  setSheetValues((prev) => ({
+                    ...prev,
+                    [field.id]: e.target.value,
+                  }))
+                }
+                className="rpg-input w-full"
+              />
+            </div>
+          ))}
+        </div>
+
+        <button
+          onClick={handleSaveSheet}
+          className="rpg-btn mt-4 w-full"
+        >
+          Salvar ficha
+        </button>
+      </div>
+    )}
+
+  </div>
+)}
         {/* SIDEBAR intacta */}
         <div className="rpg-sidebar">
           <div className="rpg-panel">
