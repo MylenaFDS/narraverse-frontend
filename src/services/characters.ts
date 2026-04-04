@@ -33,7 +33,7 @@ export async function getSheetFields(rpgId: number) {
 
 // 🔥 valores da ficha do personagem
 export async function getCharacterSheet(characterId: number) {
-  const res = await fetch(`${API}/character-sheets/character/${characterId}`)
+  const res = await fetch(`${API}/character-sheets/${characterId}`)
   return res.json()
 }
 

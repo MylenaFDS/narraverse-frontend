@@ -8,7 +8,11 @@ import {
   saveCharacterSheet,
 } from "../services/characters"
 
-import { getSheetFields } from "../services/api"
+import {
+  getSheetFields,
+  createSheetField,
+  getRPG,
+} from "../services/api"
 
 import type { Character, RPGSheetField } from "../types/character"
 
@@ -24,6 +28,14 @@ export default function RPGSheets() {
 
   const [newCharacterName, setNewCharacterName] = useState("")
 
+  const [isOwner, setIsOwner] = useState(false)
+
+  const [newFieldName, setNewFieldName] = useState("")
+  const [newFieldType, setNewFieldType] = useState("text")
+
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+
   const isValid = id && !isNaN(rpgId)
 
   // ===============================
@@ -34,15 +46,24 @@ export default function RPGSheets() {
 
     async function fetchAll() {
       try {
-        const [chars, fields] = await Promise.all([
+        setLoading(true)
+
+        const [chars, fields, rpg] = await Promise.all([
           getCharacters(rpgId),
           getSheetFields(rpgId),
+          getRPG(rpgId),
         ])
 
-        setCharacters(chars)
-        setSheetFields(fields)
+        setCharacters(chars || [])
+        setSheetFields(fields || [])
+
+        const userId = Number(localStorage.getItem("user_id"))
+        setIsOwner(userId === rpg.owner_id)
+
       } catch (err) {
-        console.error(err)
+        console.error("Erro ao carregar dados:", err)
+      } finally {
+        setLoading(false)
       }
     }
 
@@ -50,22 +71,40 @@ export default function RPGSheets() {
   }, [rpgId, isValid])
 
   // ===============================
-  // 🎯 SELECT CHARACTER
+  // ➕ CRIAR CAMPO
   // ===============================
-  async function handleSelectCharacter(char: Character) {
-    setSelectedCharacter(char)
+  async function handleCreateField() {
+    if (!newFieldName.trim()) return
 
     try {
-      const sheet = await getCharacterSheet(char.id)
-      setSheetData(sheet.data || {})
+      const field = await createSheetField(rpgId, {
+        name: newFieldName,
+        field_type: newFieldType,
+      })
+
+      setSheetFields((prev) => [...prev, field])
+      setNewFieldName("")
+      setNewFieldType("text")
     } catch (err) {
-      console.error(err)
+      console.error("Erro ao criar campo:", err)
     }
   }
 
   // ===============================
-  // ➕ CREATE CHARACTER
+  // 🎯 PERSONAGEM
   // ===============================
+  async function handleSelectCharacter(char: Character) {
+    try {
+      setSelectedCharacter(char)
+
+      const sheet = await getCharacterSheet(char.id)
+      setSheetData(sheet?.data || {})
+    } catch (err) {
+      console.error("Erro ao carregar ficha:", err)
+      setSheetData({})
+    }
+  }
+
   async function handleCreateCharacter() {
     if (!newCharacterName.trim()) return
 
@@ -77,17 +116,16 @@ export default function RPGSheets() {
       setCharacters((prev) => [...prev, char])
       setNewCharacterName("")
     } catch (err) {
-      console.error(err)
+      console.error("Erro ao criar personagem:", err)
     }
   }
 
-  // ===============================
-  // 💾 SAVE SHEET
-  // ===============================
   async function handleSaveSheet() {
     if (!selectedCharacter) return
 
     try {
+      setSaving(true)
+
       const payload = Object.entries(sheetData).map(
         ([key, value]) => ({
           field_name: key,
@@ -96,56 +134,100 @@ export default function RPGSheets() {
       )
 
       await saveCharacterSheet(selectedCharacter.id, payload)
+
     } catch (err) {
-      console.error(err)
+      console.error("Erro ao salvar ficha:", err)
+    } finally {
+      setSaving(false)
     }
   }
 
   if (!isValid) return <div>RPG inválido</div>
 
+  if (loading) {
+    return (
+      <div className="rpg-bg min-h-screen flex items-center justify-center">
+        <p>Carregando fichas...</p>
+      </div>
+    )
+  }
+
   return (
     <div className="rpg-bg min-h-screen p-6">
+      <div className="max-w-5xl mx-auto flex gap-6">
 
-      <div className="rpg-panel max-w-5xl mx-auto mb-6">
-        <h2 className="text-2xl">Fichas do RPG #{rpgId}</h2>
-      </div>
-
-      <div className="rpg-layout max-w-5xl mx-auto">
-
-        {/* ESQUERDA - FICHA */}
+        {/* 🧾 FICHA */}
         <div className="rpg-panel flex-1">
 
+          {/* 👑 CONFIGURAR CAMPOS */}
+          {isOwner && (
+            <div className="mb-6 border-b pb-4">
+              <h3 className="mb-2">Configurar ficha</h3>
+
+              <div className="flex gap-2">
+                <input
+                  placeholder="Nome do campo"
+                  value={newFieldName}
+                  onChange={(e) => setNewFieldName(e.target.value)}
+                  className="rpg-input"
+                />
+
+                <select
+                  value={newFieldType}
+                  onChange={(e) => setNewFieldType(e.target.value)}
+                  className="rpg-input"
+                >
+                  <option value="text">Texto</option>
+                  <option value="number">Número</option>
+                </select>
+
+                <button
+                  onClick={handleCreateField}
+                  className="rpg-btn"
+                >
+                  Criar
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* 📄 FICHA */}
           {selectedCharacter ? (
             <>
-              <h3 className="text-xl mb-4">{selectedCharacter.name}</h3>
+              <h3 className="mb-4">{selectedCharacter.name}</h3>
 
-              <div className="space-y-3">
-                {sheetFields.map((field) => (
-                  <div key={field.id}>
-                    <label className="text-sm text-textSoft">
-                      {field.name}
-                    </label>
+              {sheetFields.length === 0 && (
+                <p className="text-sm opacity-70">
+                  Nenhum campo definido ainda.
+                </p>
+              )}
 
-                    <input
-                      type={field.field_type === "number" ? "number" : "text"}
-                      value={sheetData[field.name] || ""}
-                      onChange={(e) =>
-                        setSheetData({
-                          ...sheetData,
-                          [field.name]: e.target.value,
-                        })
-                      }
-                      className="rpg-input w-full"
-                    />
-                  </div>
-                ))}
-              </div>
+              {sheetFields.map((field) => (
+                <div key={field.id} className="mb-3">
+                  <label className="block text-sm mb-1">
+                    {field.name}
+                  </label>
+
+                  <input
+                    type={field.field_type === "number" ? "number" : "text"}
+                    value={sheetData[field.name] || ""}
+                    onChange={(e) =>
+                      setSheetData((prev) => ({
+                        ...prev,
+                        [field.name]: e.target.value,
+                      }))
+                    }
+                    className="rpg-input w-full"
+                  />
+                </div>
+              ))}
 
               <button
                 onClick={handleSaveSheet}
-                className="rpg-btn mt-4"
+                className="rpg-btn mt-3"
+                disabled={saving}
               >
-                Salvar
+                {saving ? "Salvando..." : "Salvar ficha"}
               </button>
             </>
           ) : (
@@ -153,29 +235,32 @@ export default function RPGSheets() {
           )}
         </div>
 
-        {/* DIREITA - LISTA */}
+        {/* 👥 PERSONAGENS */}
         <div className="rpg-panel w-64">
-
           <input
             value={newCharacterName}
             onChange={(e) => setNewCharacterName(e.target.value)}
-            placeholder="Novo personagem..."
-            className="rpg-input mb-2"
+            placeholder="Novo personagem"
+            className="rpg-input"
           />
 
           <button
             onClick={handleCreateCharacter}
-            className="rpg-btn w-full mb-4"
+            className="rpg-btn mt-2"
           >
             Criar
           </button>
 
-          <div className="space-y-2">
+          <div className="mt-4 space-y-2">
             {characters.map((c) => (
               <div
                 key={c.id}
                 onClick={() => handleSelectCharacter(c)}
-                className="cursor-pointer hover:bg-[#2b2d31] p-2 rounded"
+                className={`cursor-pointer p-1 rounded ${
+                  selectedCharacter?.id === c.id
+                    ? "bg-[#2b2d31]"
+                    : ""
+                }`}
               >
                 {c.name}
               </div>
