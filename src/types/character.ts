@@ -26,3 +26,8 @@ export interface RPGSheetField {
   field_type: string
   rpg_id: number
 }
+
+export type CreateSheetFieldDTO = {
+  name: string
+  field_type: "text" | "number"
+}

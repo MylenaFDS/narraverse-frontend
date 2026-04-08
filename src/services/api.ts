@@ -1,4 +1,5 @@
 import type { FeedResponse } from "../types/feed"
+import type { CreateSheetFieldDTO } from "../types/character"
 import axios from "axios"
 
 export const api = axios.create({
@@ -223,10 +224,21 @@ export async function getSheetFields(rpgId: number) {
   return res.data
 }
 
-export async function createSheetField(rpgId: number, data: {
-  name: string
-  field_type: string
-}) {
-  const res = await api.post(`/rpg-sheet-fields/${rpgId}`, data)
-  return res.data
+export async function createSheetField(rpgId: number, data: CreateSheetFieldDTO) {
+  const token = localStorage.getItem("token")
+
+  const res = await fetch(`http://localhost:8000/rpg-sheet-fields/${rpgId}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`, // 🔥 ESSENCIAL
+    },
+    body: JSON.stringify(data),
+  })
+
+  if (!res.ok) {
+    throw new Error("Erro ao criar campo")
+  }
+
+  return await res.json()
 }

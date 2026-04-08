@@ -8,16 +8,19 @@ export default function Login() {
   const navigate = useNavigate()
 
   async function handleLogin() {
-    const data = await login(email, password)
+  const data = await login(email, password)
 
-    if (data.access_token) {
-      localStorage.setItem("token", data.access_token)
-      navigate("/home")
-    } else {
-      alert("Erro ao fazer login")
-    }
+  if (data.access_token) {
+    localStorage.setItem("token", data.access_token)
+
+    // ✅ SALVAR USER ID (ESSENCIAL)
+    localStorage.setItem("user_id", data.user.id)
+
+    navigate("/home")
+  } else {
+    alert("Erro ao fazer login")
   }
-
+}
   return (
     <div className="max-w-md mx-auto mt-20">
       <h2 className="title mb-4">Login</h2>
