@@ -1,4 +1,4 @@
-import type { Character, CharacterCreate, CharacterSheetValue } from "../types/character"
+import type { Character, CharacterCreatePayload } from "../types/character"
 
 const API = "http://localhost:8000"
 
@@ -10,7 +10,7 @@ export async function getCharacters(rpgId: number): Promise<Character[]> {
 
 export async function createCharacter(
   rpgId: number,
-  data: CharacterCreate
+  data: CharacterCreatePayload
 ): Promise<Character> {
   const res = await fetch(`${API}/characters/${rpgId}`, {
     method: "POST",
@@ -23,30 +23,4 @@ export async function createCharacter(
 
   if (!res.ok) throw new Error("Erro ao criar personagem")
   return res.json()
-}
-
-// 🔥 campos dinâmicos da ficha
-export async function getSheetFields(rpgId: number) {
-  const res = await fetch(`${API}/character-sheets/${rpgId}`)
-  return res.json()
-}
-
-// 🔥 valores da ficha do personagem
-export async function getCharacterSheet(characterId: number) {
-  const res = await fetch(`${API}/character-sheets/${characterId}`)
-  return res.json()
-}
-
-export async function saveCharacterSheet(
-  characterId: number,
-  data: CharacterSheetValue[]
-) {
-  await fetch(`${API}/character-sheets/${characterId}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-    body: JSON.stringify(data),
-  })
 }

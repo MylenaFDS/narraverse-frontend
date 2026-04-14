@@ -242,3 +242,25 @@ export async function createSheetField(rpgId: number, data: CreateSheetFieldDTO)
 
   return await res.json()
 }
+
+export async function updateSheetField(
+  fieldId: number,
+  data: { name: string }
+) {
+  const token = localStorage.getItem("token")
+
+  const res = await fetch(`http://localhost:8000/rpg-sheet-fields/${fieldId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  })
+
+  if (!res.ok) {
+    throw new Error("Erro ao atualizar campo")
+  }
+
+  return res.json()
+}

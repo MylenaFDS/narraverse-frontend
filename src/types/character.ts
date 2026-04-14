@@ -1,33 +1,27 @@
-export interface Character {
+export type Character = {
   id: number
   name: string
+  description?: string
   user_id: number
   rpg_id: number
 }
 
-export interface CharacterCreate {
-  name: string
-}
-
-export interface CharacterSheetField {
-  name: string
-  label: string
-  type: string
-}
-
-export interface CharacterSheetValue {
-  field_name: string
-  value: string
-}
-
-export interface RPGSheetField {
+export type RPGSheetField = {
   id: number
   name: string
-  field_type: string
-  rpg_id: number
+  field_type: "text" | "number"
 }
 
 export type CreateSheetFieldDTO = {
   name: string
   field_type: "text" | "number"
+}
+export type SheetValueInput = {
+  field_id: number
+  value: string
+}
+
+export type CharacterCreatePayload = {
+  name: string
+  sheet: SheetValueInput[]
 }
