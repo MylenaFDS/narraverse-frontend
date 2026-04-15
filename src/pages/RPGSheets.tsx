@@ -293,6 +293,9 @@ export default function RPGSheets() {
         {/* SIDEBAR */}
         <div className="rpg-sidebar">
           <div className="rpg-panel">
+            <h2 className="text-xl font-display text-[#e0a96d]">
+                Persongens
+              </h2>
             {characters.map((c) => (
               <div
                 key={c.id}
