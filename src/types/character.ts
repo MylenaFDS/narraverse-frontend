@@ -25,3 +25,10 @@ export type CharacterCreatePayload = {
   name: string
   sheet: SheetValueInput[]
 }
+
+export type CharacterSheetValue = {
+  id: number
+  character_id: number
+  field_id: number
+  value: string
+}
