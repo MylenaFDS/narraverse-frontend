@@ -103,37 +103,28 @@ export async function getFeed(): Promise<FeedResponse> {
 
 // 🎭 TURNOS
 // 
+export type CreateTurnDTO = {
+  content: string
+  reply_to_turn_id?: number | null
+  mentioned_participants?: number[]
+}
+
 export async function createTurn(
   rpgId: number,
-  data: {
-    content: string
-    reply_to_turn_id?: number | null
-  }
+  data: CreateTurnDTO
 ) {
-  const token = localStorage.getItem("token")
-
-  console.log("Enviando turno:", data)
-  console.log("Token:", token)
-
   const res = await fetch(`http://localhost:8000/rpg-turns/${rpgId}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
     },
     body: JSON.stringify(data),
   })
 
-  if (!res.ok) {
-    const error = await res.text()
-    console.error("Erro API:", error)
-    throw new Error("Erro ao criar turno")
-  }
+  if (!res.ok) throw new Error("Erro ao criar turno")
 
-  const json = await res.json()
-  console.log("Resposta API:", json)
-
-  return json
+  return res.json()
 }
 export async function getTurns(rpgId: number) {
   const token = localStorage.getItem("token")
