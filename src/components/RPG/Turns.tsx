@@ -5,10 +5,10 @@ import {
   deleteTurn,
 } from "../../services/api"
 
-import { getCharacters } from "../../services/characters"
+import { getCharacters, getCharacterSheet } from "../../services/characters"
 
 import type { RPGTurn } from "../../types/turn"
-import type { Character } from "../../types/character"
+import type { Character, CharacterSheetValue } from "../../types/character"
 
 type Props = {
   rpgId: number
@@ -21,8 +21,11 @@ type TurnWithReplies = RPGTurn & {
 export default function Turns({ rpgId }: Props) {
   const [turns, setTurns] = useState<RPGTurn[]>([])
   const [newTurn, setNewTurn] = useState("")
+
+  // 🔥 REPLIES (AGORA USADOS)
   const [replyTo, setReplyTo] = useState<number | null>(null)
   const [replyContent, setReplyContent] = useState("")
+
   const [loading, setLoading] = useState(true)
 
   // 🔥 AUTOCOMPLETE
@@ -30,6 +33,10 @@ export default function Turns({ rpgId }: Props) {
   const [filtered, setFiltered] = useState<Character[]>([])
   const [showDropdown, setShowDropdown] = useState(false)
   const [mentions, setMentions] = useState<number[]>([])
+
+  // 🔥 MODAL FICHA
+  const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null)
+  const [sheetData, setSheetData] = useState<Record<number, string>>({})
 
   const wsRef = useRef<WebSocket | null>(null)
 
@@ -70,7 +77,6 @@ export default function Turns({ rpgId }: Props) {
 
     ws.onmessage = (event) => {
       const msg = JSON.parse(event.data)
-      console.log("🔥 WS:", msg)
 
       if (msg.type === "new_turn") {
         setTurns((prev) => {
@@ -88,10 +94,14 @@ export default function Turns({ rpgId }: Props) {
   }, [rpgId])
 
   // ===============================
-  // AUTOCOMPLETE DETECT
+  // AUTOCOMPLETE
   // ===============================
-  function handleChange(value: string) {
-    setNewTurn(value)
+  function handleChange(value: string, isReply = false) {
+    if (isReply) {
+      setReplyContent(value)
+    } else {
+      setNewTurn(value)
+    }
 
     const match = value.match(/@(\w*)$/)
 
@@ -109,10 +119,15 @@ export default function Turns({ rpgId }: Props) {
     }
   }
 
-  function handleSelectCharacter(char: Character) {
-    const newText = newTurn.replace(/@\w*$/, `@${char.name} `)
+  function handleSelectCharacter(char: Character, isReply = false) {
+    if (isReply) {
+      const newText = replyContent.replace(/@\w*$/, `@${char.name} `)
+      setReplyContent(newText)
+    } else {
+      const newText = newTurn.replace(/@\w*$/, `@${char.name} `)
+      setNewTurn(newText)
+    }
 
-    setNewTurn(newText)
     setMentions((prev) => [...prev, char.id])
     setShowDropdown(false)
   }
@@ -139,16 +154,62 @@ export default function Turns({ rpgId }: Props) {
     await createTurn(rpgId, {
       content: replyContent,
       reply_to_turn_id: parentId,
-      mentioned_participants: [],
+      mentioned_participants: mentions,
     })
 
     setReplyContent("")
     setReplyTo(null)
+    setMentions([])
   }
 
   async function handleDeleteTurn(turnId: number) {
     await deleteTurn(turnId)
     setTurns((prev) => prev.filter((t) => t.id !== turnId))
+  }
+
+  // ===============================
+  // CLICK EM @
+  // ===============================
+  async function handleOpenCharacter(charName: string) {
+    const char = characters.find(
+      (c) => c.name.toLowerCase() === charName.toLowerCase()
+    )
+
+    if (!char) return
+
+    setSelectedCharacter(char)
+
+    const sheet = await getCharacterSheet(char.id)
+
+    const formatted: Record<number, string> = {}
+
+    sheet.forEach((item: CharacterSheetValue) => {
+      formatted[item.field_id] = item.value
+    })
+
+    setSheetData(formatted)
+  }
+
+  function renderContent(content: string) {
+    const parts = content.split(/(@\w+)/g)
+
+    return parts.map((part, index) => {
+      if (part.startsWith("@")) {
+        const name = part.slice(1)
+
+        return (
+          <span
+            key={index}
+            onClick={() => handleOpenCharacter(name)}
+            className="text-blue-400 cursor-pointer hover:underline"
+          >
+            {part}
+          </span>
+        )
+      }
+
+      return part
+    })
   }
 
   // ===============================
@@ -191,9 +252,10 @@ export default function Turns({ rpgId }: Props) {
             </button>
           </div>
 
-          <p>{turn.content}</p>
+          <p>{renderContent(turn.content)}</p>
         </div>
 
+        {/* BOTÃO RESPONDER */}
         <button
           onClick={() => {
             setReplyTo(turn.id)
@@ -204,16 +266,36 @@ export default function Turns({ rpgId }: Props) {
           Responder
         </button>
 
+        {/* INPUT RESPOSTA */}
         {replyTo === turn.id && (
-          <div className="flex gap-2 mt-2">
+          <div className="flex gap-2 mt-2 relative">
             <input
               value={replyContent}
-              onChange={(e) => setReplyContent(e.target.value)}
+              onChange={(e) => handleChange(e.target.value, true)}
               className="rpg-input flex-1"
             />
-            <button onClick={() => handleSendReply(turn.id)} className="rpg-btn">
+
+            <button
+              onClick={() => handleSendReply(turn.id)}
+              className="rpg-btn"
+            >
               Enviar
             </button>
+
+            {/* DROPDOWN */}
+            {showDropdown && filtered.length > 0 && (
+              <div className="absolute top-full left-0 w-full bg-[#1f1f1f] border mt-1 rounded z-10">
+                {filtered.map((char) => (
+                  <div
+                    key={char.id}
+                    onClick={() => handleSelectCharacter(char, true)}
+                    className="p-2 cursor-pointer hover:bg-[#2b2d31]"
+                  >
+                    @{char.name}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -230,7 +312,7 @@ export default function Turns({ rpgId }: Props) {
         threadedTurns.map((t) => renderTurn(t))
       )}
 
-      {/* INPUT */}
+      {/* INPUT PRINCIPAL */}
       <div className="mt-4 flex gap-2 relative">
         <input
           value={newTurn}
@@ -257,6 +339,29 @@ export default function Turns({ rpgId }: Props) {
           </div>
         )}
       </div>
+
+      {/* MODAL FICHA */}
+      {selectedCharacter && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center">
+          <div className="bg-[#1f1f1f] p-6 rounded w-[400px]">
+            <h2 className="text-lg mb-4">{selectedCharacter.name}</h2>
+
+            {Object.entries(sheetData).map(([fieldId, value]) => (
+              <div key={fieldId} className="mb-2">
+                <span className="text-gray-400">Campo {fieldId}:</span>
+                <p>{value}</p>
+              </div>
+            ))}
+
+            <button
+              onClick={() => setSelectedCharacter(null)}
+              className="mt-4 rpg-btn w-full"
+            >
+              Fechar
+            </button>
+          </div>
+        </div>
+      )}
     </>
   )
 }

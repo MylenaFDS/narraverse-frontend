@@ -51,17 +51,21 @@ export default function RPGSheets() {
     if (!isValid) return
 
     async function fetchAll() {
-      const [chars, fields, rpg] = await Promise.all([
-        getCharacters(rpgId),
-        getSheetFields(rpgId),
-        getRPG(rpgId),
-      ])
+      try {
+        const [chars, fields, rpg] = await Promise.all([
+          getCharacters(rpgId),
+          getSheetFields(rpgId),
+          getRPG(rpgId),
+        ])
 
-      setCharacters(chars)
-      setSheetFields(fields)
+        setCharacters(chars)
+        setSheetFields(fields)
 
-      const userId = Number(localStorage.getItem("user_id"))
-      setIsOwner(userId === rpg.owner_id)
+        const userId = Number(localStorage.getItem("user_id"))
+        setIsOwner(userId === rpg.owner_id)
+      } catch (err) {
+        console.error("Erro ao carregar dados:", err)
+      }
     }
 
     fetchAll()
@@ -104,6 +108,8 @@ export default function RPGSheets() {
   }
 
   async function handleUpdateField(fieldId: number) {
+    if (!editingFieldName.trim()) return
+
     const updated = await updateSheetField(fieldId, {
       name: editingFieldName,
     })
@@ -113,6 +119,7 @@ export default function RPGSheets() {
     )
 
     setEditingFieldId(null)
+    setEditingFieldName("")
   }
 
   // ===============================
@@ -159,172 +166,174 @@ export default function RPGSheets() {
         {/* MAIN */}
         <div className="rpg-panel flex-1">
 
-  {selectedCharacter ? (
-    // ===============================
-    // ✏️ EDITAR PERSONAGEM
-    // ===============================
-    <>
-      <h2 className="text-xl font-display text-[#e0a96d] mb-3">
-        {selectedCharacter.name}
-      </h2>
+          {selectedCharacter ? (
+            // ===============================
+            // ✏️ EDITAR PERSONAGEM
+            // ===============================
+            <>
+              <h2 className="text-xl font-display text-[#e0a96d] mb-3">
+                {selectedCharacter.name}
+              </h2>
 
-      {sheetFields.map((field) => (
-        <div key={field.id} className="mb-2">
-          <label>{field.name}</label>
+              {sheetFields.map((field) => (
+                <div key={field.id} className="mb-2">
+                  <label>{field.name}</label>
 
-          <input
-            type={field.field_type}
-            value={sheetData[field.id] || ""}
-            onChange={(e) =>
-              setSheetData({
-                ...sheetData,
-                [field.id]: e.target.value,
-              })
-            }
-            className="rpg-input w-full"
-          />
-        </div>
-      ))}
-
-      <button
-        onClick={handleSaveSheet}
-        className="rpg-btn w-full mt-3"
-      >
-        Salvar ficha
-      </button>
-
-      {/* 🔙 VOLTAR */}
-      <button
-        onClick={() => {
-          setSelectedCharacter(null)
-          setSheetData({})
-        }}
-        className="text-sm mt-3 text-[#c9ada7]"
-      >
-        ← Voltar
-      </button>
-    </>
-  ) : (
-    // ===============================
-    // ➕ CRIAR PERSONAGEM
-    // ===============================
-    <>
-      <h2 className="text-xl font-display text-[#e0a96d]">
-        Criar personagem
-      </h2>
-
-      <input
-        placeholder="Nome"
-        value={newCharacterName}
-        onChange={(e) => setNewCharacterName(e.target.value)}
-        className="rpg-input w-full mb-3"
-      />
-
-      {sheetFields.map((field) => (
-        <div key={field.id} className="mb-2">
-          <label>{field.name}</label>
-
-          <input
-            type={field.field_type}
-            value={sheetData[field.id] || ""}
-            onChange={(e) =>
-              setSheetData({
-                ...sheetData,
-                [field.id]: e.target.value,
-              })
-            }
-            className="rpg-input w-full"
-          />
-        </div>
-      ))}
-
-      <button
-        onClick={handleCreateCharacter}
-        className="rpg-btn w-full mt-3 text-xl font-display text-[#e0a96d]"
-      >
-        Criar personagem
-      </button>
-
-      {/* 👑 CAMPOS */}
-      {isOwner && (
-        <div className="mt-6 border-t pt-4">
-          <h2 className="text-xl font-display text-[#e0a96d]">
-            Campos da ficha
-          </h2>
-
-          <div className="flex gap-2 mb-3">
-            <input
-              value={newFieldName}
-              onChange={(e) => setNewFieldName(e.target.value)}
-              className="rpg-input"
-            />
-
-            <select
-              value={newFieldType}
-              onChange={(e) =>
-                setNewFieldType(e.target.value as "text" | "number")
-              }
-              className="rpg-input"
-            >
-              <option value="text">Texto</option>
-              <option value="number">Número</option>
-            </select>
-
-            <button onClick={handleCreateField} className="rpg-btn">
-              +
-            </button>
-          </div>
-
-          {sheetFields.map((f) => (
-            <div key={f.id} className="flex gap-2">
-              {editingFieldId === f.id ? (
-                <>
                   <input
-                    value={editingFieldName}
-                    onChange={(e) => setEditingFieldName(e.target.value)}
-                    className="rpg-input flex-1"
+                    type={field.field_type}
+                    value={sheetData[field.id] || ""}
+                    onChange={(e) =>
+                      setSheetData({
+                        ...sheetData,
+                        [field.id]: e.target.value,
+                      })
+                    }
+                    className="rpg-input w-full"
                   />
-                  <button onClick={() => handleUpdateField(f.id)}>
-                    ✔
-                  </button>
-                </>
-              ) : (
-                <>
-                  <span className="flex-1">{f.name}</span>
-                  <button
-                    onClick={() => {
-                      setEditingFieldId(f.id)
-                      setEditingFieldName(f.name)
-                    }}
-                  className="text-xl font-display text-[#e0a96d]">
-                    Editar
-                  </button>
-                </>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-    </>
-  )}
+                </div>
+              ))}
 
-</div>
+              <button
+                onClick={handleSaveSheet}
+                className="rpg-btn w-full mt-3"
+              >
+                Salvar ficha
+              </button>
+
+              <button
+                onClick={() => {
+                  setSelectedCharacter(null)
+                  setSheetData({})
+                }}
+                className="text-sm mt-3 text-[#c9ada7]"
+              >
+                ← Voltar
+              </button>
+            </>
+          ) : (
+            // ===============================
+            // ➕ CRIAR PERSONAGEM
+            // ===============================
+            <>
+              <h2 className="text-xl font-display text-[#e0a96d]">
+                Criar personagem
+              </h2>
+
+              <input
+                placeholder="Nome do personagem"
+                value={newCharacterName}
+                onChange={(e) => setNewCharacterName(e.target.value)}
+                className="rpg-input w-full mb-3"
+              />
+
+              {sheetFields.map((field) => (
+                <div key={field.id} className="mb-2">
+                  <label>{field.name}</label>
+
+                  <input
+                    type={field.field_type}
+                    value={sheetData[field.id] || ""}
+                    onChange={(e) =>
+                      setSheetData({
+                        ...sheetData,
+                        [field.id]: e.target.value,
+                      })
+                    }
+                    className="rpg-input w-full"
+                  />
+                </div>
+              ))}
+
+              <button
+                onClick={handleCreateCharacter}
+                className="rpg-btn w-full mt-3"
+              >
+                Criar personagem
+              </button>
+
+              {/* 👑 CAMPOS */}
+              {isOwner && (
+                <div className="mt-6 border-t pt-4">
+                  <h2 className="text-xl font-display text-[#e0a96d]">
+                    Campos da ficha
+                  </h2>
+
+                  <div className="flex gap-2 mb-3">
+                    <input
+                      placeholder="Nome do campo"
+                      value={newFieldName}
+                      onChange={(e) => setNewFieldName(e.target.value)}
+                      className="rpg-input"
+                    />
+
+                    <select
+                      value={newFieldType}
+                      onChange={(e) =>
+                        setNewFieldType(e.target.value as "text" | "number")
+                      }
+                      className="rpg-input"
+                    >
+                      <option value="text">Texto</option>
+                      <option value="number">Número</option>
+                    </select>
+
+                    <button onClick={handleCreateField} className="rpg-btn">
+                      +
+                    </button>
+                  </div>
+
+                  {sheetFields.map((f) => (
+                    <div key={f.id} className="flex gap-2">
+                      {editingFieldId === f.id ? (
+                        <>
+                          <input
+                            value={editingFieldName}
+                            onChange={(e) => setEditingFieldName(e.target.value)}
+                            className="rpg-input flex-1"
+                          />
+                          <button onClick={() => handleUpdateField(f.id)}>
+                            ✔
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <span className="flex-1">{f.name}</span>
+                          <button
+                            onClick={() => {
+                              setEditingFieldId(f.id)
+                              setEditingFieldName(f.name)
+                            }}
+                            className="text-[#e0a96d]"
+                          >
+                            Editar
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+
+        </div>
 
         {/* SIDEBAR */}
         <div className="rpg-sidebar">
           <div className="rpg-panel">
             <h2 className="text-xl font-display text-[#e0a96d]">
-                Persongens
-              </h2>
+              Personagens
+            </h2>
+
             {characters.map((c) => (
               <div
                 key={c.id}
                 onClick={() => handleSelectCharacter(c)}
                 className={`cursor-pointer p-2 rounded ${
-  selectedCharacter?.id === c.id
-    ? "bg-[#3a1f24]"
-    : "hover:bg-[#2b2d31]"
-}`}
+                  selectedCharacter?.id === c.id
+                    ? "bg-[#3a1f24]"
+                    : "hover:bg-[#2b2d31]"
+                }`}
               >
                 {c.name}
               </div>
