@@ -3,7 +3,7 @@ import {
   getTurns,
   createTurn,
   deleteTurn,
-  getSheetFields, // 🔥 NOVO
+  getSheetFields,
 } from "../../services/api"
 
 import {
@@ -15,7 +15,7 @@ import type { RPGTurn } from "../../types/turn"
 import type {
   Character,
   CharacterSheetValue,
-  RPGSheetField, // 🔥 NOVO
+  RPGSheetField,
 } from "../../types/character"
 
 type Props = {
@@ -28,64 +28,50 @@ type TurnWithReplies = RPGTurn & {
 
 export default function Turns({ rpgId }: Props) {
   const [turns, setTurns] = useState<RPGTurn[]>([])
-  const [newTurn, setNewTurn] = useState("")
+  const [loading, setLoading] = useState(true)
 
+  const [newTurn, setNewTurn] = useState("")
   const [replyTo, setReplyTo] = useState<number | null>(null)
   const [replyContent, setReplyContent] = useState("")
 
-  const [loading, setLoading] = useState(true)
-
-  // 🔥 AUTOCOMPLETE
   const [characters, setCharacters] = useState<Character[]>([])
+  const [selectedCharacterId, setSelectedCharacterId] = useState<number | null>(null)
+
   const [filtered, setFiltered] = useState<Character[]>([])
   const [showDropdown, setShowDropdown] = useState(false)
   const [mentions, setMentions] = useState<number[]>([])
 
-  // 🔥 MODAL
+  const [sheetFields, setSheetFields] = useState<RPGSheetField[]>([])
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null)
   const [sheetData, setSheetData] = useState<Record<number, string>>({})
-  const [sheetFields, setSheetFields] = useState<RPGSheetField[]>([]) // 🔥 NOVO
 
   const wsRef = useRef<WebSocket | null>(null)
 
   // ===============================
-  // FETCH TURNS
+  // FETCH INICIAL
   // ===============================
   useEffect(() => {
-    async function fetchTurns() {
+    async function fetchAll() {
       try {
-        const data = await getTurns(rpgId)
-        setTurns(data)
+        const [turnsData, chars, fields] = await Promise.all([
+          getTurns(rpgId),
+          getCharacters(rpgId),
+          getSheetFields(rpgId),
+        ])
+
+        setTurns(turnsData)
+        setCharacters(chars)
+        setSheetFields(fields)
+
+        if (chars.length > 0) {
+          setSelectedCharacterId(chars[0].id)
+        }
       } finally {
         setLoading(false)
       }
     }
 
-    fetchTurns()
-  }, [rpgId])
-
-  // ===============================
-  // FETCH CHARACTERS
-  // ===============================
-  useEffect(() => {
-    async function fetchCharacters() {
-      const data = await getCharacters(rpgId)
-      setCharacters(data)
-    }
-
-    fetchCharacters()
-  }, [rpgId])
-
-  // ===============================
-  // 🔥 FETCH FIELDS (NOVO)
-  // ===============================
-  useEffect(() => {
-    async function fetchFields() {
-      const data = await getSheetFields(rpgId)
-      setSheetFields(data)
-    }
-
-    fetchFields()
+    fetchAll()
   }, [rpgId])
 
   // ===============================
@@ -136,7 +122,7 @@ export default function Turns({ rpgId }: Props) {
     }
   }
 
-  function handleSelectCharacter(char: Character, isReply = false) {
+  function handleSelectMention(char: Character, isReply = false) {
     if (isReply) {
       setReplyContent(replyContent.replace(/@\w*$/, `@${char.name} `))
     } else {
@@ -157,6 +143,7 @@ export default function Turns({ rpgId }: Props) {
       content: newTurn,
       reply_to_turn_id: null,
       mentioned_participants: mentions,
+      character_id: selectedCharacterId,
     })
 
     setNewTurn("")
@@ -170,6 +157,7 @@ export default function Turns({ rpgId }: Props) {
       content: replyContent,
       reply_to_turn_id: parentId,
       mentioned_participants: mentions,
+      character_id: selectedCharacterId,
     })
 
     setReplyContent("")
@@ -183,11 +171,11 @@ export default function Turns({ rpgId }: Props) {
   }
 
   // ===============================
-  // CLICK @
+  // FICHA
   // ===============================
-  async function handleOpenCharacter(charName: string) {
+  async function handleOpenCharacter(name: string) {
     const char = characters.find(
-      (c) => c.name.toLowerCase() === charName.toLowerCase()
+      (c) => c.name.toLowerCase() === name.toLowerCase()
     )
 
     if (!char) return
@@ -208,13 +196,13 @@ export default function Turns({ rpgId }: Props) {
   function renderContent(content: string) {
     const parts = content.split(/(@\w+)/g)
 
-    return parts.map((part, index) => {
+    return parts.map((part, i) => {
       if (part.startsWith("@")) {
         const name = part.slice(1)
 
         return (
           <span
-            key={index}
+            key={i}
             onClick={() => handleOpenCharacter(name)}
             className="text-blue-400 cursor-pointer hover:underline"
           >
@@ -225,6 +213,11 @@ export default function Turns({ rpgId }: Props) {
 
       return part
     })
+  }
+
+  function getCharacterName(characterId?: number | null) {
+    if (!characterId) return null
+    return characters.find((c) => c.id === characterId)?.name
   }
 
   // ===============================
@@ -257,7 +250,9 @@ export default function Turns({ rpgId }: Props) {
       <div key={turn.id} style={{ marginLeft: depth * 20 }}>
         <div className="rpg-turn p-2 rounded hover:bg-[#2b2d31]">
           <div className="flex justify-between">
-            <span>Usuário {turn.user_id}</span>
+            <span className="font-bold text-purple-400">
+              {getCharacterName(turn.character_id) || `Usuário ${turn.user_id}`}
+            </span>
 
             <button
               onClick={() => handleDeleteTurn(turn.id)}
@@ -288,10 +283,7 @@ export default function Turns({ rpgId }: Props) {
               className="rpg-input flex-1"
             />
 
-            <button
-              onClick={() => handleSendReply(turn.id)}
-              className="rpg-btn"
-            >
+            <button onClick={() => handleSendReply(turn.id)} className="rpg-btn">
               Enviar
             </button>
 
@@ -300,7 +292,7 @@ export default function Turns({ rpgId }: Props) {
                 {filtered.map((char) => (
                   <div
                     key={char.id}
-                    onClick={() => handleSelectCharacter(char, true)}
+                    onClick={() => handleSelectMention(char, true)}
                     className="p-2 cursor-pointer hover:bg-[#2b2d31]"
                   >
                     @{char.name}
@@ -325,30 +317,44 @@ export default function Turns({ rpgId }: Props) {
       )}
 
       {/* INPUT */}
-      <div className="mt-4 flex gap-2 relative">
-        <input
-          value={newTurn}
-          onChange={(e) => handleChange(e.target.value)}
-          className="rpg-input flex-1"
-        />
+      <div className="mt-4 flex gap-2 flex-col relative">
+        <select
+          value={selectedCharacterId ?? ""}
+          onChange={(e) => setSelectedCharacterId(Number(e.target.value))}
+          className="rpg-input"
+        >
+          {characters.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
 
-        <button onClick={handleSendTurn} className="rpg-btn">
-          Enviar
-        </button>
+        <div className="flex gap-2 relative">
+          <input
+            value={newTurn}
+            onChange={(e) => handleChange(e.target.value)}
+            className="rpg-input flex-1"
+          />
 
-        {showDropdown && filtered.length > 0 && (
-          <div className="absolute top-full left-0 w-full bg-[#1f1f1f] border mt-1 rounded z-10">
-            {filtered.map((char) => (
-              <div
-                key={char.id}
-                onClick={() => handleSelectCharacter(char)}
-                className="p-2 cursor-pointer hover:bg-[#2b2d31]"
-              >
-                @{char.name}
-              </div>
-            ))}
-          </div>
-        )}
+          <button onClick={handleSendTurn} className="rpg-btn">
+            Enviar
+          </button>
+
+          {showDropdown && filtered.length > 0 && (
+            <div className="absolute top-full left-0 w-full bg-[#1f1f1f] border mt-1 rounded z-10">
+              {filtered.map((char) => (
+                <div
+                  key={char.id}
+                  onClick={() => handleSelectMention(char)}
+                  className="p-2 cursor-pointer hover:bg-[#2b2d31]"
+                >
+                  @{char.name}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* MODAL */}
@@ -357,12 +363,18 @@ export default function Turns({ rpgId }: Props) {
           <div className="bg-[#1f1f1f] p-6 rounded w-[400px]">
             <h2 className="text-lg mb-4">{selectedCharacter.name}</h2>
 
-            {sheetFields.map((field) => (
-              <div key={field.id} className="mb-2">
-                <span className="text-gray-400">{field.name}:</span>
-                <p>{sheetData[field.id] || "-"}</p>
-              </div>
-            ))}
+            {Object.entries(sheetData).map(([fieldId, value]) => {
+              const fieldName =
+                sheetFields.find((f) => f.id === Number(fieldId))?.name ||
+                `Campo ${fieldId}`
+
+              return (
+                <div key={fieldId} className="mb-2">
+                  <span className="text-gray-400">{fieldName}:</span>
+                  <p>{value}</p>
+                </div>
+              )
+            })}
 
             <button
               onClick={() => setSelectedCharacter(null)}
