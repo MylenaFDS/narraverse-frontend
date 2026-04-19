@@ -2,13 +2,31 @@ import type { FeedResponse } from "../types/feed"
 import type { CreateSheetFieldDTO } from "../types/character"
 import axios from "axios"
 
+// ===============================
+// AXIOS BASE
+// ===============================
 export const api = axios.create({
   baseURL: "http://localhost:8000",
 })
 
 const API_URL = "http://127.0.0.1:8000"
 
+// ===============================
+// 🔥 INTERCEPTOR DE REQUEST (NOVO)
+// ===============================
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token")
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+
+  return config
+})
+
+// ===============================
 // 🔐 helper de auth
+// ===============================
 function getAuthHeaders() {
   const token = localStorage.getItem("token")
 
@@ -18,11 +36,13 @@ function getAuthHeaders() {
   }
 }
 
+// ===============================
 // 🔑 AUTH
+// ===============================
 export async function login(email: string, password: string) {
   const formData = new URLSearchParams()
 
-  formData.append("username", email) // ⚠️ MUITO IMPORTANTE
+  formData.append("username", email)
   formData.append("password", password)
 
   const response = await fetch("http://127.0.0.1:8000/auth/login", {
@@ -90,7 +110,10 @@ export async function updateProfile(data: {
 
   return response.json()
 }
+
+// ===============================
 // 📡 FEED
+// ===============================
 export async function getFeed(): Promise<FeedResponse> {
   const response = await fetch(`${API_URL}/feed/`)
 
@@ -101,19 +124,17 @@ export async function getFeed(): Promise<FeedResponse> {
   return response.json()
 }
 
+// ===============================
 // 🎭 TURNOS
-// 
+// ===============================
 export type CreateTurnDTO = {
   content: string
   reply_to_turn_id?: number | null
-  mentioned_participants?: number[]
+  mentioned_characters?: number[]
   character_id?: number | null
 }
 
-export async function createTurn(
-  rpgId: number,
-  data: CreateTurnDTO
-) {
+export async function createTurn(rpgId: number, data: CreateTurnDTO) {
   const res = await fetch(`http://localhost:8000/rpg-turns/${rpgId}`, {
     method: "POST",
     headers: {
@@ -127,6 +148,7 @@ export async function createTurn(
 
   return res.json()
 }
+
 export async function getTurns(rpgId: number) {
   const token = localStorage.getItem("token")
 
@@ -139,9 +161,9 @@ export async function getTurns(rpgId: number) {
   return res.json()
 }
 
-
-
+// ===============================
 // 📚 LORE
+// ===============================
 export async function getLore(rpgId: number) {
   const response = await fetch(`${API_URL}/rpg-lore/${rpgId}`)
   return response.json()
@@ -160,11 +182,17 @@ export async function createLore(
   return response.json()
 }
 
+// ===============================
+// RPG
+// ===============================
 export async function getRPG(id: number) {
   const res = await api.get(`/rpgs/${id}`)
   return res.data
 }
 
+// ===============================
+// 🔄 REFRESH TOKEN
+// ===============================
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -207,23 +235,32 @@ api.interceptors.response.use(
   }
 )
 
+// ===============================
+// 🗑 TURNOS
+// ===============================
 export async function deleteTurn(turnId: number) {
   await api.delete(`/rpg-turns/${turnId}`)
 }
 
+// ===============================
+// 📄 FICHA
+// ===============================
 export async function getSheetFields(rpgId: number) {
   const res = await api.get(`/rpg-sheet-fields/${rpgId}`)
   return res.data
 }
 
-export async function createSheetField(rpgId: number, data: CreateSheetFieldDTO) {
+export async function createSheetField(
+  rpgId: number,
+  data: CreateSheetFieldDTO
+) {
   const token = localStorage.getItem("token")
 
   const res = await fetch(`http://localhost:8000/rpg-sheet-fields/${rpgId}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`, // 🔥 ESSENCIAL
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(data),
   })

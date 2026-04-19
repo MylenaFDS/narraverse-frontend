@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, type ReactNode } from "react"
+
 import {
   getTurns,
   createTurn,
@@ -9,6 +10,7 @@ import {
 import {
   getCharacters,
   getCharacterSheet,
+  getMyCharacters
 } from "../../services/characters"
 
 import type { RPGTurn } from "../../types/turn"
@@ -34,7 +36,8 @@ export default function Turns({ rpgId }: Props) {
   const [replyTo, setReplyTo] = useState<number | null>(null)
   const [replyContent, setReplyContent] = useState("")
 
-  const [characters, setCharacters] = useState<Character[]>([])
+  const [allCharacters, setAllCharacters] = useState<Character[]>([])
+const [myCharacters, setMyCharacters] = useState<Character[]>([])
   const [selectedCharacterId, setSelectedCharacterId] = useState<number | null>(null)
 
   const [filtered, setFiltered] = useState<Character[]>([])
@@ -48,31 +51,34 @@ export default function Turns({ rpgId }: Props) {
   const wsRef = useRef<WebSocket | null>(null)
 
   // ===============================
-  // FETCH INICIAL
+  // FETCH
   // ===============================
   useEffect(() => {
     async function fetchAll() {
       try {
-        const [turnsData, chars, fields] = await Promise.all([
-          getTurns(rpgId),
-          getCharacters(rpgId),
-          getSheetFields(rpgId),
-        ])
+        const [turnsData, allChars, myChars, fields] = await Promise.all([
+  getTurns(rpgId),
+  getCharacters(rpgId),  // TODOS (menções)
+  getMyCharacters(),     // SÓ SEUS (turno)
+  getSheetFields(rpgId),
+])
 
-        setTurns(turnsData)
-        setCharacters(chars)
-        setSheetFields(fields)
+setTurns(turnsData)
+setAllCharacters(allChars)
+setMyCharacters(myChars)
+setSheetFields(fields)
 
-        if (chars.length > 0) {
-          setSelectedCharacterId(chars[0].id)
-        }
+if (myChars.length > 0) {
+  setSelectedCharacterId(myChars[0].id)
+}
       } finally {
         setLoading(false)
       }
     }
 
-    fetchAll()
-  }, [rpgId])
+    fetchAll(
+    )
+  }, [rpgId],)
 
   // ===============================
   // WEBSOCKET
@@ -111,7 +117,7 @@ export default function Turns({ rpgId }: Props) {
     if (match) {
       const search = match[1].toLowerCase()
 
-      const results = characters.filter((c) =>
+      const results = allCharacters.filter((c) =>
         c.name.toLowerCase().includes(search)
       )
 
@@ -129,7 +135,7 @@ export default function Turns({ rpgId }: Props) {
       setNewTurn(newTurn.replace(/@\w*$/, `@${char.name} `))
     }
 
-    setMentions((prev) => [...prev, char.id])
+    setMentions((prev) => [...new Set([...prev, char.id])])
     setShowDropdown(false)
   }
 
@@ -142,8 +148,8 @@ export default function Turns({ rpgId }: Props) {
     await createTurn(rpgId, {
       content: newTurn,
       reply_to_turn_id: null,
-      mentioned_participants: mentions,
-      character_id: selectedCharacterId,
+      mentioned_characters: mentions,
+      character_id: selectedCharacterId ?? undefined,
     })
 
     setNewTurn("")
@@ -156,8 +162,8 @@ export default function Turns({ rpgId }: Props) {
     await createTurn(rpgId, {
       content: replyContent,
       reply_to_turn_id: parentId,
-      mentioned_participants: mentions,
-      character_id: selectedCharacterId,
+      mentioned_characters: mentions,
+      character_id: selectedCharacterId ?? undefined,
     })
 
     setReplyContent("")
@@ -174,7 +180,7 @@ export default function Turns({ rpgId }: Props) {
   // FICHA
   // ===============================
   async function handleOpenCharacter(name: string) {
-    const char = characters.find(
+    const char = allCharacters.find(
       (c) => c.name.toLowerCase() === name.toLowerCase()
     )
 
@@ -217,7 +223,16 @@ export default function Turns({ rpgId }: Props) {
 
   function getCharacterName(characterId?: number | null) {
     if (!characterId) return null
-    return characters.find((c) => c.id === characterId)?.name
+    return allCharacters.find((c) => c.id === characterId)?.name
+  }
+
+  function getInitials(name: string) {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase()
   }
 
   // ===============================
@@ -246,67 +261,112 @@ export default function Turns({ rpgId }: Props) {
   const threadedTurns = buildThreads(turns)
 
   function renderTurn(turn: TurnWithReplies, depth = 0): ReactNode {
-    return (
-      <div key={turn.id} style={{ marginLeft: depth * 20 }}>
-        <div className="rpg-turn p-2 rounded hover:bg-[#2b2d31]">
-          <div className="flex justify-between">
-            <span className="font-bold text-purple-400">
-              {getCharacterName(turn.character_id) || `Usuário ${turn.user_id}`}
-            </span>
+  const name =
+    getCharacterName(turn.character_id) || `Usuário ${turn.user_id}`
 
-            <button
-              onClick={() => handleDeleteTurn(turn.id)}
-              className="text-red-400 text-xs"
-            >
-              Deletar
-            </button>
-          </div>
+  const isMe = false // 👉 depois você pode ligar com user logado
 
-          <p>{renderContent(turn.content)}</p>
+  return (
+    <div key={turn.id} style={{ marginLeft: depth * 20 }}>
+
+      <div className="flex items-start gap-3 mt-2">
+
+        {/* AVATAR */}
+        <div className="
+          w-9 h-9 rounded-full 
+          bg-gradient-to-br from-yellow-500 to-yellow-700
+          text-black flex items-center justify-center 
+          text-xs font-bold shadow-md
+        ">
+          {getInitials(name)}
         </div>
 
-        <button
-          onClick={() => {
-            setReplyTo(turn.id)
-            setReplyContent("")
-          }}
-          className="text-xs text-accent"
-        >
-          Responder
-        </button>
+        {/* CONTEÚDO */}
+        <div className="flex-1">
 
-        {replyTo === turn.id && (
-          <div className="flex gap-2 mt-2 relative">
-            <input
-              value={replyContent}
-              onChange={(e) => handleChange(e.target.value, true)}
-              className="rpg-input flex-1"
-            />
+          <div
+            className={`
+              p-3 rounded-lg transition-all duration-200
+              border border-[#3a2a2a]
+              ${isMe
+                ? "bg-transparent"
+                : "bg-transparent hover:bg-[#2a2a2a]"
+              }
+            `}
+            style={{ fontFamily: "Georgia, serif" }}
+          >
 
-            <button onClick={() => handleSendReply(turn.id)} className="rpg-btn">
-              Enviar
-            </button>
+            {/* HEADER */}
+            <div className="flex justify-between items-center mb-1">
+              <span className="font-semibold text-yellow-500 tracking-wide">
+                {name}
+              </span>
 
-            {showDropdown && filtered.length > 0 && (
-              <div className="absolute top-full left-0 w-full bg-[#1f1f1f] border mt-1 rounded z-10">
-                {filtered.map((char) => (
-                  <div
-                    key={char.id}
-                    onClick={() => handleSelectMention(char, true)}
-                    className="p-2 cursor-pointer hover:bg-[#2b2d31]"
-                  >
-                    @{char.name}
-                  </div>
-                ))}
-              </div>
-            )}
+              <button
+                onClick={() => handleDeleteTurn(turn.id)}
+                className="text-red-400 text-xs opacity-70 hover:opacity-100"
+              >
+                Deletar
+              </button>
+            </div>
+
+            {/* TEXTO */}
+            <p className="leading-relaxed text-[15px]">
+              {renderContent(turn.content)}
+            </p>
           </div>
-        )}
 
-        {turn.replies.map((r) => renderTurn(r, depth + 1))}
+          {/* RESPONDER */}
+          <button
+            onClick={() => {
+              setReplyTo(turn.id)
+              setReplyContent("")
+            }}
+            className="text-xs text-yellow-600 hover:text-yellow-400 mt-1 transition"
+          >
+            Responder
+          </button>
+        </div>
       </div>
-    )
-  }
+
+      {/* INPUT RESPOSTA */}
+      {replyTo === turn.id && (
+        <div className="flex gap-2 mt-2 relative ml-12">
+          <input
+            value={replyContent}
+            onChange={(e) => handleChange(e.target.value, true)}
+            className="rpg-input flex-1"
+          />
+
+          <button
+            onClick={() => handleSendReply(turn.id)}
+            className="rpg-btn"
+          >
+            Enviar
+          </button>
+
+          {showDropdown && filtered.length > 0 && (
+            <div className="absolute top-full left-0 w-full bg-[#1f1f1f] border mt-1 rounded z-10 shadow-lg">
+              {filtered.map((char) => (
+                <div
+                  key={char.id}
+                  onClick={() => handleSelectMention(char, true)}
+                  className="p-2 cursor-pointer hover:bg-[#2b2d31]"
+                >
+                  @{char.name}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* REPLIES */}
+      {turn.replies.map((r) => renderTurn(r, depth + 1))}
+    </div>
+  )
+}
+
 
   return (
     <>
@@ -323,7 +383,7 @@ export default function Turns({ rpgId }: Props) {
           onChange={(e) => setSelectedCharacterId(Number(e.target.value))}
           className="rpg-input"
         >
-          {characters.map((c) => (
+          {myCharacters.map((c) => (
             <option key={c.id} value={c.id}>
               {c.name}
             </option>

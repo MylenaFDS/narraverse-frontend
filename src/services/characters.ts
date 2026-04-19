@@ -4,13 +4,19 @@ import type {
   CharacterSheetValue,
 } from "../types/character"
 
+import { api } from "./api"
+
 const API = "http://localhost:8000"
 
 // ===============================
 // PERSONAGENS
 // ===============================
 export async function getCharacters(rpgId: number): Promise<Character[]> {
-  const res = await fetch(`${API}/characters/${rpgId}`)
+  const res = await fetch(`${API}/characters/${rpgId}`,{
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  })
   if (!res.ok) throw new Error("Erro ao buscar personagens")
   return res.json()
 }
@@ -67,4 +73,9 @@ export async function saveCharacterSheet(
       })
     )
   )
+}
+
+export async function getMyCharacters() {
+  const res = await api.get("/characters/me")
+  return res.data
 }
