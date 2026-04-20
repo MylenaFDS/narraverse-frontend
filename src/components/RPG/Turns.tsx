@@ -84,7 +84,11 @@ if (myChars.length > 0) {
   // WEBSOCKET
   // ===============================
   useEffect(() => {
-    const ws = new WebSocket(`ws://localhost:8000/ws/rpg/${rpgId}`)
+    const token = localStorage.getItem("token")
+
+    const ws = new WebSocket(
+      `ws://localhost:8000/ws/rpg/${rpgId}?token=${token}`
+    )
     wsRef.current = ws
 
     ws.onmessage = (event) => {
