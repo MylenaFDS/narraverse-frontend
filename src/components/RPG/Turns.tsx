@@ -92,19 +92,31 @@ if (myChars.length > 0) {
     wsRef.current = ws
 
     ws.onmessage = (event) => {
-      const msg = JSON.parse(event.data)
+      console.log("WS RECEBIDO:",event.data)
+  const msg = JSON.parse(event.data)
 
-      if (msg.type === "new_turn") {
-        setTurns((prev) => {
-          if (prev.some((t) => t.id === msg.data.id)) return prev
-          return [...prev, msg.data]
-        })
-      }
+  if (msg.type === "new_turn") {
+    setTurns((prev) => {
+      if (prev.some((t) => t.id === msg.data.id)) return prev
+      return [...prev, msg.data]
+    })
+  }
 
-      if (msg.type === "delete_turn") {
-        setTurns((prev) => prev.filter((t) => t.id !== msg.turn_id))
-      }
-    }
+  if (msg.type === "delete_turn") {
+    setTurns((prev) => prev.filter((t) => t.id !== msg.turn_id))
+  }
+
+  // 🚀 NOVO: NOTIFICAÇÃO
+  if (msg.type === "notification") {
+    console.log("🔔 Notificação recebida:", msg)
+
+    // teste simples:
+    alert(msg.message)
+
+    // depois você pode trocar por toast bonito
+  }
+}
+
 
     return () => ws.close()
   }, [rpgId])
