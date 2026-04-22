@@ -1,6 +1,7 @@
 import type { ReactNode } from "react"
 import Navbar from "./Navbar"
 import { Link } from "react-router-dom"
+import NotificationToast from "./NotificationToast"
 
 export default function Layout({ children }: { children: ReactNode }) {
   return (
@@ -13,6 +14,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         </h1>
 
         <Navbar />
+        <NotificationToast/>
       </header>
 
       {/* CONTEÚDO */}

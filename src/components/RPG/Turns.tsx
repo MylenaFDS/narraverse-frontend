@@ -20,6 +20,8 @@ import type {
   RPGSheetField,
 } from "../../types/character"
 
+import { useNotifications } from "../../contexts/useNotifications"
+
 type Props = {
   rpgId: number
 }
@@ -47,9 +49,9 @@ const [myCharacters, setMyCharacters] = useState<Character[]>([])
   const [sheetFields, setSheetFields] = useState<RPGSheetField[]>([])
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null)
   const [sheetData, setSheetData] = useState<Record<number, string>>({})
-
+  const { addNotification } = useNotifications()
   const wsRef = useRef<WebSocket | null>(null)
-
+  
   // ===============================
   // FETCH
   // ===============================
@@ -84,42 +86,56 @@ if (myChars.length > 0) {
   // WEBSOCKET
   // ===============================
   useEffect(() => {
-    const token = localStorage.getItem("token")
+  const token = localStorage.getItem("token")
 
-    const ws = new WebSocket(
-      `ws://localhost:8000/ws/rpg/${rpgId}?token=${token}`
-    )
-    wsRef.current = ws
+  const ws = new WebSocket(
+    `ws://localhost:8000/ws/rpg/${rpgId}/turns?token=${token}`
+  )
 
-    ws.onmessage = (event) => {
-      console.log("WS RECEBIDO:",event.data)
-  const msg = JSON.parse(event.data)
+  
 
-  if (msg.type === "new_turn") {
-    setTurns((prev) => {
-      if (prev.some((t) => t.id === msg.data.id)) return prev
-      return [...prev, msg.data]
-    })
+  wsRef.current = ws
+
+  ws.onopen = () => {
+    console.log("✅ WS conectado (turns)")
+  }
+  
+  ws.onmessage = (event) => {
+    console.log("WS RECEBIDO:", event.data)
+
+    const msg = JSON.parse(event.data)
+
+    if (msg.type === "new_turn") {
+      setTurns((prev) => {
+        if (prev.some((t) => t.id === msg.data.id)) return prev
+        return [...prev, msg.data]
+      })
+    }
+
+    if (msg.type === "delete_turn") {
+      setTurns((prev) => prev.filter((t) => t.id !== msg.turn_id))
+    }
+    
+    if (msg.type === "notification") {
+      console.log("🔔 Notificação:", msg.message)
+      
+      addNotification(msg.message)
+    }
   }
 
-  if (msg.type === "delete_turn") {
-    setTurns((prev) => prev.filter((t) => t.id !== msg.turn_id))
+  ws.onclose = () => {
+    console.log("❌ WS desconectado")
   }
 
-  // 🚀 NOVO: NOTIFICAÇÃO
-  if (msg.type === "notification") {
-    console.log("🔔 Notificação recebida:", msg)
-
-    // teste simples:
-    alert(msg.message)
-
-    // depois você pode trocar por toast bonito
+  ws.onerror = (err) => {
+    console.error("🔥 WS erro:", err)
   }
-}
 
+  return () => {
+    ws.close()
+  }
+}, [rpgId,addNotification])
 
-    return () => ws.close()
-  }, [rpgId])
 
   // ===============================
   // AUTOCOMPLETE
