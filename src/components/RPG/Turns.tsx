@@ -92,14 +92,12 @@ if (myChars.length > 0) {
     `ws://localhost:8000/ws/rpg/${rpgId}/turns?token=${token}`
   )
 
-  
-
   wsRef.current = ws
 
   ws.onopen = () => {
     console.log("✅ WS conectado (turns)")
   }
-  
+
   ws.onmessage = (event) => {
     console.log("WS RECEBIDO:", event.data)
 
@@ -115,11 +113,14 @@ if (myChars.length > 0) {
     if (msg.type === "delete_turn") {
       setTurns((prev) => prev.filter((t) => t.id !== msg.turn_id))
     }
-    
+
     if (msg.type === "notification") {
       console.log("🔔 Notificação:", msg.message)
-      
-      addNotification(msg.message)
+
+      addNotification(msg.message, {
+        turn_id: msg.turn_id,
+        rpg_id: msg.rpg_id,
+      })
     }
   }
 
@@ -134,9 +135,7 @@ if (myChars.length > 0) {
   return () => {
     ws.close()
   }
-}, [rpgId,addNotification])
-
-
+}, [rpgId, addNotification])
   // ===============================
   // AUTOCOMPLETE
   // ===============================
@@ -479,4 +478,6 @@ if (myChars.length > 0) {
       )}
     </>
   )
+  
 }
+  

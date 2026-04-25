@@ -1,9 +1,59 @@
-import type { ReactNode } from "react"
+import { useEffect, useRef, type ReactNode } from "react"
 import Navbar from "./Navbar"
 import { Link } from "react-router-dom"
 import NotificationToast from "./NotificationToast"
+import { useNotifications } from "../contexts/useNotifications"
 
 export default function Layout({ children }: { children: ReactNode }) {
+  const { addNotification } = useNotifications()
+  const wsRef = useRef<WebSocket | null>(null)
+
+  useEffect(() => {
+    const token = localStorage.getItem("token")
+
+    if (!token) return
+
+    const ws = new WebSocket(
+      `ws://localhost:8000/ws/notifications?token=${token}`
+    )
+
+    wsRef.current = ws
+
+    ws.onopen = () => {
+      console.log("🔔 WS NOTIFICATIONS conectado")
+    }
+
+    ws.onmessage = (event) => {
+      try {
+        const msg = JSON.parse(event.data)
+
+        if (msg.type === "notification") {
+          console.log("🔔 Notificação global:", msg)
+
+          // ✅ AGORA COM DADOS COMPLETOS
+          addNotification(msg.message, {
+            turn_id: msg.turn_id,
+            rpg_id: msg.rpg_id,
+          })
+        }
+      } catch (err) {
+        console.error("Erro ao processar notificação:", err)
+      }
+    }
+
+    ws.onerror = (err) => {
+      console.error("🔥 WS notifications erro:", err)
+    }
+
+    ws.onclose = () => {
+      console.log("❌ WS notifications desconectado")
+    }
+
+    return () => {
+      ws.close()
+    }
+  }, [addNotification])
+
   return (
     <div className="min-h-screen bg-[#1a0f12] text-[#f5e9e2]">
 
@@ -14,7 +64,9 @@ export default function Layout({ children }: { children: ReactNode }) {
         </h1>
 
         <Navbar />
-        <NotificationToast/>
+
+        {/* 🔔 Toast global */}
+        <NotificationToast />
       </header>
 
       {/* CONTEÚDO */}

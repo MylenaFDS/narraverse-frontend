@@ -25,21 +25,20 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   // ===============================
   // AÇÕES
   // ===============================
-  function addNotification(message: string) {
-    setNotifications((prev) => {
-      // evita duplicadas
-
-      return [
-        {
-          id: Date.now(),
-          message,
-          read: false,
-        },
-        ...prev,
-      ]
-    })
-  }
-
+ function addNotification(
+  message: string,
+  meta?: { turn_id?: number; rpg_id?: number }
+) {
+  setNotifications((prev) => [
+    {
+      id: Date.now(),
+      message,
+      read: false,
+      meta, // ✅ tudo dentro de meta
+    },
+    ...prev,
+  ])
+}
   function markAllAsRead() {
     setNotifications((prev) =>
       prev.map((n) => ({ ...n, read: true }))
@@ -57,4 +56,5 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       {children}
     </NotificationContext.Provider>
   )
+  
 }
