@@ -1,14 +1,10 @@
 import { useNotifications } from "../contexts/useNotifications"
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
+import type { Notification } from "../types/notification"
 
-type Notification = {
-  id: number
-  message: string
-  read: boolean
-  turn_id?: number
-  rpg_id?: number
-}
+
+
 
 export default function NotificationToast() {
   const { notifications } = useNotifications()
@@ -28,11 +24,20 @@ export default function NotificationToast() {
     return () => clearTimeout(timeout)
   }, [current])
 
-  function handleClick(n: Notification) {
-    if (n.rpg_id && n.turn_id) {
-      navigate(`/rpg/${n.rpg_id}#turn-${n.turn_id}`)
-    }
-  }
+ function handleClick(n: Notification) {
+  console.log("CLIQUEI", n)
+
+  const rpgId = n.meta?.rpg_id
+const turnId = n.meta?.turn_id
+
+if (rpgId && turnId) {
+  navigate(`/rpg/${rpgId}`)
+
+  setTimeout(() => {
+    window.location.hash = `turn-${turnId}`
+  }, 50)
+}
+}
 
   if (!current) return null
 
@@ -42,7 +47,7 @@ export default function NotificationToast() {
       {/* 🔔 Toast atual */}
       <div
         onClick={() => handleClick(current)}
-        className="bg-[#2a2a2a] text-white px-4 py-3 rounded shadow-lg cursor-pointer hover:bg-[#3a3a3a]"
+        className="bg-[#2a2a2a] text-white px-4 py-3 rounded shadow-lg cursor-pointer hover:bg-[#3a3a3a] cursor:pointer hover:opacity-90"
       >
         🔔 {current.message}
       </div>

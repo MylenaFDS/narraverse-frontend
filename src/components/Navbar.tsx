@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { getMe } from "../services/api"
 import { Link, useNavigate } from "react-router-dom"
 import { useNotifications } from "../contexts/useNotifications"
+import type { Notification } from "../types/notification"
 
 type User = {
   id: number
@@ -30,9 +31,16 @@ export default function Navbar() {
   }, [])
 
   function handleLogout() {
-    localStorage.removeItem("token")
-    navigate("/login")
+  localStorage.removeItem("token")
+  navigate("/login")
+}
+
+function handleClickNotification(n: Notification) {
+  if (n.meta?.rpg_id !== undefined && n.meta?.turn_id !== undefined){
+    navigate(`/rpg/${n.meta.rpg_id}#turn-${n.meta.turn_id}`)
+    setOpen(false)
   }
+}
 
   const unreadCount = notifications.filter((n) => !n.read).length
 
@@ -79,8 +87,12 @@ export default function Navbar() {
                 ) : (
                   notifications.map((n) => (
                     <div
-                      key={n.id}
-                      className={`
+  key={n.id}
+  onClick={() => {
+  console.log("clicou", n)
+  handleClickNotification(n)
+}}
+                      className={` cursor-pointer
                         p-3 border-b border-[#2a2a2a]
                         ${!n.read ? "bg-[#2a2a2a]" : ""}
                       `}

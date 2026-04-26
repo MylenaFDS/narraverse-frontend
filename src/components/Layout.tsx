@@ -37,9 +37,12 @@ export default function Layout({ children }: { children: ReactNode }) {
 
           // ✅ AGORA COM DADOS COMPLETOS
           addNotification(msg.message, {
-            turn_id: msg.turn_id,
-            rpg_id: msg.rpg_id,
-          })
+  meta: {
+    turn_id: msg.turn_id,
+    rpg_id: msg.rpg_id,
+    isNew: true
+  }
+})
         }
       } catch (err) {
         console.error("Erro ao processar notificação:", err)

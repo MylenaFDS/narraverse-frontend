@@ -21,7 +21,7 @@ import type {
 } from "../../types/character"
 
 
-import { useLocation } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 
 type Props = {
   rpgId: number
@@ -53,7 +53,7 @@ const [myCharacters, setMyCharacters] = useState<Character[]>([])
   
   const wsRef = useRef<WebSocket | null>(null)
   const location = useLocation()
-  
+  const navigate = useNavigate()
   // ===============================
   // FETCH
   // ===============================
@@ -153,15 +153,21 @@ if (myChars.length > 0) {
 }, [rpgId])
 
 useEffect(() => {
-  if (!location.hash) return
+  if (!location.hash || turns.length === 0) return
 
   const id = location.hash.replace("#turn-", "")
 
-  const el = document.getElementById(`turn-${id}`)
+  // 🔥 espera o DOM renderizar
+  setTimeout(() => {
+    const el = document.getElementById(`turn-${id}`)
 
-  if (el) {
-    el.scrollIntoView({ behavior: "smooth", block: "center" })
-  }
+    if (el) {
+      el.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      })
+    }
+  }, 100)
 }, [location, turns])
   // ===============================
   // AUTOCOMPLETE
@@ -321,7 +327,7 @@ useEffect(() => {
   function renderTurn(turn: TurnWithReplies, depth = 0): ReactNode {
   const name =
     getCharacterName(turn.character_id) || `Usuário ${turn.user_id}`
-
+  const isHighlighted = location.hash === `#turn-${turn.id}`
   const isMe = false // 👉 depois você pode ligar com user logado
 
   return (
@@ -329,6 +335,10 @@ useEffect(() => {
   id={`turn-${turn.id}`}
   key={turn.id}
   style={{ marginLeft: depth * 20 }}
+  onClick={() => navigate(`/rpg/${rpgId}#turn-${turn.id}`)}
+  className={`cursor-pointer ${
+        isHighlighted ? "bg-yellow-900/30 border border-yellow-500" : ""
+      }`}
 >
 
       <div className="flex items-start gap-3 mt-2">
@@ -365,7 +375,10 @@ useEffect(() => {
               </span>
 
               <button
-                onClick={() => handleDeleteTurn(turn.id)}
+  onClick={(e) => {
+    e.stopPropagation()
+    handleDeleteTurn(turn.id)
+  }}
                 className="text-red-400 text-xs opacity-70 hover:opacity-100"
               >
                 Deletar
@@ -380,10 +393,11 @@ useEffect(() => {
 
           {/* RESPONDER */}
           <button
-            onClick={() => {
-              setReplyTo(turn.id)
-              setReplyContent("")
-            }}
+            onClick={(e) => {
+  e.stopPropagation()
+  setReplyTo(turn.id)
+  setReplyContent("")
+}}
             className="text-xs text-yellow-600 hover:text-yellow-400 mt-1 transition"
           >
             Responder

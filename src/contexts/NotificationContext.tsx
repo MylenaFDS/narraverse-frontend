@@ -7,15 +7,22 @@ export type Notification = {
   meta?: {
     turn_id?: number
     rpg_id?: number
+    isNew?: boolean
   }
 }
 
 export type ContextType = {
   notifications: Notification[]
-  addNotification: (msg: string, data?: {
-    turn_id?: number
-    rpg_id?: number
-  }) => void
+  addNotification: (
+    msg: string,
+    data?: {
+      meta?: {
+        turn_id?: number
+        rpg_id?: number
+        isNew?: boolean
+      }
+    }
+  ) => void
   markAllAsRead: () => void
 }
 
