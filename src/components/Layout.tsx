@@ -4,6 +4,7 @@ import { Link } from "react-router-dom"
 import NotificationToast from "./NotificationToast"
 import { useNotifications } from "../contexts/useNotifications"
 
+
 export default function Layout({ children }: { children: ReactNode }) {
   const { addNotification } = useNotifications()
   const wsRef = useRef<WebSocket | null>(null)
@@ -12,13 +13,18 @@ export default function Layout({ children }: { children: ReactNode }) {
     const token = localStorage.getItem("token")
 
     if (!token) return
+    
+    if (wsRef.current) {
+  wsRef.current.close()
+}
 
     const ws = new WebSocket(
       `ws://localhost:8000/ws/notifications?token=${token}`
     )
 
     wsRef.current = ws
-
+    
+  
     ws.onopen = () => {
       console.log("🔔 WS NOTIFICATIONS conectado")
     }
@@ -28,7 +34,6 @@ export default function Layout({ children }: { children: ReactNode }) {
         const msg = JSON.parse(event.data)
 
         if (msg.type === "notification") {
-          console.log("🔔 Notificação global:", msg)
 
           // ✅ AGORA COM DADOS COMPLETOS
           addNotification(msg.message, {

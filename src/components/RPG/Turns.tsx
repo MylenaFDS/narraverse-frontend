@@ -20,7 +20,8 @@ import type {
   RPGSheetField,
 } from "../../types/character"
 
-import { useNotifications } from "../../contexts/useNotifications"
+
+import { useLocation } from "react-router-dom"
 
 type Props = {
   rpgId: number
@@ -49,8 +50,9 @@ const [myCharacters, setMyCharacters] = useState<Character[]>([])
   const [sheetFields, setSheetFields] = useState<RPGSheetField[]>([])
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null)
   const [sheetData, setSheetData] = useState<Record<number, string>>({})
-  const { addNotification } = useNotifications()
+  
   const wsRef = useRef<WebSocket | null>(null)
+  const location = useLocation()
   
   // ===============================
   // FETCH
@@ -87,55 +89,80 @@ if (myChars.length > 0) {
   // ===============================
   useEffect(() => {
   const token = localStorage.getItem("token")
+  if (!token) return
 
-  const ws = new WebSocket(
-    `ws://localhost:8000/ws/rpg/${rpgId}/turns?token=${token}`
+  let ws: WebSocket | null = null
+  let isMounted = true
+
+  function connect() {
+    ws = new WebSocket(
+      `ws://localhost:8000/ws/rpg/${rpgId}/turns?token=${token}`
+    )
+
+    wsRef.current = ws
+
+    ws.onopen = () => {
+  console.log("✅ WS conectado (turns)")
+
+  // 🔥 força sincronização
+  getTurns(rpgId).then(setTurns)
+}
+
+    ws.onmessage = (event) => {
+  const message = JSON.parse(event.data)
+
+  console.log("📩 WS RECEBIDO:", message)
+
+  if (message.type === "new_turn") {
+  setTurns((prev) => {
+  const exists = prev.some((t) => t.id === message.data.id)
+  if (exists) return prev
+
+  const updated = [...prev, message.data]
+
+  return updated.sort(
+    (a, b) =>
+      new Date(a.created_at).getTime() -
+      new Date(b.created_at).getTime()
   )
+})
+}
+}
 
-  wsRef.current = ws
-
-  ws.onopen = () => {
-    console.log("✅ WS conectado (turns)")
-  }
-
-  ws.onmessage = (event) => {
-    console.log("WS RECEBIDO:", event.data)
-
-    const msg = JSON.parse(event.data)
-
-    if (msg.type === "new_turn") {
-      setTurns((prev) => {
-        if (prev.some((t) => t.id === msg.data.id)) return prev
-        return [...prev, msg.data]
-      })
+    ws.onerror = () => {
+      console.log("🔥 WS erro")
+      ws?.close()
     }
 
-    if (msg.type === "delete_turn") {
-      setTurns((prev) => prev.filter((t) => t.id !== msg.turn_id))
-    }
+    ws.onclose = () => {
+      console.log("❌ WS desconectado")
 
-    if (msg.type === "notification") {
-      console.log("🔔 Notificação:", msg.message)
-
-      addNotification(msg.message, {
-        turn_id: msg.turn_id,
-        rpg_id: msg.rpg_id,
-      })
+      // 🔥 RECONEXÃO AUTOMÁTICA
+      if (isMounted && ws?.readyState !== WebSocket.OPEN) {
+  setTimeout(connect, 2000)
+}
     }
   }
 
-  ws.onclose = () => {
-    console.log("❌ WS desconectado")
-  }
-
-  ws.onerror = (err) => {
-    console.error("🔥 WS erro:", err)
-  }
+  connect()
 
   return () => {
-    ws.close()
+    isMounted = false
+    ws?.close()
   }
-}, [rpgId, addNotification])
+}, [rpgId])
+
+useEffect(() => {
+  if (!location.hash) return
+
+  const id = location.hash.replace("#turn-", "")
+
+  const el = document.getElementById(`turn-${id}`)
+
+  if (el) {
+    el.scrollIntoView({ behavior: "smooth", block: "center" })
+  }
+}, [location, turns])
   // ===============================
   // AUTOCOMPLETE
   // ===============================
@@ -298,7 +325,11 @@ if (myChars.length > 0) {
   const isMe = false // 👉 depois você pode ligar com user logado
 
   return (
-    <div key={turn.id} style={{ marginLeft: depth * 20 }}>
+    <div
+  id={`turn-${turn.id}`}
+  key={turn.id}
+  style={{ marginLeft: depth * 20 }}
+>
 
       <div className="flex items-start gap-3 mt-2">
 
