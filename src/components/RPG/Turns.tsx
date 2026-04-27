@@ -221,19 +221,26 @@ useEffect(() => {
   }
 
   async function handleSendReply(parentId: number) {
-    if (!replyContent.trim()) return
+  if (!replyContent.trim()) return
 
-    await createTurn(rpgId, {
-      content: replyContent,
-      reply_to_turn_id: parentId,
-      mentioned_characters: mentions,
-      character_id: selectedCharacterId ?? undefined,
-    })
+  const parentTurn = turns.find((t) => t.id === parentId)
 
-    setReplyContent("")
-    setReplyTo(null)
-    setMentions([])
+  if (!parentTurn || !canReply(parentTurn)) {
+    alert("Você não pode responder este turno.")
+    return
   }
+
+  await createTurn(rpgId, {
+    content: replyContent,
+    reply_to_turn_id: parentId,
+    mentioned_characters: mentions,
+    character_id: selectedCharacterId ?? undefined,
+  })
+
+  setReplyContent("")
+  setReplyTo(null)
+  setMentions([])
+}
 
   async function handleDeleteTurn(turnId: number) {
     await deleteTurn(turnId)
@@ -324,6 +331,15 @@ useEffect(() => {
 
   const threadedTurns = buildThreads(turns)
 
+  function canReply(turn: RPGTurn): boolean {
+  const mentioned = turn.mentioned_characters ?? []
+
+  if (mentioned.length === 0) return false
+
+  return myCharacters.some((c) =>
+    mentioned.includes(c.id)
+  )
+}
   function renderTurn(turn: TurnWithReplies, depth = 0): ReactNode {
   const name =
     getCharacterName(turn.character_id) || `Usuário ${turn.user_id}`
@@ -392,16 +408,18 @@ useEffect(() => {
           </div>
 
           {/* RESPONDER */}
-          <button
-            onClick={(e) => {
-  e.stopPropagation()
-  setReplyTo(turn.id)
-  setReplyContent("")
-}}
-            className="text-xs text-yellow-600 hover:text-yellow-400 mt-1 transition"
-          >
-            Responder
-          </button>
+          {canReply(turn) && (
+  <button
+    onClick={(e) => {
+      e.stopPropagation()
+      setReplyTo(turn.id)
+      setReplyContent("")
+    }}
+    className="text-xs text-yellow-600 hover:text-yellow-400 mt-1 transition"
+  >
+    Responder
+  </button>
+)}
         </div>
       </div>
 
