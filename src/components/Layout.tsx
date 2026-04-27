@@ -69,7 +69,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       {/* HEADER */}
       <header className="border-b border-[#3a1f24] bg-[#2a1519] px-6 py-4 flex justify-between items-center">
         <h1 className="text-xl font-display text-[#e0a96d]">
-          <Link to="/home">Narraverse</Link>
+          <Link to="/home"><h1>Narraverse</h1></Link>
         </h1>
 
         <Navbar />
