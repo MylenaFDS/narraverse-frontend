@@ -24,6 +24,13 @@ export type ContextType = {
     }
   ) => void
   markAllAsRead: () => void
+  markAsNotNew: (id: number) => void // 👈 adicionar
 }
 
-export const NotificationContext = createContext<ContextType | null>(null)
+export const NotificationContext = createContext<ContextType>({
+  notifications: [],
+  addNotification: () => {},
+  markAllAsRead: () => {},
+  markAsNotNew: () => {},
+})
+

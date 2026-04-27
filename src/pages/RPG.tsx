@@ -22,7 +22,7 @@ export default function RPG() {
       <div className="rpg-panel max-w-5xl mx-auto mb-6">
         <h2>RPG #{rpgId}</h2>
 
-        <div className="flex gap-3 mt-4">
+        <div className="flex gap-3 mt-4 text-xl font-display text-[#e0a96d]">
           <button onClick={() => setActiveTab("turns")}>Turnos</button>
           <button onClick={() => setActiveTab("chat")}>Chat</button>
 
@@ -48,8 +48,8 @@ export default function RPG() {
 
         {/* SIDEBAR */}
         <div className="rpg-sidebar">
-          <div className="rpg-panel">Jogadores</div>
-          <div className="rpg-panel">Anotações</div>
+          <div className="rpg-panel text-xl font-display text-[#e0a96d]">Jogadores</div>
+          <div className="rpg-panel text-xl font-display text-[#e0a96d]">Anotações</div>
         </div>
 
       </div>
