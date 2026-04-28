@@ -43,8 +43,13 @@ export default function Turns({ rpgId }: Props) {
 const [myCharacters, setMyCharacters] = useState<Character[]>([])
   const [selectedCharacterId, setSelectedCharacterId] = useState<number | null>(null)
 
-  const [filtered, setFiltered] = useState<Character[]>([])
-  const [showDropdown, setShowDropdown] = useState(false)
+  // turno principal
+const [showDropdown, setShowDropdown] = useState(false)
+const [filtered, setFiltered] = useState<Character[]>([])
+
+// reply
+const [showReplyDropdown, setShowReplyDropdown] = useState(false)
+const [filteredReply, setFilteredReply] = useState<Character[]>([])
   const [mentions, setMentions] = useState<number[]>([])
 
   const [sheetFields, setSheetFields] = useState<RPGSheetField[]>([])
@@ -173,24 +178,30 @@ useEffect(() => {
   // AUTOCOMPLETE
   // ===============================
   function handleChange(value: string, isReply = false) {
-    if (isReply) setReplyContent(value)
-    else setNewTurn(value)
+  if (isReply) setReplyContent(value)
+  else setNewTurn(value)
 
-    const match = value.match(/@(\w*)$/)
+  const match = value.match(/@(\w*)$/)
 
-    if (match) {
-      const search = match[1].toLowerCase()
+  if (match) {
+    const search = match[1].toLowerCase()
 
-      const results = allCharacters.filter((c) =>
-        c.name.toLowerCase().includes(search)
-      )
+    const results = allCharacters.filter((c) =>
+      c.name.toLowerCase().includes(search)
+    )
 
+    if (isReply) {
+      setFilteredReply(results)
+      setShowReplyDropdown(true)
+    } else {
       setFiltered(results)
       setShowDropdown(true)
-    } else {
-      setShowDropdown(false)
     }
+  } else {
+    if (isReply) setShowReplyDropdown(false)
+    else setShowDropdown(false)
   }
+}
 
   function handleSelectMention(char: Character, isReply = false) {
     if (isReply) {
@@ -305,7 +316,13 @@ useEffect(() => {
       .slice(0, 2)
       .toUpperCase()
   }
+  function getAllowedCharacters(turn: RPGTurn): Character[] {
+  const mentioned = turn.mentioned_characters ?? []
 
+  return myCharacters.filter((char) =>
+    mentioned.includes(char.id)
+  )
+}
   // ===============================
   // THREAD
   // ===============================
@@ -411,10 +428,19 @@ useEffect(() => {
           {canReply(turn) && (
   <button
     onClick={(e) => {
-      e.stopPropagation()
-      setReplyTo(turn.id)
-      setReplyContent("")
-    }}
+  e.stopPropagation()
+
+  const allowed = getAllowedCharacters(turn)
+
+  setSelectedCharacterId(allowed[0]?.id ?? null)
+  setReplyTo(turn.id)
+  setReplyContent("")
+
+  setShowDropdown(false)
+  setShowReplyDropdown(false)
+
+  
+}}
     className="text-xs text-yellow-600 hover:text-yellow-400 mt-1 transition"
   >
     Responder
@@ -425,35 +451,53 @@ useEffect(() => {
 
       {/* INPUT RESPOSTA */}
       {replyTo === turn.id && (
-        <div className="flex gap-2 mt-2 relative ml-12">
-          <input
-            value={replyContent}
-            onChange={(e) => handleChange(e.target.value, true)}
-            className="rpg-input flex-1"
-          />
+  <div className="flex flex-col gap-2 mt-2 relative ml-12">
 
-          <button
-            onClick={() => handleSendReply(turn.id)}
-            className="rpg-btn"
+    {/* 🔥 SELECT DINÂMICO */}
+    <select
+      value={selectedCharacterId ?? ""}
+      onChange={(e) => setSelectedCharacterId(Number(e.target.value))}
+      className="rpg-input"
+    >
+      {getAllowedCharacters(turn).map((c) => (
+        <option key={c.id} value={c.id}>
+          {c.name}
+        </option>
+      ))}
+    </select>
+
+    {/* INPUT + BOTÃO */}
+    <div className="flex gap-2 relative">
+      <input
+        value={replyContent}
+        onChange={(e) => handleChange(e.target.value, true)}
+        className="rpg-input flex-1"
+      />
+
+      <button
+        onClick={() => handleSendReply(turn.id)}
+        className="rpg-btn"
+      >
+        Enviar
+      </button>
+    </div>
+
+    {/* DROPDOWN MENÇÃO */}
+    {showReplyDropdown && filteredReply.length > 0 && (
+      <div className="absolute top-full left-0 w-full bg-[#1f1f1f] border mt-1 rounded z-10 shadow-lg">
+        {filteredReply.map((char) => (
+          <div
+            key={char.id}
+            onClick={() => handleSelectMention(char, true)}
+            className="p-2 cursor-pointer hover:bg-[#2b2d31]"
           >
-            Enviar
-          </button>
-
-          {showDropdown && filtered.length > 0 && (
-            <div className="absolute top-full left-0 w-full bg-[#1f1f1f] border mt-1 rounded z-10 shadow-lg">
-              {filtered.map((char) => (
-                <div
-                  key={char.id}
-                  onClick={() => handleSelectMention(char, true)}
-                  className="p-2 cursor-pointer hover:bg-[#2b2d31]"
-                >
-                  @{char.name}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+            @{char.name}
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+)}
 
       {/* REPLIES */}
       {turn.replies.map((r) => renderTurn(r, depth + 1))}
