@@ -1,7 +1,9 @@
-import { useParams, useNavigate } from "react-router-dom"
+import { useParams } from "react-router-dom"
 import { useState, useEffect } from "react"
 
 import Turns from "../components/RPG/Turns"
+import Chat from "../components/RPG/Chat"
+import RPGSheets from "../components/RPG/RPGSheets"
 import { getRPG } from "../services/api"
 
 type Tab = "turns" | "chat" | "characters" | "lore"
@@ -14,10 +16,11 @@ type RPGType = {
 
 export default function RPG() {
   const { id } = useParams()
-  const navigate = useNavigate()
   const rpgId = Number(id)
 
-  const [activeTab, setActiveTab] = useState<Tab>("turns")
+  // 🔥 AGORA COMEÇA NA ENCICLOPÉDIA
+  const [activeTab, setActiveTab] = useState<Tab>("lore")
+
   const [rpg, setRpg] = useState<RPGType | null>(null)
 
   const isValid = id && !isNaN(rpgId)
@@ -31,44 +34,91 @@ export default function RPG() {
   }, [rpgId, isValid])
 
   if (!isValid) return <div>RPG inválido</div>
-
   if (!rpg) return <div>Carregando RPG...</div>
+
+  function tabClass(tab: Tab) {
+    return `
+      px-3 py-1 rounded transition
+      ${
+        activeTab === tab
+          ? "bg-[#e0a96d] text-black"
+          : "hover:bg-[#2a2a2a]"
+      }
+    `
+  }
 
   return (
     <div className="rpg-bg min-h-screen p-6">
 
+      {/* HEADER */}
       <div className="rpg-panel max-w-5xl mx-auto mb-6">
-        {/* 🔥 AQUI ESTÁ A MUDANÇA */}
         <div className="text-xl font-bold font-display text-[#e0a96d]">
           <h2>{rpg.name}</h2>
         </div>
 
-        <div className="flex gap-3 mt-4 text-x2 font-display text-[#e0a96d]">
-          <button onClick={() => setActiveTab("turns")}>Turnos</button>
-          <button onClick={() => setActiveTab("chat")}>Chat</button>
+        {/* 🔥 AGORA TUDO É ABA */}
+        <div className="flex gap-3 mt-4 text-xl font-display text-[#e0a96d]">
 
-          <button onClick={() => navigate(`/rpg/${rpgId}/sheets`)}>
+          <button
+            onClick={() => setActiveTab("lore")}
+            className={tabClass("lore")}
+          >
+            Enciclopédia
+          </button>
+
+          <button
+            onClick={() => setActiveTab("characters")}
+            className={tabClass("characters")}
+          >
             Fichas
           </button>
 
-          <button onClick={() => setActiveTab("lore")}>
-            Enciclopédia
+          <button
+            onClick={() => setActiveTab("turns")}
+            className={tabClass("turns")}
+          >
+            Turnos
+          </button>
+
+          <button
+            onClick={() => setActiveTab("chat")}
+            className={tabClass("chat")}
+          >
+            Chat
           </button>
         </div>
       </div>
 
+      {/* LAYOUT */}
       <div className="rpg-layout max-w-5xl mx-auto">
 
         <div className="rpg-panel">
+
+          {activeTab === "lore" && (
+            <div>Enciclopédia em construção...</div>
+          )}
+
+          {activeTab === "characters" && (
+            <div>
+              <RPGSheets rpgId={rpgId} />
+            </div>
+          )}
+
           {activeTab === "turns" && <Turns rpgId={rpgId} />}
-          {activeTab === "chat" && <div>Chat em construção...</div>}
-          {activeTab === "lore" && <div>Enciclopédia em construção...</div>}
+
+          {/* 🔥 MANTÉM CHAT MONTADO (evita reconectar WS toda hora) */}
+          <div style={{ display: activeTab === "chat" ? "block" : "none" }}>
+            <Chat rpgId={rpgId} />
+          </div>
+
         </div>
 
+        {/* SIDEBAR */}
         <div className="rpg-sidebar">
           <div className="rpg-panel text-xl font-display text-[#e0a96d]">
             Jogadores
           </div>
+
           <div className="rpg-panel text-xl font-display text-[#e0a96d]">
             Anotações
           </div>

@@ -6,25 +6,29 @@ import {
   createCharacter,
   getCharacterSheet,
   saveCharacterSheet,
-} from "../services/characters"
+} from "../../services/characters"
 
 import {
   getSheetFields,
   createSheetField,
   updateSheetField,
   getRPG,
-} from "../services/api"
+} from "../../services/api"
 
 import type {
   Character,
   RPGSheetField,
   CharacterCreatePayload,
   CharacterSheetValue,
-} from "../types/character"
+} from "../../types/character"
 
-export default function RPGSheets() {
+type Props = {
+  rpgId: number
+}
+
+export default function RPGSheets({ rpgId }: Props) {
   const { id } = useParams()
-  const rpgId = Number(id)
+  
 
   const [characters, setCharacters] = useState<Character[]>([])
   const [sheetFields, setSheetFields] = useState<RPGSheetField[]>([])
