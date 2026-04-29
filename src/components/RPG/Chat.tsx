@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState } from "react"
 
-
 type Message = {
   id: number
   content: string
   user_id: number
-  username: string
+  username?: string
   created_at: string
 }
 
@@ -14,13 +13,12 @@ type Props = {
 }
 
 export default function Chat({ rpgId }: Props) {
-  
-
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
-  const [typingUser, setTypingUser] = useState<string | null>(null)
+  const [typingUsers, setTypingUsers] = useState<string[]>([])
 
   const wsRef = useRef<WebSocket | null>(null)
+  const reconnectTimeout = useRef<number | null>(null)
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
 
   // ===============================
@@ -29,52 +27,80 @@ export default function Chat({ rpgId }: Props) {
   useEffect(() => {
     fetch(`http://localhost:8000/rpg-chat/${rpgId}`)
       .then((res) => res.json())
-      .then(setMessages)
+      .then((data: Message[]) => {
+        setMessages(data)
+      })
   }, [rpgId])
 
   // ===============================
-  // WEBSOCKET
+  // WEBSOCKET COM RECONEXÃO
   // ===============================
   useEffect(() => {
-  if (wsRef.current) return // 🔥 impede reconectar
+    const token = localStorage.getItem("token")
+    if (!token) return
 
-  const token = localStorage.getItem("token")
-  if (!token) return
+    let isMounted = true
 
-  const ws = new WebSocket(
-    `ws://localhost:8000/ws/rpg/${rpgId}/chat?token=${token}`
-  )
+    function connect() {
+      const ws = new WebSocket(
+        `ws://localhost:8000/ws/rpg/${rpgId}/chat?token=${token}`
+      )
 
-  wsRef.current = ws
+      wsRef.current = ws
 
-  ws.onopen = () => {
-    console.log("💬 WS chat conectado")
-  }
+      ws.onopen = () => {
+        console.log("💬 WS chat conectado")
+      }
 
-  ws.onmessage = (event) => {
-  const data = JSON.parse(event.data)
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data)
 
-  if (data.type === "message") {
-    setMessages((prev) => [...prev, data.data])
-  }
+        if (data.type === "message") {
+          setMessages((prev) => {
+            const exists = prev.some((m) => m.id === data.data.id)
+            if (exists) return prev
+            return [...prev, data.data]
+          })
+        }
 
-  else if (data.type === "typing") {
-    setTypingUser(data.username)
-
-    setTimeout(() => {
-      setTypingUser(null)
-    }, 2000)
-  }
+        else if (data.type === "typing_start") {
+  setTypingUsers((prev) => {
+    if (prev.includes(data.username)) return prev
+    return [...prev, data.username]
+  })
 }
-  ws.onclose = () => {
-    console.log("❌ WS chat desconectado")
-    wsRef.current = null // 🔥 permite reconectar se precisar
-  }
 
-  return () => {
-    ws.close()
-  }
-}, [rpgId])
+else if (data.type === "typing_stop") {
+  setTypingUsers((prev) =>
+    prev.filter((u) => u !== data.username)
+  )
+}
+      }
+
+      ws.onclose = () => {
+        console.log("❌ WS chat desconectado")
+
+        if (isMounted) {
+          reconnectTimeout.current = window.setTimeout(connect, 2000)
+        }
+      }
+
+      ws.onerror = () => {
+        ws.close()
+      }
+    }
+
+    connect()
+
+    return () => {
+      isMounted = false
+      wsRef.current?.close()
+
+      if (reconnectTimeout.current) {
+        clearTimeout(reconnectTimeout.current)
+      }
+    }
+  }, [rpgId])
 
   // ===============================
   // SCROLL AUTOMÁTICO
@@ -104,11 +130,31 @@ export default function Chat({ rpgId }: Props) {
   }
 
   // ===============================
-  // DIGITANDO
+  // DIGITANDO (OTIMIZADO)
   // ===============================
+  const typingTimeoutRef = useRef<number | null>(null)
+  const typingRef = useRef(false)
+  
+
   function handleTyping() {
-    wsRef.current?.send(JSON.stringify({ type: "typing" }))
+  if (!wsRef.current) return
+
+  // já está digitando → não envia de novo
+  if (!typingRef.current) {
+    wsRef.current.send(JSON.stringify({ type: "typing_start" }))
+    typingRef.current = true
   }
+
+  // reset timeout
+  if (typingTimeoutRef.current) {
+    clearTimeout(typingTimeoutRef.current)
+  }
+
+  typingTimeoutRef.current = window.setTimeout(() => {
+    wsRef.current?.send(JSON.stringify({ type: "typing_stop" }))
+    typingRef.current = false
+  }, 1500)
+}
 
   // ===============================
   // UTILS
@@ -118,15 +164,15 @@ export default function Chat({ rpgId }: Props) {
   }
 
   function getInitials(name?: string) {
-  if (!name) return "??"
+    if (!name) return "??"
 
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase()
-}
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase()
+  }
 
   // ===============================
   // RENDER
@@ -167,7 +213,7 @@ export default function Chat({ rpgId }: Props) {
                 {/* NOME */}
                 {!sameUser && (
                   <div className="text-sm text-yellow-500 font-semibold">
-                    {msg.username}
+                    {msg.username || "Usuário"}
                   </div>
                 )}
 
@@ -195,11 +241,13 @@ export default function Chat({ rpgId }: Props) {
       </div>
 
       {/* DIGITANDO */}
-      {typingUser && (
-        <div className="text-xs text-gray-400 mt-1">
-          {typingUser} está digitando...
-        </div>
-      )}
+      {typingUsers.length > 0 && (
+  <div className="text-xs text-gray-400 mt-1">
+    {typingUsers.length === 1
+      ? `${typingUsers[0]} está digitando...`
+      : `${typingUsers.join(", ")} estão digitando...`}
+  </div>
+)}
 
       {/* INPUT */}
       <div className="mt-2 flex gap-2">
