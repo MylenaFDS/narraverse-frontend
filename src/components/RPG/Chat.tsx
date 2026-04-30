@@ -115,9 +115,9 @@ export default function Chat({ rpgId }: { rpgId: number }) {
   // UI
   // ===============================
   return (
-    <div className="flex flex-col h-[500px] bg-[#0f0709] rounded-xl border border-yellow-900/30">
+    <div className="flex flex-col h-[500px] bg-transparent rounded-xl border border-yellow-900/30">
 
-      <div className="border-b border-[#3a1f24] p-2 text-yellow-500">
+      <div className="border-b border-transparent text-xl p-2 flex gap-3 mt-4 font-display text-[#e0a96d]">
         Chat do RPG
       </div>
 
