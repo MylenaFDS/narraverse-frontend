@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from "react"
+import { useEffect, useRef, useCallback, type ReactNode } from "react"
 import Navbar from "./Navbar"
 import { Link } from "react-router-dom"
 import NotificationToast from "./NotificationToast"
@@ -8,17 +8,11 @@ export default function Layout({ children }: { children: ReactNode }) {
   const { addNotification } = useNotifications()
 
   const wsRef = useRef<WebSocket | null>(null)
-
-  // ✅ FALTAVA ISSO
   const hasConnected = useRef(false)
 
-  useEffect(() => {
+  const connectWS = useCallback(() => {
     const token = localStorage.getItem("token")
     if (!token) return
-
-    // 🔥 evita múltiplas conexões (loop infinito)
-    if (hasConnected.current) return
-    hasConnected.current = true
 
     const ws = new WebSocket(
       `ws://127.0.0.1:8001/ws/notifications?token=${token}`
@@ -49,28 +43,40 @@ export default function Layout({ children }: { children: ReactNode }) {
     }
 
     ws.onerror = () => {
-      console.log("⚠️ WS erro — provavelmente token inválido")
+      console.log("⚠️ WS erro")
+      ws.close()
     }
 
     ws.onclose = () => {
-      console.log("❌ WS desconectado")
-      hasConnected.current = false
+      console.log("❌ WS caiu — reconectando em 3s...")
+      setTimeout(() => {
+        connectWS()
+      }, 3000)
     }
+  }, [addNotification]) // ✅ agora ESLint fica feliz
+
+  useEffect(() => {
+    const token = localStorage.getItem("token")
+    if (!token) return
+
+    if (hasConnected.current) return
+    hasConnected.current = true
+
+    connectWS()
 
     return () => {
-      ws.close()
+      wsRef.current?.close()
       hasConnected.current = false
     }
-
-    // 🚫 NÃO coloque addNotification aqui
-    // senão vira loop infinito
-  }, [])
+  }, [connectWS]) // ✅ sem warning
 
   return (
     <div className="min-h-screen bg-[#1a0f12] text-[#f5e9e2]">
       <header className="border-b border-[#3a1f24] bg-[#2a1519] px-6 py-4 flex justify-between items-center">
         <h1 className="text-xl font-display text-[#e0a96d]">
-          <Link to="/home"><h1>Narraverse</h1></Link>
+          <Link to="/home">
+            <h1>Narraverse</h1>
+          </Link>
         </h1>
 
         <Navbar />
