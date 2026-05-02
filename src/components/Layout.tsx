@@ -8,18 +8,20 @@ export default function Layout({ children }: { children: ReactNode }) {
   const { addNotification } = useNotifications()
 
   const wsRef = useRef<WebSocket | null>(null)
-  const hasConnected = useRef(false) // 🔥 evita reconexão
+
+  // ✅ FALTAVA ISSO
+  const hasConnected = useRef(false)
 
   useEffect(() => {
     const token = localStorage.getItem("token")
     if (!token) return
 
-    // 🔥 evita abrir múltiplas conexões
+    // 🔥 evita múltiplas conexões (loop infinito)
     if (hasConnected.current) return
     hasConnected.current = true
 
     const ws = new WebSocket(
-      `ws://localhost:8000/ws/notifications?token=${token}`
+      `ws://127.0.0.1:8001/ws/notifications?token=${token}`
     )
 
     wsRef.current = ws
@@ -46,12 +48,12 @@ export default function Layout({ children }: { children: ReactNode }) {
       }
     }
 
-    ws.onerror = (err) => {
-      console.error("🔥 WS notifications erro:", err)
+    ws.onerror = () => {
+      console.log("⚠️ WS erro — provavelmente token inválido")
     }
 
     ws.onclose = () => {
-      console.log("❌ WS notifications desconectado")
+      console.log("❌ WS desconectado")
       hasConnected.current = false
     }
 
@@ -60,25 +62,21 @@ export default function Layout({ children }: { children: ReactNode }) {
       hasConnected.current = false
     }
 
-    // ❌ NÃO depende de addNotification
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // 🚫 NÃO coloque addNotification aqui
+    // senão vira loop infinito
   }, [])
 
   return (
     <div className="min-h-screen bg-[#1a0f12] text-[#f5e9e2]">
-      {/* HEADER */}
       <header className="border-b border-[#3a1f24] bg-[#2a1519] px-6 py-4 flex justify-between items-center">
         <h1 className="text-xl font-display text-[#e0a96d]">
           <Link to="/home"><h1>Narraverse</h1></Link>
         </h1>
 
         <Navbar />
-
-        {/* 🔔 Toast global */}
         <NotificationToast />
       </header>
 
-      {/* CONTEÚDO */}
       <main className="p-6 max-w-5xl mx-auto">
         {children}
       </main>

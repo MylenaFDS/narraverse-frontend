@@ -13,8 +13,18 @@ export default function Lore({ rpgId }: Props) {
 
   useEffect(() => {
     async function fetchLore() {
-      const data = await getLore(rpgId)
-      setLore(data)
+      try {
+        const data = await getLore(rpgId)
+
+        if (Array.isArray(data)) {
+          setLore(data)
+        } else {
+          console.error("Lore inválida:", data)
+          setLore([])
+        }
+      } catch (err) {
+        console.error("Erro ao carregar lore:", err)
+      }
     }
 
     fetchLore()
@@ -29,7 +39,7 @@ export default function Lore({ rpgId }: Props) {
     setContent("")
 
     const data = await getLore(rpgId)
-    setLore(data)
+    setLore(Array.isArray(data) ? data : [])
   }
 
   return (

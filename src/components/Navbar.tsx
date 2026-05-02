@@ -18,17 +18,28 @@ export default function Navbar() {
 
   const navigate = useNavigate()
 
-  useEffect(() => {
-    async function loadUser() {
-      const token = localStorage.getItem("token")
-      if (!token) return
+useEffect(() => {
+  let mounted = true
 
-      const data = await getMe()
-      setUser(data)
+  async function loadUser() {
+    const data = await getMe()
+
+    if (!mounted) return
+
+    if (!data) {
+      setUser(null)
+      return
     }
 
-    loadUser()
-  }, [])
+    setUser(data)
+  }
+
+  loadUser()
+
+  return () => {
+    mounted = false
+  }
+}, [])
 
   function handleLogout() {
   localStorage.removeItem("token")

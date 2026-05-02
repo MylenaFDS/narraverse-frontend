@@ -23,9 +23,23 @@ export default function Chat({ rpgId }: { rpgId: number }) {
   // LOAD
   // ===============================
   useEffect(() => {
-    fetch(`http://localhost:8000/rpg-chat/${rpgId}`)
-      .then(res => res.json())
-      .then(setMessages)
+    async function load() {
+      try {
+        const res = await fetch(`http://127.0.0.1:8001/rpg-chat/${rpgId}`)
+        const data = await res.json()
+
+        if (Array.isArray(data)) {
+          setMessages(data)
+        } else {
+          console.error("Erro: resposta não é array", data)
+          setMessages([])
+        }
+      } catch (err) {
+        console.error("Erro ao carregar chat:", err)
+      }
+    }
+
+    load()
   }, [rpgId])
 
   // ===============================
@@ -36,29 +50,41 @@ export default function Chat({ rpgId }: { rpgId: number }) {
     if (!token) return
 
     const ws = new WebSocket(
-      `ws://localhost:8000/ws/rpg/${rpgId}/chat?token=${token}`
+      `ws://127.0.0.1:8001/ws/rpg/${rpgId}/chat?token=${token}`
     )
 
     ws.onmessage = (event) => {
-      const data = JSON.parse(event.data)
+      try {
+        const data = JSON.parse(event.data)
 
-      if (data.type === "message") {
-        setMessages(prev => [...prev, data.data])
-      }
+        if (data.type === "message") {
+          setMessages(prev => [...prev, data.data])
+        }
 
-      else if (data.type === "delete") {
-        setMessages(prev => prev.filter(m => m.id !== data.message_id))
-      }
+        else if (data.type === "delete") {
+          setMessages(prev => prev.filter(m => m.id !== data.message_id))
+        }
 
-      else if (data.type === "edit") {
-        setMessages(prev =>
-          prev.map(m =>
-            m.id === data.data.id
-              ? { ...m, content: data.data.content }
-              : m
+        else if (data.type === "edit") {
+          setMessages(prev =>
+            prev.map(m =>
+              m.id === data.data.id
+                ? { ...m, content: data.data.content }
+                : m
+            )
           )
-        )
+        }
+      } catch (err) {
+        console.error("Erro WS:", err)
       }
+    }
+
+    ws.onerror = (err) => {
+      console.error("🔥 WS chat erro:", err)
+    }
+
+    ws.onclose = () => {
+      console.log("❌ WS chat desconectado")
     }
 
     wsRef.current = ws
@@ -66,54 +92,56 @@ export default function Chat({ rpgId }: { rpgId: number }) {
   }, [rpgId])
 
   // ===============================
-  // SEND / EDIT
+  // SEND
   // ===============================
   async function sendMessage() {
     if (!input.trim()) return
 
     const token = localStorage.getItem("token")
 
-    if (editingMessage) {
-      await fetch(`http://localhost:8000/rpg-chat/${editingMessage.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ content: input }),
-      })
+    try {
+      if (editingMessage) {
+        await fetch(`http://127.0.0.1:8001/rpg-chat/${editingMessage.id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ content: input }),
+        })
 
-      setEditingMessage(null)
-    } else {
-      await fetch(`http://localhost:8000/rpg-chat/${rpgId}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ content: input }),
-      })
+        setEditingMessage(null)
+      } else {
+        await fetch(`http://127.0.0.1:8001/rpg-chat/${rpgId}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ content: input }),
+        })
+      }
+
+      setInput("")
+      inputRef.current?.focus()
+    } catch (err) {
+      console.error("Erro ao enviar:", err)
     }
-
-    setInput("")
-    inputRef.current?.focus()
   }
 
-  // ===============================
-  // DELETE
-  // ===============================
   async function deleteMessage(id: number) {
     const token = localStorage.getItem("token")
 
-    await fetch(`http://localhost:8000/rpg-chat/${id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    try {
+      await fetch(`http://127.0.0.1:8001/rpg-chat/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      })
+    } catch (err) {
+      console.error("Erro ao deletar:", err)
+    }
   }
 
-  // ===============================
-  // UI
-  // ===============================
   return (
     <div className="flex flex-col h-[500px] bg-transparent rounded-xl border border-yellow-900/30">
 
@@ -126,10 +154,7 @@ export default function Chat({ rpgId }: { rpgId: number }) {
           const isMe = msg.user_id === myUserId
 
           return (
-            <div
-              key={msg.id}
-              className={`flex gap-2 ${isMe ? "justify-end" : ""}`}
-            >
+            <div key={msg.id} className={`flex gap-2 ${isMe ? "justify-end" : ""}`}>
               <div>
                 <div className="text-xs text-yellow-500">
                   {msg.username}
@@ -141,18 +166,14 @@ export default function Chat({ rpgId }: { rpgId: number }) {
 
                 {isMe && (
                   <div className="flex gap-2 text-[10px] text-gray-400 mt-1">
-                    <button
-                      onClick={() => {
-                        setEditingMessage(msg)
-                        setInput(msg.content)
-                      }}
-                    >
+                    <button onClick={() => {
+                      setEditingMessage(msg)
+                      setInput(msg.content)
+                    }}>
                       editar
                     </button>
 
-                    <button
-                      onClick={() => deleteMessage(msg.id)}
-                    >
+                    <button onClick={() => deleteMessage(msg.id)}>
                       excluir
                     </button>
                   </div>
@@ -170,13 +191,11 @@ export default function Chat({ rpgId }: { rpgId: number }) {
           value={input}
           onChange={(e) => {
             let value = e.target.value
-
             const LIMIT = 40
             const lines = value.split("\n")
             const last = lines[lines.length - 1]
 
             if (last.length >= LIMIT) value += "\n"
-
             setInput(value)
           }}
           className="flex-1 bg-[#1a0f12] border p-2 rounded"

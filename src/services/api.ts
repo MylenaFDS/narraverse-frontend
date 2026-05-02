@@ -1,18 +1,22 @@
+import axios from "axios"
+import type { AxiosError } from "axios"
 import type { FeedResponse } from "../types/feed"
 import type { CreateSheetFieldDTO } from "../types/character"
-import axios from "axios"
 
 // ===============================
-// AXIOS BASE
+// 🌐 BASE URL
+// ===============================
+const API_URL = "http://127.0.0.1:8001"
+
+// ===============================
+// 🔥 AXIOS INSTANCE
 // ===============================
 export const api = axios.create({
-  baseURL: "http://localhost:8000",
+  baseURL: API_URL,
 })
 
-const API_URL = "http://127.0.0.1:8000"
-
 // ===============================
-// 🔥 INTERCEPTOR DE REQUEST (NOVO)
+// 🔐 INTERCEPTOR TOKEN
 // ===============================
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token")
@@ -25,106 +29,110 @@ api.interceptors.request.use((config) => {
 })
 
 // ===============================
-// 🔐 helper de auth
+// 🔄 REFRESH TOKEN (FIXED)
 // ===============================
-function getAuthHeaders() {
-  const token = localStorage.getItem("token")
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config
 
-  return {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
+    // 🔥 evita loop infinito
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true
+
+      const refreshToken = localStorage.getItem("refresh_token")
+
+      // ❌ NÃO redireciona aqui
+      if (!refreshToken) {
+        localStorage.clear()
+        return Promise.reject(error)
+      }
+
+      try {
+        const res = await axios.post(`${API_URL}/auth/refresh`, {
+          refresh_token: refreshToken,
+        })
+
+        const newToken = res.data.access_token
+        localStorage.setItem("token", newToken)
+
+        originalRequest.headers.Authorization = `Bearer ${newToken}`
+
+        return api(originalRequest)
+      } catch (err) {
+        console.error("Erro ao renovar token:", err)
+
+        localStorage.clear()
+        return Promise.reject(error)
+      }
+    }
+
+    return Promise.reject(error)
   }
-}
+)
 
 // ===============================
 // 🔑 AUTH
 // ===============================
 export async function login(email: string, password: string) {
   const formData = new URLSearchParams()
-
   formData.append("username", email)
   formData.append("password", password)
 
-  const response = await fetch("http://127.0.0.1:8000/auth/login", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: formData,
+  const res = await axios.post(`${API_URL}/auth/login`, formData, {
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
   })
 
-  return response.json()
+  return res.data
 }
 
-export async function register(
-  username: string,
-  email: string,
-  password: string
-) {
-  const response = await fetch("http://127.0.0.1:8000/auth/register", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      username,
-      email,
-      password,
-    }),
+export async function register(username: string, email: string, password: string) {
+  const res = await api.post("/auth/register", {
+    username,
+    email,
+    password,
   })
 
-  return response.json()
+  return res.data
 }
 
 export async function getMe() {
-  const token = localStorage.getItem("token")
+  try {
+    const res = await api.get("/auth/me")
+    return res.data
+  } catch (err: unknown) {
+    const error = err as AxiosError
 
-  const response = await fetch("http://127.0.0.1:8000/users/me", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
+    // 🔥 ignora abort (super importante)
+    if (error.code === "ERR_CANCELED") {
+      return null
+    }
 
-  return response.json()
+    if (error.response?.status === 401) {
+      return null
+    }
+
+    console.error("Erro getMe:", error)
+    return null
+  }
 }
-
-export async function getUserProfile(userId: number) {
-  const response = await fetch(`http://127.0.0.1:8000/users/${userId}`)
-  return response.json()
-}
-
+// ===============================
+// 👤 USER
+// ===============================
 export async function updateProfile(data: {
   username?: string
   bio?: string
 }) {
-  const token = localStorage.getItem("token")
-
-  const response = await fetch("http://127.0.0.1:8000/users/me", {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(data),
-  })
-
-  return response.json()
+  const res = await api.put("/users/me", data)
+  return res.data
 }
-
 // ===============================
 // 📡 FEED
 // ===============================
 export async function getFeed(): Promise<FeedResponse> {
-  const response = await fetch(`${API_URL}/feed/`)
-
-  if (!response.ok) {
-    throw new Error("Erro ao buscar feed")
-  }
-
-  return response.json()
+  const res = await api.get("/feed/")
+  return res.data
 }
-
-
 
 // ===============================
 // 🎭 TURNOS
@@ -137,111 +145,41 @@ export type CreateTurnDTO = {
 }
 
 export async function createTurn(rpgId: number, data: CreateTurnDTO) {
-  const res = await fetch(`http://localhost:8000/rpg-turns/${rpgId}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-    body: JSON.stringify(data),
-  })
-
-  if (!res.ok) throw new Error("Erro ao criar turno")
-
-  return res.json()
+  const res = await api.post(`/rpg-turns/${rpgId}`, data)
+  return res.data
 }
 
 export async function getTurns(rpgId: number) {
-  const token = localStorage.getItem("token")
+  const res = await api.get(`/rpg-turns/${rpgId}`)
+  return res.data
+}
 
-  const res = await fetch(`http://localhost:8000/rpg-turns/${rpgId}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
-
-  return res.json()
+export async function deleteTurn(turnId: number) {
+  await api.delete(`/rpg-turns/${turnId}`)
 }
 
 // ===============================
 // 📚 LORE
 // ===============================
 export async function getLore(rpgId: number) {
-  const response = await fetch(`${API_URL}/rpg-lore/${rpgId}`)
-  return response.json()
+  const res = await api.get(`/rpg-lore/${rpgId}`)
+  return res.data
 }
 
 export async function createLore(
   rpgId: number,
   data: { title: string; content: string }
 ) {
-  const response = await fetch(`${API_URL}/rpg-lore/${rpgId}`, {
-    method: "POST",
-    headers: getAuthHeaders(),
-    body: JSON.stringify(data),
-  })
-
-  return response.json()
-}
-
-// ===============================
-// RPG
-// ===============================
-export async function getRPG(id: number) {
-  const res = await api.get(`/rpgs/${id}`)
+  const res = await api.post(`/rpg-lore/${rpgId}`, data)
   return res.data
 }
 
 // ===============================
-// 🔄 REFRESH TOKEN
+// 🎮 RPG
 // ===============================
-api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config
-
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true
-
-      const refreshToken = localStorage.getItem("refresh_token")
-
-      if (!refreshToken) {
-        window.location.href = "/login"
-        return Promise.reject(error)
-      }
-
-      try {
-        const res = await fetch("http://127.0.0.1:8000/auth/refresh", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ refresh_token: refreshToken }),
-        })
-
-        const data = await res.json()
-
-        localStorage.setItem("token", data.access_token)
-
-        originalRequest.headers.Authorization = `Bearer ${data.access_token}`
-
-        return api(originalRequest)
-      } catch (err) {
-        console.error("Erro ao renovar token:", err)
-        localStorage.clear()
-        window.location.href = "/login"
-      }
-    }
-
-    return Promise.reject(error)
-  }
-)
-
-// ===============================
-// 🗑 TURNOS
-// ===============================
-export async function deleteTurn(turnId: number) {
-  await api.delete(`/rpg-turns/${turnId}`)
+export async function getRPG(id: number) {
+  const res = await api.get(`/rpgs/${id}`)
+  return res.data
 }
 
 // ===============================
@@ -256,42 +194,14 @@ export async function createSheetField(
   rpgId: number,
   data: CreateSheetFieldDTO
 ) {
-  const token = localStorage.getItem("token")
-
-  const res = await fetch(`http://localhost:8000/rpg-sheet-fields/${rpgId}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(data),
-  })
-
-  if (!res.ok) {
-    throw new Error("Erro ao criar campo")
-  }
-
-  return await res.json()
+  const res = await api.post(`/rpg-sheet-fields/${rpgId}`, data)
+  return res.data
 }
 
 export async function updateSheetField(
   fieldId: number,
   data: { name: string }
 ) {
-  const token = localStorage.getItem("token")
-
-  const res = await fetch(`http://localhost:8000/rpg-sheet-fields/${fieldId}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(data),
-  })
-
-  if (!res.ok) {
-    throw new Error("Erro ao atualizar campo")
-  }
-
-  return res.json()
+  const res = await api.put(`/rpg-sheet-fields/${fieldId}`, data)
+  return res.data
 }

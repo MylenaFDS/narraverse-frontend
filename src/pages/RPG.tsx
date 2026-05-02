@@ -3,6 +3,7 @@ import { useState, useEffect } from "react"
 
 import Turns from "../components/RPG/Turns"
 import Chat from "../components/RPG/Chat"
+import Lore from "../components/RPG/Lore"
 import RPGSheets from "../components/RPG/RPGSheets"
 import { getRPG } from "../services/api"
 
@@ -95,7 +96,9 @@ export default function RPG() {
         <div className="rpg-panel">
 
           {activeTab === "lore" && (
-            <div>Enciclopédia em construção...</div>
+            <div>
+              <Lore rpgId={rpgId} />
+            </div>
           )}
 
           {activeTab === "characters" && (

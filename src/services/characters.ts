@@ -6,7 +6,7 @@ import type {
 
 import { api } from "./api"
 
-const API = "http://localhost:8000"
+const API = "http://127.0.0.1:8001"
 
 // ===============================
 // PERSONAGENS

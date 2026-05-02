@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { login } from "../services/api"
+import { login, getMe } from "../services/api"
 import { useNavigate, Link } from "react-router-dom"
 
 export default function Login() {
@@ -8,19 +8,33 @@ export default function Login() {
   const navigate = useNavigate()
 
   async function handleLogin() {
-  const data = await login(email, password)
+    try {
+      const data = await login(email, password)
 
-  if (data.access_token) {
-    localStorage.setItem("token", data.access_token)
+      if (!data.access_token) {
+        alert("Login falhou")
+        return
+      }
 
-    // ✅ SALVAR USER ID (ESSENCIAL)
-    localStorage.setItem("user_id", data.user.id)
+      // ✅ salva tokens corretamente
+      localStorage.setItem("token", data.access_token)
+      localStorage.setItem("refresh_token", data.refresh_token)
 
-    navigate("/home")
-  } else {
-    alert("Erro ao fazer login")
+      const user = await getMe()
+
+      if (!user) {
+        throw new Error("Erro ao buscar usuário")
+      }
+
+      localStorage.setItem("user_id", user.id)
+
+      navigate("/home")
+    } catch (err) {
+      console.error(err)
+      alert("Erro ao fazer login")
+    }
   }
-}
+
   return (
     <div className="max-w-md mx-auto mt-20">
       <h2 className="title mb-4">Login</h2>
