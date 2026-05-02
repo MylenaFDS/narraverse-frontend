@@ -10,6 +10,8 @@ export default function Layout({ children }: { children: ReactNode }) {
   const wsRef = useRef<WebSocket | null>(null)
   const hasConnected = useRef(false)
 
+  const connectWSRef = useRef<() => void>(() => {})
+
   const connectWS = useCallback(() => {
     const token = localStorage.getItem("token")
     if (!token) return
@@ -50,10 +52,15 @@ export default function Layout({ children }: { children: ReactNode }) {
     ws.onclose = () => {
       console.log("❌ WS caiu — reconectando em 3s...")
       setTimeout(() => {
-        connectWS()
+        connectWSRef.current()
       }, 3000)
     }
-  }, [addNotification]) // ✅ agora ESLint fica feliz
+  }, [addNotification])
+
+  // ✅ AGORA CORRETO
+  useEffect(() => {
+    connectWSRef.current = connectWS
+  }, [connectWS])
 
   useEffect(() => {
     const token = localStorage.getItem("token")
@@ -68,7 +75,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       wsRef.current?.close()
       hasConnected.current = false
     }
-  }, [connectWS]) // ✅ sem warning
+  }, [connectWS])
 
   return (
     <div className="min-h-screen bg-[#1a0f12] text-[#f5e9e2]">
