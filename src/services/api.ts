@@ -173,7 +173,17 @@ export async function createLore(
   const res = await api.post(`/rpg-lore/${rpgId}`, data)
   return res.data
 }
+export async function updateLore(
+  loreId: number,
+  data: { title: string; content: string }
+) {
+  const res = await api.put(`/rpg-lore/item/${loreId}`, data)
+  return res.data
+}
 
+export async function deleteLore(loreId: number) {
+  await api.delete(`/rpg-lore/item/${loreId}`)
+}
 // ===============================
 // 🎮 RPG
 // ===============================
