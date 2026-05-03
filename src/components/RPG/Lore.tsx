@@ -17,7 +17,7 @@ export default function Lore({ rpgId }: Props) {
   const [content, setContent] = useState("")
   const [category, setCategory] = useState("")
   const [search, setSearch] = useState("")
-  const [isOwner, setIsOwner] = useState(false)
+  const [isOwner, setIsOwner] = useState<boolean | null>(null)
   const [openCategories, setOpenCategories] = useState<string[]>([])
 
   useEffect(() => {
@@ -201,7 +201,13 @@ setIsOwner(res.data.is_owner)
           onClick={handleCreate}
           className="mt-2 bg-purple-600 px-4 py-2 rounded"
         >
-          {isOwner ? "Criar lore" : "Enviar sugestão"}
+          {isOwner === null ? (
+  "Carregando..."
+) : isOwner ? (
+  "Criar lore"
+) : (
+  "Enviar sugestão"
+)}
         </button>
       </div>
 
