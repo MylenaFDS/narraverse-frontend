@@ -1,10 +1,6 @@
 import { useEffect, useState } from "react"
-import {
-  getLore,
-  createLore,
-  updateLore,
-  deleteLore,
-} from "../../services/api"
+import { getLore, createLore } from "../../services/api"
+import axios from "axios"
 import type { Lore } from "../../types/lore"
 
 type Props = {
@@ -13,100 +9,169 @@ type Props = {
 
 export default function Lore({ rpgId }: Props) {
   const [lore, setLore] = useState<Lore[]>([])
+  const [suggestions, setSuggestions] = useState<Lore[]>([])
+  const [categories, setCategories] = useState<string[]>([])
+  const [newCategory, setNewCategory] = useState("")
+
   const [title, setTitle] = useState("")
   const [content, setContent] = useState("")
-  const [loading, setLoading] = useState(true)
-  const [creating, setCreating] = useState(false)
-
-  const [editingId, setEditingId] = useState<number | null>(null)
-  const [editTitle, setEditTitle] = useState("")
-  const [editContent, setEditContent] = useState("")
-  const [savingEdit, setSavingEdit] = useState(false)
-
-  const [deletingId, setDeletingId] = useState<number | null>(null)
+  const [category, setCategory] = useState("")
+  const [search, setSearch] = useState("")
+  const [isOwner, setIsOwner] = useState(false)
+  const [openCategories, setOpenCategories] = useState<string[]>([])
 
   useEffect(() => {
-    async function fetchLore() {
+    async function load() {
       try {
-        setLoading(true)
-        const data = await getLore(rpgId)
-        setLore(Array.isArray(data) ? data : [])
+        const token = localStorage.getItem("token")
+
+        // 📚 LORE
+        const loreData = await getLore(rpgId)
+        setLore(Array.isArray(loreData) ? loreData : [])
+
+        // 📂 CATEGORIAS
+        const catRes = await axios.get(
+          `http://127.0.0.1:8001/rpg-lore/${rpgId}/categories`
+        )
+
+        const cats = catRes.data || []
+        setCategories(cats)
+
+        if (cats.length > 0) {
+          setCategory(cats[0])
+        }
+
+        // 👑 VERIFICAR OWNER (AGORA CORRETO)
+        const res = await axios.get(
+  `http://127.0.0.1:8001/rpgs/${rpgId}`,
+  {
+    headers: { Authorization: `Bearer ${token}` },
+  }
+)
+ console.log("RPG DATA:", res.data)
+
+setIsOwner(res.data.is_owner)
+
+        const owner = res.data.is_owner
+        setIsOwner(owner)
+
+        // 💡 SUGESTÕES (SÓ SE FOR DONO)
+        if (owner) {
+          const res = await axios.get(
+            `http://127.0.0.1:8001/rpg-lore/${rpgId}/suggestions`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          )
+
+          setSuggestions(res.data || [])
+        }
       } catch (err) {
-        console.error("Erro ao carregar lore:", err)
-      } finally {
-        setLoading(false)
+        console.error(err)
       }
     }
 
-    fetchLore()
+    load()
   }, [rpgId])
 
+  // ===============================
+  // ✍️ CRIAR LORE / SUGESTÃO
+  // ===============================
   async function handleCreate() {
-    if (!title.trim() || !content.trim()) return
+    if (!title || !content || !category) return
 
-    try {
-      setCreating(true)
+    await createLore(rpgId, { title, content, category })
 
-      const newLore = await createLore(rpgId, { title, content })
+    setTitle("")
+    setContent("")
 
-      setLore((prev) => [newLore, ...prev])
-
-      setTitle("")
-      setContent("")
-    } catch (err) {
-      console.error("Erro ao criar lore:", err)
-    } finally {
-      setCreating(false)
-    }
+    const data = await getLore(rpgId)
+    setLore(Array.isArray(data) ? data : [])
   }
 
-  function startEdit(item: Lore) {
-    setEditingId(item.id)
-    setEditTitle(item.title)
-    setEditContent(item.content)
+  // ===============================
+  // ➕ CRIAR CATEGORIA
+  // ===============================
+  async function handleCreateCategory() {
+    if (!newCategory.trim()) return
+
+    const token = localStorage.getItem("token")
+
+    await axios.post(
+      `http://127.0.0.1:8001/rpg-lore/${rpgId}/categories`,
+      { name: newCategory },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    )
+
+    setCategories((prev) => [...prev, newCategory])
+    setNewCategory("")
   }
 
-  async function handleSaveEdit(id: number) {
-    try {
-      setSavingEdit(true)
+  // ===============================
+  // 📂 AGRUPAR
+  // ===============================
+  const grouped = lore.reduce<Record<string, Lore[]>>((acc, item) => {
+    const cat = item.category || "Sem categoria"
+    if (!acc[cat]) acc[cat] = []
+    acc[cat].push(item)
+    return acc
+  }, {})
 
-      const updated = await updateLore(id, {
-        title: editTitle,
-        content: editContent,
-      })
-
-      setLore((prev) =>
-        prev.map((l) => (l.id === id ? updated : l))
-      )
-
-      setEditingId(null)
-    } catch (err) {
-      console.error("Erro ao editar:", err)
-    } finally {
-      setSavingEdit(false)
-    }
+  // ===============================
+  // 🔍 FILTRO
+  // ===============================
+  function filterItem(item: Lore) {
+    return (
+      item.title.toLowerCase().includes(search.toLowerCase()) ||
+      item.content.toLowerCase().includes(search.toLowerCase())
+    )
   }
 
-  async function handleDelete(id: number) {
-    const confirmDelete = window.confirm("Excluir esta lore?")
-    if (!confirmDelete) return
-
-    try {
-      setDeletingId(id)
-
-      await deleteLore(id)
-
-      setLore((prev) => prev.filter((l) => l.id !== id))
-    } catch (err) {
-      console.error("Erro ao deletar:", err)
-    } finally {
-      setDeletingId(null)
-    }
+  // ===============================
+  // 📂 TOGGLE
+  // ===============================
+  function toggleCategory(cat: string) {
+    setOpenCategories((prev) =>
+      prev.includes(cat)
+        ? prev.filter((c) => c !== cat)
+        : [...prev, cat]
+    )
   }
 
   return (
     <div>
-      {/* CRIAÇÃO */}
+      {/* 🔍 BUSCA */}
+      <input
+        placeholder="Buscar lore..."
+        className="w-full p-2 mb-4 bg-gray-800 rounded"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
+
+      {/* ➕ CRIAR CATEGORIA */}
+      {isOwner && (
+        <div className="mb-4">
+          <input
+            placeholder="Nova categoria"
+            className="w-full p-2 mb-2 bg-gray-800 rounded"
+            value={newCategory}
+            onChange={(e) => setNewCategory(e.target.value)}
+          />
+
+          <button
+            onClick={handleCreateCategory}
+            className="bg-blue-600 px-3 py-1 rounded"
+          >
+            Criar categoria
+          </button>
+        </div>
+      )}
+
+      {/* ✍️ CRIAR LORE */}
       <div className="mb-6">
         <input
           placeholder="Título"
@@ -114,6 +179,16 @@ export default function Lore({ rpgId }: Props) {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
+
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          className="w-full p-2 mb-2 bg-gray-800 rounded"
+        >
+          {categories.map((cat) => (
+            <option key={cat}>{cat}</option>
+          ))}
+        </select>
 
         <textarea
           placeholder="Conteúdo"
@@ -124,83 +199,71 @@ export default function Lore({ rpgId }: Props) {
 
         <button
           onClick={handleCreate}
-          disabled={creating}
-          className="mt-2 bg-purple-600 px-4 py-2 rounded disabled:opacity-50"
+          className="mt-2 bg-purple-600 px-4 py-2 rounded"
         >
-          {creating ? "Criando..." : "Criar lore"}
+          {isOwner ? "Criar lore" : "Enviar sugestão"}
         </button>
       </div>
 
-      {/* LISTA */}
-      {loading ? (
-        <p className="text-gray-400">Carregando lore...</p>
-      ) : lore.length === 0 ? (
-        <p className="text-gray-400">Nenhuma lore ainda</p>
-      ) : (
-        <div className="space-y-4">
-          {lore.map((item) => (
-            <div key={item.id} className="bg-gray-800 p-4 rounded">
-              {editingId === item.id ? (
-                <>
-                  <input
-                    className="w-full p-2 mb-2 bg-gray-700 rounded"
-                    value={editTitle}
-                    onChange={(e) => setEditTitle(e.target.value)}
-                  />
+      {/* 📚 WIKI */}
+      <div className="space-y-4">
+        {Object.keys(grouped).map((cat) => (
+          <div key={cat} className="bg-[#2a1519] rounded">
+            <div
+              onClick={() => toggleCategory(cat)}
+              className="cursor-pointer p-3 border-b border-[#3a1f24] flex justify-between"
+            >
+              <span className="font-bold">📂 {cat}</span>
+              <span>{openCategories.includes(cat) ? "▲" : "▼"}</span>
+            </div>
 
-                  <textarea
-                    className="w-full p-2 bg-gray-700 rounded"
-                    value={editContent}
-                    onChange={(e) => setEditContent(e.target.value)}
-                  />
+            {openCategories.includes(cat) && (
+              <div className="p-3 space-y-3">
+                {grouped[cat]
+                  .filter(filterItem)
+                  .map((item) => (
+                    <div key={item.id} className="bg-gray-800 p-3 rounded">
+                      <h3 className="font-bold">{item.title}</h3>
+                      <p>{item.content}</p>
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
 
-                  <div className="flex gap-2 mt-2">
-                    <button
-                      onClick={() => handleSaveEdit(item.id)}
-                      disabled={savingEdit}
-                      className="bg-green-600 px-3 py-1 rounded"
-                    >
-                      {savingEdit ? "Salvando..." : "Salvar"}
-                    </button>
+      {/* 💡 SUGESTÕES */}
+      {isOwner && (
+        <div className="mt-8">
+          <h2 className="text-lg mb-2">💡 Sugestões</h2>
 
-                    <button
-                      onClick={() => setEditingId(null)}
-                      className="bg-gray-600 px-3 py-1 rounded"
-                    >
-                      Cancelar
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <h3 className="font-bold text-purple-300">
-                    {item.title}
-                  </h3>
+          {suggestions.map((item) => (
+            <div key={item.id} className="bg-gray-800 p-3 mb-2 rounded">
+              <h3>{item.title}</h3>
+              <p>{item.content}</p>
 
-                  <p className="text-gray-300 whitespace-pre-wrap">
-                    {item.content}
-                  </p>
+              <button
+                onClick={async () => {
+                  const token = localStorage.getItem("token")
 
-                  <div className="flex gap-2 mt-3">
-                    <button
-                      onClick={() => startEdit(item)}
-                      className="text-blue-400 text-sm"
-                    >
-                      Editar
-                    </button>
+                  await axios.put(
+                    `http://127.0.0.1:8001/rpg-lore/${item.id}/approve`,
+                    {},
+                    {
+                      headers: {
+                        Authorization: `Bearer ${token}`,
+                      },
+                    }
+                  )
 
-                    <button
-                      onClick={() => handleDelete(item.id)}
-                      disabled={deletingId === item.id}
-                      className="text-red-400 text-sm"
-                    >
-                      {deletingId === item.id
-                        ? "Excluindo..."
-                        : "Excluir"}
-                    </button>
-                  </div>
-                </>
-              )}
+                  const data = await getLore(rpgId)
+                  setLore(Array.isArray(data) ? data : [])
+                }}
+                className="mt-2 bg-green-600 px-3 py-1 rounded"
+              >
+                Aprovar
+              </button>
             </div>
           ))}
         </div>

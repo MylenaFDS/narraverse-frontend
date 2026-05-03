@@ -168,14 +168,14 @@ export async function getLore(rpgId: number) {
 
 export async function createLore(
   rpgId: number,
-  data: { title: string; content: string }
+  data: { title: string; content: string; category?: string; order?: number }
 ) {
   const res = await api.post(`/rpg-lore/${rpgId}`, data)
   return res.data
 }
 export async function updateLore(
   loreId: number,
-  data: { title: string; content: string }
+  data: { title: string; content: string; category?: string; order?: number }
 ) {
   const res = await api.put(`/rpg-lore/item/${loreId}`, data)
   return res.data

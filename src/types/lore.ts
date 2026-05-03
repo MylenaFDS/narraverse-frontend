@@ -3,4 +3,6 @@ export type Lore = {
   title: string
   content: string
   is_approved: boolean
+  category?: string
+  order?: number
 }
