@@ -111,21 +111,40 @@ export default function Lore({ rpgId }: Props) {
   // ➕ CATEGORIA
   // ===============================
   async function handleCreateCategory() {
-    if (!newCategory.trim()) return
+  if (!newCategory.trim()) return
 
-    const token = localStorage.getItem("token")
+  const token = localStorage.getItem("token")
 
+  try {
     await axios.post(
       `http://127.0.0.1:8001/rpg-lore/${rpgId}/categories`,
       { name: newCategory },
       {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
     )
 
-    setCategories((prev) => [...prev, newCategory])
+    // 🔥 RECARREGA DO BACKEND (não confia no state)
+    const catRes = await axios.get(
+      `http://127.0.0.1:8001/rpg-lore/${rpgId}/categories`
+    )
+
+    setCategories(catRes.data || [])
     setNewCategory("")
+
+  } catch (err: unknown) {
+    console.error(err)
+
+    // 🔥 MOSTRAR ERRO REAL
+    if (err instanceof Error && (err as unknown as { response: { data: { detail: string } } }).response?.data?.detail) {
+      alert((err as unknown as { response: { data: { detail: string } } }).response.data.detail)
+    } else {
+      alert("Erro ao criar categoria")
+    }
   }
+}
 
   // ===============================
   // 🔄 DRAG
