@@ -18,18 +18,21 @@ export default function Lore({ rpgId }: Props) {
   const [category, setCategory] = useState("")
   const [search, setSearch] = useState("")
   const [isOwner, setIsOwner] = useState<boolean | null>(null)
-  const [openCategories, setOpenCategories] = useState<string[]>([])
+
+  const [editingId, setEditingId] = useState<number | null>(null)
+  const [editTitle, setEditTitle] = useState("")
+  const [editContent, setEditContent] = useState("")
+
+  const [draggedId, setDraggedId] = useState<number | null>(null)
 
   useEffect(() => {
     async function load() {
       try {
         const token = localStorage.getItem("token")
 
-        // 📚 LORE
         const loreData = await getLore(rpgId)
         setLore(Array.isArray(loreData) ? loreData : [])
 
-        // 📂 CATEGORIAS
         const catRes = await axios.get(
           `http://127.0.0.1:8001/rpg-lore/${rpgId}/categories`
         )
@@ -37,34 +40,27 @@ export default function Lore({ rpgId }: Props) {
         const cats = catRes.data || []
         setCategories(cats)
 
-        if (cats.length > 0) {
-          setCategory(cats[0])
-        }
+        if (cats.length > 0) setCategory(cats[0])
 
-        // 👑 VERIFICAR OWNER (AGORA CORRETO)
+        // 👑 OWNER
         const res = await axios.get(
-  `http://127.0.0.1:8001/rpgs/${rpgId}`,
-  {
-    headers: { Authorization: `Bearer ${token}` },
-  }
-)
- console.log("RPG DATA:", res.data)
-
-setIsOwner(res.data.is_owner)
+          `http://127.0.0.1:8001/rpgs/${rpgId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        )
 
         const owner = res.data.is_owner
         setIsOwner(owner)
 
-        // 💡 SUGESTÕES (SÓ SE FOR DONO)
         if (owner) {
-          const res = await axios.get(
+          const sug = await axios.get(
             `http://127.0.0.1:8001/rpg-lore/${rpgId}/suggestions`,
             {
               headers: { Authorization: `Bearer ${token}` },
             }
           )
-
-          setSuggestions(res.data || [])
+          setSuggestions(sug.data || [])
         }
       } catch (err) {
         console.error(err)
@@ -75,7 +71,7 @@ setIsOwner(res.data.is_owner)
   }, [rpgId])
 
   // ===============================
-  // ✍️ CRIAR LORE / SUGESTÃO
+  // ✍️ CRIAR
   // ===============================
   async function handleCreate() {
     if (!title || !content || !category) return
@@ -90,7 +86,29 @@ setIsOwner(res.data.is_owner)
   }
 
   // ===============================
-  // ➕ CRIAR CATEGORIA
+  // ✏️ EDITAR
+  // ===============================
+  async function handleSaveEdit(id: number) {
+    const token = localStorage.getItem("token")
+
+    await axios.put(
+      `http://127.0.0.1:8001/rpg-lore/${id}`,
+      {
+        title: editTitle,
+        content: editContent,
+      },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    )
+
+    const data = await getLore(rpgId)
+    setLore(Array.isArray(data) ? data : [])
+    setEditingId(null)
+  }
+
+  // ===============================
+  // ➕ CATEGORIA
   // ===============================
   async function handleCreateCategory() {
     if (!newCategory.trim()) return
@@ -101,14 +119,33 @@ setIsOwner(res.data.is_owner)
       `http://127.0.0.1:8001/rpg-lore/${rpgId}/categories`,
       { name: newCategory },
       {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       }
     )
 
     setCategories((prev) => [...prev, newCategory])
     setNewCategory("")
+  }
+
+  // ===============================
+  // 🔄 DRAG
+  // ===============================
+  function handleDragStart(id: number) {
+    setDraggedId(id)
+  }
+
+  function handleDrop(targetId: number) {
+    if (draggedId === null) return
+
+    const newLore = [...lore]
+    const fromIndex = newLore.findIndex((l) => l.id === draggedId)
+    const toIndex = newLore.findIndex((l) => l.id === targetId)
+
+    const [moved] = newLore.splice(fromIndex, 1)
+    newLore.splice(toIndex, 0, moved)
+
+    setLore(newLore)
+    setDraggedId(null)
   }
 
   // ===============================
@@ -121,9 +158,6 @@ setIsOwner(res.data.is_owner)
     return acc
   }, {})
 
-  // ===============================
-  // 🔍 FILTRO
-  // ===============================
   function filterItem(item: Lore) {
     return (
       item.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -132,27 +166,19 @@ setIsOwner(res.data.is_owner)
   }
 
   // ===============================
-  // 📂 TOGGLE
+  // UI
   // ===============================
-  function toggleCategory(cat: string) {
-    setOpenCategories((prev) =>
-      prev.includes(cat)
-        ? prev.filter((c) => c !== cat)
-        : [...prev, cat]
-    )
-  }
-
   return (
     <div>
       {/* 🔍 BUSCA */}
       <input
-        placeholder="Buscar lore..."
+        placeholder="Buscar..."
         className="w-full p-2 mb-4 bg-gray-800 rounded"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />
 
-      {/* ➕ CRIAR CATEGORIA */}
+      {/* OWNER */}
       {isOwner && (
         <div className="mb-4">
           <input
@@ -161,7 +187,6 @@ setIsOwner(res.data.is_owner)
             value={newCategory}
             onChange={(e) => setNewCategory(e.target.value)}
           />
-
           <button
             onClick={handleCreateCategory}
             className="bg-blue-600 px-3 py-1 rounded"
@@ -171,7 +196,7 @@ setIsOwner(res.data.is_owner)
         </div>
       )}
 
-      {/* ✍️ CRIAR LORE */}
+      {/* CRIAR */}
       <div className="mb-6">
         <input
           placeholder="Título"
@@ -201,40 +226,58 @@ setIsOwner(res.data.is_owner)
           onClick={handleCreate}
           className="mt-2 bg-purple-600 px-4 py-2 rounded"
         >
-          {isOwner === null ? (
-  "Carregando..."
-) : isOwner ? (
-  "Criar lore"
-) : (
-  "Enviar sugestão"
-)}
+          {isOwner ? "Criar lore" : "Enviar sugestão"}
         </button>
       </div>
 
       {/* 📚 WIKI */}
-      <div className="space-y-4">
+      <div className="space-y-6">
         {Object.keys(grouped).map((cat) => (
-          <div key={cat} className="bg-[#2a1519] rounded">
-            <div
-              onClick={() => toggleCategory(cat)}
-              className="cursor-pointer p-3 border-b border-[#3a1f24] flex justify-between"
-            >
-              <span className="font-bold">📂 {cat}</span>
-              <span>{openCategories.includes(cat) ? "▲" : "▼"}</span>
-            </div>
+          <div key={cat}>
+            <h2 className="text-xl font-bold mb-2">📂 {cat}</h2>
 
-            {openCategories.includes(cat) && (
-              <div className="p-3 space-y-3">
-                {grouped[cat]
-                  .filter(filterItem)
-                  .map((item) => (
-                    <div key={item.id} className="bg-gray-800 p-3 rounded">
-                      <h3 className="font-bold">{item.title}</h3>
-                      <p>{item.content}</p>
-                    </div>
-                  ))}
+            {grouped[cat].filter(filterItem).map((item) => (
+              <div
+                key={item.id}
+                draggable={isOwner || false}
+                onDragStart={() => handleDragStart(item.id)}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={() => handleDrop(item.id)}
+                className="bg-gray-800 p-3 mb-2 rounded cursor-pointer"
+              >
+                {editingId === item.id ? (
+                  <>
+                    <input
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
+                      onBlur={() => handleSaveEdit(item.id)}
+                      className="w-full bg-gray-700 mb-2 p-1"
+                    />
+                    <textarea
+                      value={editContent}
+                      onChange={(e) => setEditContent(e.target.value)}
+                      onBlur={() => handleSaveEdit(item.id)}
+                      className="w-full bg-gray-700 p-1"
+                    />
+                  </>
+                ) : (
+                  <>
+                    <h3
+                      className="font-bold"
+                      onClick={() => {
+                        if (!isOwner) return
+                        setEditingId(item.id)
+                        setEditTitle(item.title)
+                        setEditContent(item.content)
+                      }}
+                    >
+                      {item.title}
+                    </h3>
+                    <p>{item.content}</p>
+                  </>
+                )}
               </div>
-            )}
+            ))}
           </div>
         ))}
       </div>
