@@ -106,6 +106,26 @@ export default function Lore({ rpgId }: Props) {
     setLore(Array.isArray(data) ? data : [])
     setEditingId(null)
   }
+ 
+  // ===============================
+// 🗑️ DELETAR
+// ===============================
+async function handleDelete(id: number) {
+  const confirmDelete = confirm("Tem certeza que deseja excluir?")
+  if (!confirmDelete) return
+
+  const token = localStorage.getItem("token")
+
+  await axios.delete(
+    `http://127.0.0.1:8001/rpg-lore/${id}`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  )
+
+  const data = await getLore(rpgId)
+  setLore(Array.isArray(data) ? data : [])
+}
 
   // ===============================
   // ➕ CATEGORIA
@@ -265,21 +285,36 @@ export default function Lore({ rpgId }: Props) {
                 className="bg-gray-800 p-3 mb-2 rounded cursor-pointer"
               >
                 {editingId === item.id ? (
-                  <>
-                    <input
-                      value={editTitle}
-                      onChange={(e) => setEditTitle(e.target.value)}
-                      onBlur={() => handleSaveEdit(item.id)}
-                      className="w-full bg-gray-700 mb-2 p-1"
-                    />
-                    <textarea
-                      value={editContent}
-                      onChange={(e) => setEditContent(e.target.value)}
-                      onBlur={() => handleSaveEdit(item.id)}
-                      className="w-full bg-gray-700 p-1"
-                    />
-                  </>
-                ) : (
+  <>
+    <input
+      value={editTitle}
+      onChange={(e) => setEditTitle(e.target.value)}
+      className="w-full bg-gray-700 mb-2 p-1"
+    />
+
+    <textarea
+      value={editContent}
+      onChange={(e) => setEditContent(e.target.value)}
+      className="w-full bg-gray-700 p-1"
+    />
+
+    <div className="flex gap-2 mt-2">
+      <button
+        onClick={() => handleSaveEdit(item.id)}
+        className="bg-green-600 px-2 py-1 rounded"
+      >
+        Salvar
+      </button>
+
+      <button
+        onClick={() => setEditingId(null)}
+        className="bg-gray-600 px-2 py-1 rounded"
+      >
+        Cancelar
+      </button>
+    </div>
+  </>
+) : (
                   <>
                     <h3
                       className="font-bold"
@@ -293,6 +328,14 @@ export default function Lore({ rpgId }: Props) {
                       {item.title}
                     </h3>
                     <p>{item.content}</p>
+                    {isOwner && (
+  <button
+    onClick={() => handleDelete(item.id)}
+    className="mt-2 bg-red-600 px-2 py-1 rounded text-sm"
+  >
+    Excluir
+  </button>
+)}
                   </>
                 )}
               </div>
