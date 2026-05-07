@@ -542,117 +542,132 @@ export default function Lore({ rpgId }: Props) {
                         </div>
                       </>
                     ) : (
-                      <div className="flex justify-between gap-4">
-                        <div className="flex-1">
-                          <h3 className="text-2xl font-bold mb-2">
-                            {item.title}
-                          </h3>
+                      <div className="flex flex-col">
+  <div className="flex-1">
+    <h3 className="text-2xl font-bold mb-3">
+      {item.title}
+    </h3>
 
-                          <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">
-                            {item.content}
-                          </p>
-                        </div>
-
-                        {isOwner && (
-  <div
-    className="
-      opacity-0
-      group-hover:opacity-100
-      transition-all
-      duration-200
-      flex
-      items-start
-      gap-2
-    "
-  >
-    {/* EDITAR */}
-    <button
-      onClick={() => {
-        setEditingId(item.id)
-
-        setEditTitle(item.title)
-
-        setEditContent(item.content)
-      }}
+    <p
       className="
-        flex
-        items-center
-        gap-2
-
-        bg-[#232329]
-        hover:bg-yellow-500/15
-
-        border
-        border-[#34343c]
-        hover:border-yellow-500/40
-
         text-gray-300
-        hover:text-yellow-300
-
-        px-3
-        py-2
-
-        rounded-xl
-
-        transition-all
-        duration-200
-
-        shadow-sm
-        hover:shadow-yellow-500/10
+        whitespace-pre-wrap
+        leading-relaxed
       "
     >
-      <span className="text-sm">
-        ✏️
-      </span>
-
-      <span className="text-sm font-medium">
-        Editar
-      </span>
-    </button>
-
-    {/* DELETAR */}
-    <button
-      onClick={() =>
-        handleDelete(item.id)
-      }
-      className="
-        flex
-        items-center
-        gap-2
-
-        bg-[#232329]
-        hover:bg-red-500/15
-
-        border
-        border-[#34343c]
-        hover:border-red-500/40
-
-        text-gray-300
-        hover:text-red-300
-
-        px-3
-        py-2
-
-        rounded-xl
-
-        transition-all
-        duration-200
-
-        shadow-sm
-        hover:shadow-red-500/10
-      "
-    >
-      <span className="text-sm">
-        🗑️
-      </span>
-
-      <span className="text-sm font-medium">
-        Excluir
-      </span>
-    </button>
+      {item.content}
+    </p>
   </div>
-)}
-                      </div>
+
+  {/* BOTÕES */}
+  {isOwner && (
+    <div
+      className="
+        mt-5
+        pt-4
+
+        border-t
+        border-[#2a2a30]
+
+        opacity-0
+        group-hover:opacity-100
+
+        transition-all
+        duration-200
+
+        flex
+        items-center
+        gap-2
+      "
+    >
+      {/* EDITAR */}
+      <button
+        onClick={() => {
+          setEditingId(item.id)
+
+          setEditTitle(item.title)
+
+          setEditContent(item.content)
+        }}
+        className="
+          flex
+          items-center
+          gap-2
+
+          bg-[#232329]
+          hover:bg-yellow-500/15
+
+          border
+          border-[#34343c]
+          hover:border-yellow-500/40
+
+          text-gray-300
+          hover:text-yellow-300
+
+          px-3
+          py-2
+
+          rounded-xl
+
+          transition-all
+          duration-200
+
+          shadow-sm
+          hover:shadow-yellow-500/10
+        "
+      >
+        <span className="text-sm">
+          ✏️
+        </span>
+
+        <span className="text-sm font-medium">
+          Editar
+        </span>
+      </button>
+
+      {/* DELETAR */}
+      <button
+        onClick={() =>
+          handleDelete(item.id)
+        }
+        className="
+          flex
+          items-center
+          gap-2
+
+          bg-[#232329]
+          hover:bg-red-500/15
+
+          border
+          border-[#34343c]
+          hover:border-red-500/40
+
+          text-gray-300
+          hover:text-red-300
+
+          px-3
+          py-2
+
+          rounded-xl
+
+          transition-all
+          duration-200
+
+          shadow-sm
+          hover:shadow-red-500/10
+        "
+      >
+        <span className="text-sm">
+          🗑️
+        </span>
+
+        <span className="text-sm font-medium">
+          Excluir
+        </span>
+      </button>
+    </div>
+  )}
+</div>
                     )}
                   </div>
                 ))}
