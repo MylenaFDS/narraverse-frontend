@@ -31,23 +31,21 @@ export default function Lore({ rpgId }: Props) {
       try {
         const token = localStorage.getItem("token")
 
-        // 📚 LORE
         const loreData = await getLore(rpgId)
         setLore(Array.isArray(loreData) ? loreData : [])
 
-        // 📂 CATEGORIAS
         const catRes = await axios.get(
           `http://127.0.0.1:8001/rpg-lore/${rpgId}/categories`
         )
 
         const cats = catRes.data || []
+
         setCategories(cats)
 
         if (cats.length > 0) {
           setCategory(cats[0])
         }
 
-        // 👑 OWNER
         const res = await axios.get(
           `http://127.0.0.1:8001/rpgs/${rpgId}`,
           {
@@ -60,7 +58,6 @@ export default function Lore({ rpgId }: Props) {
         const owner = res.data.is_owner
         setIsOwner(owner)
 
-        // 💡 SUGESTÕES
         if (owner) {
           const sug = await axios.get(
             `http://127.0.0.1:8001/rpg-lore/${rpgId}/suggestions`,
@@ -120,6 +117,7 @@ export default function Lore({ rpgId }: Props) {
     )
 
     const data = await getLore(rpgId)
+
     setLore(Array.isArray(data) ? data : [])
 
     setEditingId(null)
@@ -147,6 +145,7 @@ export default function Lore({ rpgId }: Props) {
     )
 
     const data = await getLore(rpgId)
+
     setLore(Array.isArray(data) ? data : [])
   }
 
@@ -176,36 +175,10 @@ export default function Lore({ rpgId }: Props) {
       )
 
       setCategories(catRes.data || [])
-      setNewCategory("")
-    } catch (err: unknown) {
-      console.error(err)
 
-      if (
-        err instanceof Error &&
-        (
-          err as unknown as {
-            response: {
-              data: {
-                detail: string
-              }
-            }
-          }
-        ).response?.data?.detail
-      ) {
-        alert(
-          (
-            err as unknown as {
-              response: {
-                data: {
-                  detail: string
-                }
-              }
-            }
-          ).response.data.detail
-        )
-      } else {
-        alert("Erro ao criar categoria")
-      }
+      setNewCategory("")
+    } catch (err) {
+      console.error(err)
     }
   }
 
@@ -234,6 +207,7 @@ export default function Lore({ rpgId }: Props) {
     newLore.splice(toIndex, 0, moved)
 
     setLore(newLore)
+
     setDraggedId(null)
   }
 
@@ -281,21 +255,21 @@ export default function Lore({ rpgId }: Props) {
         </h1>
 
         <p className="text-gray-400">
-          Organize a lore do mundo, facções,
-          personagens, política e segredos.
+          Organize a história, política,
+          facções, personagens e segredos do mundo.
         </p>
       </div>
 
-      {/* 🔍 SEARCH */}
+      {/* SEARCH */}
       <div className="mb-8">
         <input
-          placeholder="Buscar na lore..."
+          placeholder="Buscar lore..."
           className="
             w-full
             bg-[#1c1c1f]
             border
             border-[#2a2a30]
-            rounded-xl
+            rounded-2xl
             p-4
             outline-none
             focus:border-purple-500
@@ -306,7 +280,7 @@ export default function Lore({ rpgId }: Props) {
         />
       </div>
 
-      {/* OWNER PANEL */}
+      {/* ADMIN */}
       {isOwner && (
         <div
           className="
@@ -319,7 +293,7 @@ export default function Lore({ rpgId }: Props) {
           "
         >
           <h2 className="text-lg font-bold mb-4">
-            ⚙️ Administração da Wiki
+            ⚙️ Administração
           </h2>
 
           <div className="flex gap-3">
@@ -410,7 +384,7 @@ export default function Lore({ rpgId }: Props) {
           </select>
 
           <textarea
-            placeholder="Conteúdo da lore..."
+            placeholder="Conteúdo..."
             className="
               w-full
               bg-[#232329]
@@ -449,7 +423,6 @@ export default function Lore({ rpgId }: Props) {
       <div className="space-y-10">
         {Object.keys(grouped).map((cat) => (
           <div key={cat}>
-            {/* CATEGORY */}
             <div
               className="
                 sticky
@@ -467,7 +440,6 @@ export default function Lore({ rpgId }: Props) {
               </h2>
             </div>
 
-            {/* ITEMS */}
             <div className="space-y-3">
               {grouped[cat]
                 .filter(filterItem)
@@ -570,77 +542,117 @@ export default function Lore({ rpgId }: Props) {
                         </div>
                       </>
                     ) : (
-                      <>
-                        {/* TOP BAR */}
-                        <div className="flex justify-between items-start gap-4">
-                          <div className="flex-1">
-                            <h3 className="text-2xl font-bold mb-2">
-                              {item.title}
-                            </h3>
+                      <div className="flex justify-between gap-4">
+                        <div className="flex-1">
+                          <h3 className="text-2xl font-bold mb-2">
+                            {item.title}
+                          </h3>
 
-                            <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">
-                              {item.content}
-                            </p>
-                          </div>
-
-                          {/* ACTIONS */}
-                          {isOwner && (
-                            <div
-                              className="
-                                opacity-0
-                                group-hover:opacity-100
-                                transition
-                                flex
-                                gap-2
-                              "
-                            >
-                              <button
-                                onClick={() => {
-                                  setEditingId(
-                                    item.id
-                                  )
-
-                                  setEditTitle(
-                                    item.title
-                                  )
-
-                                  setEditContent(
-                                    item.content
-                                  )
-                                }}
-                                className="
-                                  bg-yellow-600
-                                  hover:bg-yellow-500
-                                  px-3
-                                  py-1
-                                  rounded-lg
-                                  text-sm
-                                "
-                              >
-                                ✏️
-                              </button>
-
-                              <button
-                                onClick={() =>
-                                  handleDelete(
-                                    item.id
-                                  )
-                                }
-                                className="
-                                  bg-red-600
-                                  hover:bg-red-500
-                                  px-3
-                                  py-1
-                                  rounded-lg
-                                  text-sm
-                                "
-                              >
-                                🗑️
-                              </button>
-                            </div>
-                          )}
+                          <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">
+                            {item.content}
+                          </p>
                         </div>
-                      </>
+
+                        {isOwner && (
+  <div
+    className="
+      opacity-0
+      group-hover:opacity-100
+      transition-all
+      duration-200
+      flex
+      items-start
+      gap-2
+    "
+  >
+    {/* EDITAR */}
+    <button
+      onClick={() => {
+        setEditingId(item.id)
+
+        setEditTitle(item.title)
+
+        setEditContent(item.content)
+      }}
+      className="
+        flex
+        items-center
+        gap-2
+
+        bg-[#232329]
+        hover:bg-yellow-500/15
+
+        border
+        border-[#34343c]
+        hover:border-yellow-500/40
+
+        text-gray-300
+        hover:text-yellow-300
+
+        px-3
+        py-2
+
+        rounded-xl
+
+        transition-all
+        duration-200
+
+        shadow-sm
+        hover:shadow-yellow-500/10
+      "
+    >
+      <span className="text-sm">
+        ✏️
+      </span>
+
+      <span className="text-sm font-medium">
+        Editar
+      </span>
+    </button>
+
+    {/* DELETAR */}
+    <button
+      onClick={() =>
+        handleDelete(item.id)
+      }
+      className="
+        flex
+        items-center
+        gap-2
+
+        bg-[#232329]
+        hover:bg-red-500/15
+
+        border
+        border-[#34343c]
+        hover:border-red-500/40
+
+        text-gray-300
+        hover:text-red-300
+
+        px-3
+        py-2
+
+        rounded-xl
+
+        transition-all
+        duration-200
+
+        shadow-sm
+        hover:shadow-red-500/10
+      "
+    >
+      <span className="text-sm">
+        🗑️
+      </span>
+
+      <span className="text-sm font-medium">
+        Excluir
+      </span>
+    </button>
+  </div>
+)}
+                      </div>
                     )}
                   </div>
                 ))}
@@ -649,7 +661,7 @@ export default function Lore({ rpgId }: Props) {
         ))}
       </div>
 
-      {/* 💡 SUGESTÕES */}
+      {/* SUGESTÕES */}
       {isOwner && suggestions.length > 0 && (
         <div className="mt-16">
           <h2 className="text-3xl font-black mb-6">
