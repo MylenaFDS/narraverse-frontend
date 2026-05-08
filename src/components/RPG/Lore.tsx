@@ -45,11 +45,13 @@ export default function Lore({ rpgId }: Props) {
 
         const cats = catRes.data || []
 
-        setCategories(cats)
+        const finalCats = cats.includes("Mundo")
+  ? cats
+  : ["Mundo", ...cats]
 
-        if (cats.length > 0) {
-          setCategory(cats[0])
-        }
+setCategories(finalCats)
+
+setCategory("Mundo")
 
         const res = await axios.get(
           `http://127.0.0.1:8001/rpgs/${rpgId}`,
@@ -272,7 +274,49 @@ export default function Lore({ rpgId }: Props) {
         .includes(search.toLowerCase())
     )
   }
+const worldLore = lore.filter(
+  (item) => item.category === "Mundo"
+)
 
+const mapRegions = worldLore.map(
+  (item, index) => {
+    const positions = [
+      {
+        top: "20%",
+        left: "25%",
+        color: "bg-purple-500",
+      },
+      {
+        bottom: "30%",
+        right: "20%",
+        color: "bg-red-500",
+      },
+      {
+        top: "50%",
+        right: "35%",
+        color: "bg-blue-500",
+      },
+      {
+        top: "15%",
+        right: "10%",
+        color: "bg-green-500",
+      },
+      {
+        bottom: "15%",
+        left: "20%",
+        color: "bg-yellow-500",
+      },
+    ]
+
+    const pos =
+      positions[index % positions.length]
+
+    return {
+      ...item,
+      ...pos,
+    }
+  }
+)
   // ===============================
   // UI
   // ===============================
@@ -377,76 +421,42 @@ export default function Lore({ rpgId }: Props) {
               Área do mapa interativo
             </span>
 
-            {/* REGIÃO 1 */}
-            <button
-              className="
-                absolute
-                top-[20%]
-                left-[25%]
+            {mapRegions.map((region) => (
+  <button
+    key={region.id}
+    title={region.title}
+    className={`
+      absolute
+      w-5
+      h-5
+      rounded-full
+      ${region.color}
 
-                w-5
-                h-5
+      shadow-lg
+      hover:scale-125
+      transition
+    `}
+    style={{
+      top: region.top,
+      left: region.left,
+      right: region.right,
+      bottom: region.bottom,
+    }}
+    onClick={() => {
+      const el = document.getElementById(
+        `lore-${region.id}`
+      )
 
-                rounded-full
-
-                bg-purple-500
-
-                shadow-lg
-                shadow-purple-500/40
-
-                hover:scale-125
-                transition
-              "
-              title="Capital Imperial"
-            />
-
-            {/* REGIÃO 2 */}
-            <button
-              className="
-                absolute
-                bottom-[30%]
-                right-[20%]
-
-                w-5
-                h-5
-
-                rounded-full
-
-                bg-red-500
-
-                shadow-lg
-                shadow-red-500/40
-
-                hover:scale-125
-                transition
-              "
-              title="Terras Proibidas"
-            />
-
-            {/* REGIÃO 3 */}
-            <button
-              className="
-                absolute
-                top-[50%]
-                right-[35%]
-
-                w-5
-                h-5
-
-                rounded-full
-
-                bg-blue-500
-
-                shadow-lg
-                shadow-blue-500/40
-
-                hover:scale-125
-                transition
-              "
-              title="Porto Real"
-            />
+      el?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      })
+    }}
+  />
+))}
           </div>
         </div>
+        
       </div>
 
       {/* ADMIN */}
@@ -625,6 +635,7 @@ export default function Lore({ rpgId }: Props) {
                   .filter(filterItem)
                   .map((item) => (
                     <div
+                     id={`lore-${item.id}`}
                       key={item.id}
                       draggable={
                         isOwner || false
