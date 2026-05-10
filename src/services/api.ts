@@ -215,3 +215,35 @@ export async function updateSheetField(
   const res = await api.put(`/rpg-sheet-fields/${fieldId}`, data)
   return res.data
 }
+
+// ===============================
+// 🗺️ MAPA
+// ===============================
+
+export async function createMapRegion(
+  rpgId: number,
+  data: {
+    name: string
+    lore_id?: number
+    pos_x: number
+    pos_y: number
+    color?: string
+  }
+) {
+  const res = await api.post(
+    `/rpgs/${rpgId}/map-regions`,
+    data
+  )
+
+  return res.data
+}
+
+export async function getMapRegions(
+  rpgId: number
+) {
+  const res = await api.get(
+    `/rpgs/${rpgId}/map-regions`
+  )
+
+  return res.data
+}

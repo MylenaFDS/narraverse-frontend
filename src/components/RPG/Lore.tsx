@@ -87,29 +87,97 @@ setCategory("Mundo")
   }, [rpgId])
 
   // ===============================
-  // ✍️ CRIAR
-  // ===============================
-  async function handleCreate() {
-    if (!title || !content || !category)
-      return
+// ✍️ CRIAR
+// ===============================
+async function handleCreate() {
+  if (!title || !content || !category)
+    return
 
-    await createLore(rpgId, {
+  const createdLore = await createLore(
+    rpgId,
+    {
       title,
       content,
       category,
-    })
+    }
+  )
 
-    setTitle("")
-    setContent("")
+  // 🔥 cria região automática no mapa
+  if (category === "Mundo") {
+    try {
+      const positions = [
+        {
+          pos_x: 25,
+          pos_y: 20,
+          color: "#a855f7",
+        },
+        {
+          pos_x: 75,
+          pos_y: 30,
+          color: "#ef4444",
+        },
+        {
+          pos_x: 65,
+          pos_y: 50,
+          color: "#3b82f6",
+        },
+        {
+          pos_x: 85,
+          pos_y: 15,
+          color: "#22c55e",
+        },
+        {
+          pos_x: 20,
+          pos_y: 80,
+          color: "#eab308",
+        },
+      ]
 
-    const data = await getLore(rpgId)
+      const pos =
+        positions[
+          Math.floor(
+            Math.random() *
+              positions.length
+          )
+        ]
 
-    setLore(
-      Array.isArray(data)
-        ? data
-        : []
-    )
+      const token =
+        localStorage.getItem("token")
+
+      await axios.post(
+        `http://127.0.0.1:8001/rpgs/${rpgId}/map-regions`,
+        {
+          name: title,
+          lore_id: createdLore.id,
+          pos_x: pos.pos_x,
+          pos_y: pos.pos_y,
+          color: pos.color,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+    } catch (err) {
+      console.error(
+        "Erro criando região:",
+        err
+      )
+    }
   }
+
+  setTitle("")
+  setContent("")
+
+  const data = await getLore(rpgId)
+
+  setLore(
+    Array.isArray(data)
+      ? data
+      : []
+  )
+}
 
   // ===============================
   // ✏️ EDITAR
