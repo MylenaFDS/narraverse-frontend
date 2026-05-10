@@ -1,11 +1,20 @@
 import { useEffect, useState } from "react"
-import { getLore, createLore } from "../../services/api"
+import { getLore, createLore, createMapRegion, getMapRegions } from "../../services/api"
 import axios from "axios"
 import type { Lore } from "../../types/lore"
 
 type Props = {
   rpgId: number
 }
+
+type MapRegion = 
+{ id: number 
+  name: string 
+  lore_id?: number | null 
+  pos_x: number 
+  pos_y: number 
+  color: string 
+  rpg_id: number }
 
 export default function Lore({ rpgId }: Props) {
   const [lore, setLore] = useState<Lore[]>([])
@@ -25,6 +34,7 @@ export default function Lore({ rpgId }: Props) {
   const [editContent, setEditContent] = useState("")
 
   const [draggedId, setDraggedId] = useState<number | null>(null)
+  const [mapRegions, setMapRegions] =useState<MapRegion[]>([])
 
   useEffect(() => {
     async function load() {
@@ -38,7 +48,12 @@ export default function Lore({ rpgId }: Props) {
             ? loreData
             : []
         )
-
+      const mapData = await getMapRegions(rpgId)
+       setMapRegions( 
+        Array.isArray(mapData)
+         ? mapData 
+         : [] 
+        )
         const catRes = await axios.get(
           `http://127.0.0.1:8001/rpg-lore/${rpgId}/categories`
         )
@@ -104,68 +119,57 @@ async function handleCreate() {
 
   // 🔥 cria região automática no mapa
   if (category === "Mundo") {
-    try {
-      const positions = [
-        {
-          pos_x: 25,
-          pos_y: 20,
-          color: "#a855f7",
-        },
-        {
-          pos_x: 75,
-          pos_y: 30,
-          color: "#ef4444",
-        },
-        {
-          pos_x: 65,
-          pos_y: 50,
-          color: "#3b82f6",
-        },
-        {
-          pos_x: 85,
-          pos_y: 15,
-          color: "#22c55e",
-        },
-        {
-          pos_x: 20,
-          pos_y: 80,
-          color: "#eab308",
-        },
+  try {
+    const positions = [
+      {
+        pos_x: 25,
+        pos_y: 20,
+        color: "#a855f7",
+      },
+      {
+        pos_x: 75,
+        pos_y: 30,
+        color: "#ef4444",
+      },
+      {
+        pos_x: 65,
+        pos_y: 50,
+        color: "#3b82f6",
+      },
+      {
+        pos_x: 85,
+        pos_y: 15,
+        color: "#22c55e",
+      },
+      {
+        pos_x: 20,
+        pos_y: 80,
+        color: "#eab308",
+      },
+    ]
+
+    const pos =
+      positions[
+        Math.floor(
+          Math.random() *
+            positions.length
+        )
       ]
 
-      const pos =
-        positions[
-          Math.floor(
-            Math.random() *
-              positions.length
-          )
-        ]
-
-      const token =
-        localStorage.getItem("token")
-
-      await axios.post(
-        `http://127.0.0.1:8001/rpgs/${rpgId}/map-regions`,
-        {
-          name: title,
-          lore_id: createdLore.id,
-          pos_x: pos.pos_x,
-          pos_y: pos.pos_y,
-          color: pos.color,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      )
-    } catch (err) {
-      console.error(
-        "Erro criando região:",
-        err
-      )
-    }
+    await createMapRegion(rpgId, {
+      name: title,
+      lore_id: createdLore.id,
+      pos_x: pos.pos_x,
+      pos_y: pos.pos_y,
+      color: pos.color,
+    })
+  } catch (err) {
+    console.error(
+      "Erro criando região:",
+      err
+    )
   }
+}
 
   setTitle("")
   setContent("")
@@ -342,49 +346,9 @@ async function handleCreate() {
         .includes(search.toLowerCase())
     )
   }
-const worldLore = lore.filter(
-  (item) => item.category === "Mundo"
-)
 
-const mapRegions = worldLore.map(
-  (item, index) => {
-    const positions = [
-      {
-        top: "20%",
-        left: "25%",
-        color: "bg-purple-500",
-      },
-      {
-        bottom: "30%",
-        right: "20%",
-        color: "bg-red-500",
-      },
-      {
-        top: "50%",
-        right: "35%",
-        color: "bg-blue-500",
-      },
-      {
-        top: "15%",
-        right: "10%",
-        color: "bg-green-500",
-      },
-      {
-        bottom: "15%",
-        left: "20%",
-        color: "bg-yellow-500",
-      },
-    ]
 
-    const pos =
-      positions[index % positions.length]
 
-    return {
-      ...item,
-      ...pos,
-    }
-  }
-)
   // ===============================
   // UI
   // ===============================
@@ -492,27 +456,24 @@ const mapRegions = worldLore.map(
             {mapRegions.map((region) => (
   <button
     key={region.id}
-    title={region.title}
-    className={`
+    title={region.name}
+    className="
       absolute
       w-5
       h-5
       rounded-full
-      ${region.color}
-
       shadow-lg
       hover:scale-125
       transition
-    `}
+    "
     style={{
-      top: region.top,
-      left: region.left,
-      right: region.right,
-      bottom: region.bottom,
+      top: `${region.pos_y}%`,
+      left: `${region.pos_x}%`,
+      backgroundColor: region.color,
     }}
     onClick={() => {
       const el = document.getElementById(
-        `lore-${region.id}`
+        `lore-${region.lore_id}`
       )
 
       el?.scrollIntoView({
