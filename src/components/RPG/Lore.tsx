@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react"
-import { getLore, createLore, createMapRegion, getMapRegions } from "../../services/api"
+import { useEffect, useState, useRef } from "react"
+import { getLore, createLore, createMapRegion, getMapRegions,updateMapRegionPosition } from "../../services/api"
 import axios from "axios"
 import type { Lore } from "../../types/lore"
 
@@ -35,6 +35,7 @@ export default function Lore({ rpgId }: Props) {
 
   const [draggedId, setDraggedId] = useState<number | null>(null)
   const [mapRegions, setMapRegions] =useState<MapRegion[]>([])
+  const mapRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     async function load() {
@@ -299,6 +300,8 @@ setMapRegions((prev) => [
   function handleDragStart(id: number) {
     setDraggedId(id)
   }
+  const [draggingRegion, setDraggingRegion] =
+  useState<number | null>(null)
 
   function handleDrop(targetId: number) {
     if (draggedId === null) return
@@ -401,6 +404,7 @@ setMapRegions((prev) => [
       </div>
 
       {/* MAPA */}
+      
       <div
         className="
           mb-10
@@ -446,6 +450,7 @@ setMapRegions((prev) => [
           />
 
           <div
+          ref={mapRef}
             className="
               relative
               w-[80%]
@@ -475,6 +480,72 @@ setMapRegions((prev) => [
   <button
     key={region.id}
     title={region.name}
+
+    draggable={false}
+
+    onMouseDown={() => {
+      setDraggingRegion(region.id)
+    }}
+
+    onMouseUp={async (e) => {
+      if (
+        draggingRegion !== region.id ||
+        !mapRef.current
+      )
+        return
+
+      const rect =
+        mapRef.current.getBoundingClientRect()
+
+      const x =
+        ((e.clientX - rect.left) /
+          rect.width) *
+        100
+
+      const y =
+        ((e.clientY - rect.top) /
+          rect.height) *
+        100
+
+      const finalX = Math.max(
+        5,
+        Math.min(95, x)
+      )
+
+      const finalY = Math.max(
+        5,
+        Math.min(95, y)
+      )
+
+      // 🔥 atualiza local instantâneo
+      setMapRegions((prev) =>
+        prev.map((r) =>
+          r.id === region.id
+            ? {
+                ...r,
+                pos_x: finalX,
+                pos_y: finalY,
+              }
+            : r
+        )
+      )
+
+      // 🔥 salva backend
+      try {
+        await updateMapRegionPosition(
+          region.id,
+          {
+            pos_x: Math.round(finalX),
+            pos_y: Math.round(finalY),
+          }
+        )
+      } catch (err) {
+        console.error(err)
+      }
+
+      setDraggingRegion(null)
+    }}
+
     className="
       absolute
       z-10
@@ -484,22 +555,14 @@ setMapRegions((prev) => [
       shadow-lg
       hover:scale-125
       transition
+      cursor-move
     "
     style={{
-  top: `${Math.max(10, Math.min(region.pos_y, 90))}%`,
-  left: `${Math.max(10, Math.min(region.pos_x, 90))}%`,
-  backgroundColor: region.color,
-  transform: "translate(-50%, -50%)",
-}}
-    onClick={() => {
-      const el = document.getElementById(
-        `lore-${region.lore_id}`
-      )
-
-      el?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      })
+      top: `${region.pos_y}%`,
+      left: `${region.pos_x}%`,
+      backgroundColor: region.color,
+      transform:
+        "translate(-50%, -50%)",
     }}
   />
 ))}

@@ -247,3 +247,18 @@ export async function getMapRegions(
 
   return res.data
 }
+
+export async function updateMapRegionPosition(
+  regionId: number,
+  data: {
+    pos_x: number
+    pos_y: number
+  }
+) {
+  const res = await api.put(
+    `/rpg-map/${regionId}/position`,
+    data
+  )
+
+  return res.data
+}
