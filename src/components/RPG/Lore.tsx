@@ -36,6 +36,7 @@ export default function Lore({ rpgId }: Props) {
   const [draggedId, setDraggedId] = useState<number | null>(null)
   const [mapRegions, setMapRegions] =useState<MapRegion[]>([])
   const mapRef = useRef<HTMLDivElement | null>(null)
+  const [hasMoved, setHasMoved] =useState(false)
 
   useEffect(() => {
     async function load() {
@@ -364,11 +365,15 @@ async function handleMouseMove(
   e: React.MouseEvent<HTMLDivElement>
 ) {
   if (!isOwner) return
+
   if (
     draggingRegion === null ||
     !mapRef.current
   )
     return
+
+  // 🔥 detecta movimento real
+  setHasMoved(true)
 
   const rect =
     mapRef.current.getBoundingClientRect()
@@ -393,7 +398,6 @@ async function handleMouseMove(
     Math.min(95, y)
   )
 
-  // move instantaneamente
   setMapRegions((prev) =>
     prev.map((r) =>
       r.id === draggingRegion
@@ -430,6 +434,10 @@ async function handleMouseUp() {
   }
 
   setDraggingRegion(null)
+
+setTimeout(() => {
+  setHasMoved(false)
+}, 0)
 }
 
   // ===============================
@@ -551,35 +559,70 @@ onMouseLeave={handleMouseUp}
 
             {mapRegions.map((region) => (
   <button
-    key={region.id}
-    title={region.name}
+  key={region.id}
+  title={region.name}
+  draggable={false}
 
-    draggable={false}
-   
-    onMouseDown={() => {
-  if (!isOwner) return
+  onMouseDown={() => {
+    if (isOwner) {
+      setDraggingRegion(region.id)
+      setHasMoved(false)
+    }
+  }}
 
-  setDraggingRegion(region.id)
-}}
-    className="
-      absolute
-      z-10
-      w-5
-      h-5
-      rounded-full
-      shadow-lg
-      hover:scale-125
-      transition
-      cursor-move
-    "
-    style={{
-      top: `${region.pos_y}%`,
-      left: `${region.pos_x}%`,
-      backgroundColor: region.color,
-      transform:
-        "translate(-50%, -50%)",
-    }}
-  />
+  onClick={() => {
+    // 🔥 se arrastou → não abre
+    if (hasMoved) return
+
+    if (!region.lore_id) return
+
+    const el = document.getElementById(
+      `lore-${region.lore_id}`
+    )
+
+    if (el) {
+      el.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      })
+
+      el.classList.add(
+        "ring-2",
+        "ring-purple-500"
+      )
+
+      setTimeout(() => {
+        el.classList.remove(
+          "ring-2",
+          "ring-purple-500"
+        )
+      }, 1500)
+    }
+  }}
+
+  className={`
+    absolute
+    z-10
+    w-5
+    h-5
+    rounded-full
+    shadow-lg
+    hover:scale-125
+    transition
+    ${
+      isOwner
+        ? "cursor-move"
+        : "cursor-pointer"
+    }
+  `}
+  style={{
+    top: `${region.pos_y}%`,
+    left: `${region.pos_x}%`,
+    backgroundColor: region.color,
+    transform:
+      "translate(-50%, -50%)",
+  }}
+/>
 ))}
           </div>
         </div>
