@@ -360,7 +360,77 @@ setMapRegions((prev) => [
     )
   }
 
+async function handleMouseMove(
+  e: React.MouseEvent<HTMLDivElement>
+) {
+  if (!isOwner) return
+  if (
+    draggingRegion === null ||
+    !mapRef.current
+  )
+    return
 
+  const rect =
+    mapRef.current.getBoundingClientRect()
+
+  const x =
+    ((e.clientX - rect.left) /
+      rect.width) *
+    100
+
+  const y =
+    ((e.clientY - rect.top) /
+      rect.height) *
+    100
+
+  const finalX = Math.max(
+    5,
+    Math.min(95, x)
+  )
+
+  const finalY = Math.max(
+    5,
+    Math.min(95, y)
+  )
+
+  // move instantaneamente
+  setMapRegions((prev) =>
+    prev.map((r) =>
+      r.id === draggingRegion
+        ? {
+            ...r,
+            pos_x: finalX,
+            pos_y: finalY,
+          }
+        : r
+    )
+  )
+}
+
+async function handleMouseUp() {
+  if (draggingRegion === null)
+    return
+
+  const region = mapRegions.find(
+    (r) => r.id === draggingRegion
+  )
+
+  if (!region) return
+
+  try {
+    await updateMapRegionPosition(
+      region.id,
+      {
+        pos_x: Math.round(region.pos_x),
+        pos_y: Math.round(region.pos_y),
+      }
+    )
+  } catch (err) {
+    console.error(err)
+  }
+
+  setDraggingRegion(null)
+}
 
   // ===============================
   // UI
@@ -451,6 +521,9 @@ setMapRegions((prev) => [
 
           <div
           ref={mapRef}
+          onMouseMove={handleMouseMove}
+onMouseUp={handleMouseUp}
+onMouseLeave={handleMouseUp}
             className="
               relative
               w-[80%]
@@ -482,70 +555,12 @@ setMapRegions((prev) => [
     title={region.name}
 
     draggable={false}
-
+   
     onMouseDown={() => {
-      setDraggingRegion(region.id)
-    }}
+  if (!isOwner) return
 
-    onMouseUp={async (e) => {
-      if (
-        draggingRegion !== region.id ||
-        !mapRef.current
-      )
-        return
-
-      const rect =
-        mapRef.current.getBoundingClientRect()
-
-      const x =
-        ((e.clientX - rect.left) /
-          rect.width) *
-        100
-
-      const y =
-        ((e.clientY - rect.top) /
-          rect.height) *
-        100
-
-      const finalX = Math.max(
-        5,
-        Math.min(95, x)
-      )
-
-      const finalY = Math.max(
-        5,
-        Math.min(95, y)
-      )
-
-      // 🔥 atualiza local instantâneo
-      setMapRegions((prev) =>
-        prev.map((r) =>
-          r.id === region.id
-            ? {
-                ...r,
-                pos_x: finalX,
-                pos_y: finalY,
-              }
-            : r
-        )
-      )
-
-      // 🔥 salva backend
-      try {
-        await updateMapRegionPosition(
-          region.id,
-          {
-            pos_x: Math.round(finalX),
-            pos_y: Math.round(finalY),
-          }
-        )
-      } catch (err) {
-        console.error(err)
-      }
-
-      setDraggingRegion(null)
-    }}
-
+  setDraggingRegion(region.id)
+}}
     className="
       absolute
       z-10

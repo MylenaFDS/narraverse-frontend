@@ -256,9 +256,8 @@ export async function updateMapRegionPosition(
   }
 ) {
   const res = await api.put(
-    `/rpg-map/${regionId}/position`,
-    data
-  )
-
+  `/rpgs/map-regions/${regionId}/position`,
+  data
+)
   return res.data
 }
