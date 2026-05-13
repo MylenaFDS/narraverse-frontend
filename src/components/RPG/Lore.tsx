@@ -120,49 +120,59 @@ async function handleCreate() {
   // 🔥 cria região automática no mapa
   if (category === "Mundo") {
   try {
-    const positions = [
-      {
-        pos_x: 25,
-        pos_y: 20,
-        color: "#a855f7",
-      },
-      {
-        pos_x: 75,
-        pos_y: 30,
-        color: "#ef4444",
-      },
-      {
-        pos_x: 65,
-        pos_y: 50,
-        color: "#3b82f6",
-      },
-      {
-        pos_x: 85,
-        pos_y: 15,
-        color: "#22c55e",
-      },
-      {
-        pos_x: 20,
-        pos_y: 80,
-        color: "#eab308",
-      },
-    ]
+  let finalX = 0
+let finalY = 0
+let isTooClose = true
 
-    const pos =
-      positions[
-        Math.floor(
-          Math.random() *
-            positions.length
-        )
-      ]
+while (isTooClose) {
+  finalX =
+    Math.floor(Math.random() * 70) + 15
 
-    await createMapRegion(rpgId, {
-      name: title,
-      lore_id: createdLore.id,
-      pos_x: pos.pos_x,
-      pos_y: pos.pos_y,
-      color: pos.color,
-    })
+  finalY =
+    Math.floor(Math.random() * 60) + 20
+
+  isTooClose = mapRegions.some((region) => {
+    const dx =
+      region.pos_x - finalX
+
+    const dy =
+      region.pos_y - finalY
+
+    const distance = Math.sqrt(
+      dx * dx + dy * dy
+    )
+
+    return distance < 10
+  })
+}
+   const colors = [
+  "#a855f7",
+  "#ef4444",
+  "#3b82f6",
+  "#22c55e",
+  "#eab308",
+]
+
+const color =
+  colors[
+    Math.floor(
+      Math.random() * colors.length
+    )
+  ]
+
+const newRegion =
+  await createMapRegion(rpgId, {
+    name: title,
+    lore_id: createdLore.id,
+    pos_x: finalX,
+    pos_y: finalY,
+    color,
+  })
+
+setMapRegions((prev) => [
+  ...prev,
+  newRegion,
+])
   } catch (err) {
     console.error(
       "Erro criando região:",
@@ -449,9 +459,17 @@ async function handleCreate() {
               justify-center
             "
           >
-            <span className="text-gray-500 text-lg">
-              Área do mapa interativo
-            </span>
+            <span
+  className="
+    absolute
+    text-gray-500/40
+    text-lg
+    pointer-events-none
+    z-0
+  "
+>
+  Área do mapa interativo
+</span>
 
             {mapRegions.map((region) => (
   <button
@@ -459,6 +477,7 @@ async function handleCreate() {
     title={region.name}
     className="
       absolute
+      z-10
       w-5
       h-5
       rounded-full
@@ -467,10 +486,11 @@ async function handleCreate() {
       transition
     "
     style={{
-      top: `${region.pos_y}%`,
-      left: `${region.pos_x}%`,
-      backgroundColor: region.color,
-    }}
+  top: `${Math.max(10, Math.min(region.pos_y, 90))}%`,
+  left: `${Math.max(10, Math.min(region.pos_x, 90))}%`,
+  backgroundColor: region.color,
+  transform: "translate(-50%, -50%)",
+}}
     onClick={() => {
       const el = document.getElementById(
         `lore-${region.lore_id}`
