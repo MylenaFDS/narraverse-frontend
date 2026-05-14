@@ -39,7 +39,21 @@ export default function Lore({ rpgId }: Props) {
   const [hasMoved, setHasMoved] =useState(false)
   const [worldMap, setWorldMap] =useState("")
   const [selectedLore, setSelectedLore] = useState<Lore | null>(null)
-  const [zoom, setZoom] = useState<number>(1)
+  const [zoom, setZoom] = useState(1.2)
+
+const [offset, setOffset] = useState({
+  x: 0,
+  y: 0,
+})
+
+const [isPanning, setIsPanning] =
+  useState(false)
+
+const [panStart, setPanStart] =
+  useState({
+    x: 0,
+    y: 0,
+  })
 
   useEffect(() => {
     async function load() {
@@ -447,25 +461,57 @@ setTimeout(() => {
   setHasMoved(false)
 }, 0)
 }
+
 // ===============================
-// 🔎 ZOOM SCROLL
+// ✋ PAN DO MAPA
+// ===============================
+function handlePanStart(
+  e: React.MouseEvent<HTMLDivElement>
+) {
+  // 🔥 não inicia pan enquanto arrasta região
+  if (draggingRegion !== null)
+    return
+
+  setIsPanning(true)
+
+  setPanStart({
+    x: e.clientX - offset.x,
+    y: e.clientY - offset.y,
+  })
+}
+
+function handlePanMove(
+  e: React.MouseEvent<HTMLDivElement>
+) {
+  if (!isPanning) return
+
+  setOffset({
+    x: e.clientX - panStart.x,
+    y: e.clientY - panStart.y,
+  })
+}
+
+function handlePanEnd() {
+  setIsPanning(false)
+}
+
+// ===============================
+// 🔍 ZOOM SCROLL
 // ===============================
 function handleWheel(
   e: React.WheelEvent<HTMLDivElement>
 ) {
   e.preventDefault()
 
-  setZoom((prev: number) => {
-    const next =
-      e.deltaY > 0
-        ? prev - 0.1
-        : prev + 0.1
+  const delta =
+    e.deltaY > 0 ? -0.1 : 0.1
 
-    return Math.min(
+  setZoom((prev: number) =>
+    Math.min(
       3,
-      Math.max(0.6, next)
+      Math.max(1, prev + delta)
     )
-  })
+  )
 }
   // ===============================
   // UI
@@ -533,15 +579,33 @@ function handleWheel(
           </p>
         </div>
 
-        <div
+       <div
   className="
     relative
     h-[520px]
-    bg-[#101014]
+    bg-[#0b0b0e]
     overflow-hidden
     rounded-b-2xl
+    cursor-grab
+    active:cursor-grabbing
+    select-none
   "
+  onMouseDown={handlePanStart}
+  onMouseMove={(e) => {
+    handlePanMove(e)
+    handleMouseMove(e)
+  }}
+  onMouseUp={() => {
+    handlePanEnd()
+    handleMouseUp()
+  }}
+  onMouseLeave={() => {
+    handlePanEnd()
+    handleMouseUp()
+  }}
+  onWheel={handleWheel}
 >
+
   {/* CONTROLES DE ZOOM */}
   <div
     className="
@@ -555,10 +619,10 @@ function handleWheel(
   >
     <button
       onClick={() =>
-        setZoom((prev) =>
-          Math.max(0.6, prev - 0.2)
-        )
-      }
+  setZoom((prev: number) =>
+    Math.max(1, prev - 0.2)
+  )
+}
       className="
         w-10
         h-10
@@ -600,23 +664,22 @@ function handleWheel(
 
   {/* ÁREA INTERATIVA */}
   <div
-    ref={mapRef}
-    onMouseMove={handleMouseMove}
-    onMouseUp={handleMouseUp}
-    onMouseLeave={handleMouseUp}
-    onWheel={handleWheel}
-    style={{
-      transform: `scale(${zoom})`,
-      transformOrigin: "center",
-    }}
-    className="
-      relative
-      w-full
-      h-full
-      transition-transform
-      duration-100
-    "
-  >
+  ref={mapRef}
+  style={{
+    transform: `
+  translate3d(${offset.x}px, ${offset.y}px, 0)
+  scale(${zoom})
+`,
+    transformOrigin: "0 0",
+  }}
+  className="
+  absolute
+  inset-0
+  transition-transform
+  duration-75
+  will-change-transform
+"
+>
     {/* MAPA */}
     {worldMap && (
       <img
@@ -628,7 +691,7 @@ function handleWheel(
           inset-0
           w-full
           h-full
-          object-cover
+          object-contain
           select-none
           pointer-events-none
           opacity-90
