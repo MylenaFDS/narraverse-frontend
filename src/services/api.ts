@@ -261,3 +261,25 @@ export async function updateMapRegionPosition(
 )
   return res.data
 }
+
+export async function uploadMapImage(
+  rpgId: number,
+  file: File
+) {
+  const formData = new FormData()
+
+  formData.append("file", file)
+
+  const res = await api.post(
+    `/rpgs/${rpgId}/map-image`,
+    formData,
+    {
+      headers: {
+        "Content-Type":
+          "multipart/form-data",
+      },
+    }
+  )
+
+  return res.data
+}

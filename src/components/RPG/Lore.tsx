@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react"
-import { getLore, createLore, createMapRegion, getMapRegions,updateMapRegionPosition } from "../../services/api"
+import { getLore, createLore, createMapRegion, getMapRegions,updateMapRegionPosition, uploadMapImage } from "../../services/api"
 import axios from "axios"
 import type { Lore } from "../../types/lore"
 
@@ -37,6 +37,7 @@ export default function Lore({ rpgId }: Props) {
   const [mapRegions, setMapRegions] =useState<MapRegion[]>([])
   const mapRef = useRef<HTMLDivElement | null>(null)
   const [hasMoved, setHasMoved] =useState(false)
+  const [worldMap, setWorldMap] =useState("")
 
   useEffect(() => {
     async function load() {
@@ -56,6 +57,7 @@ export default function Lore({ rpgId }: Props) {
          ? mapData 
          : [] 
         )
+      
         const catRes = await axios.get(
           `http://127.0.0.1:8001/rpg-lore/${rpgId}/categories`
         )
@@ -78,7 +80,9 @@ setCategory("Mundo")
             },
           }
         )
-
+       setWorldMap(
+                    res.data.world_map || ""
+                  )
         const owner = res.data.is_owner
 
         setIsOwner(owner)
@@ -509,15 +513,27 @@ setTimeout(() => {
         <div
           className="
             relative
-            h-[420px]
-            bg-gradient-to-br
-            from-[#101014]
-            to-[#1b1b22]
-            flex
+  h-[420px]
+  bg-[#101014]
+  overflow-hidden
             items-center
             justify-center
           "
         >
+        {worldMap && (
+  <img
+    src={worldMap}
+    alt="Mapa do mundo"
+    className="
+      absolute
+      inset-0
+      w-full
+      h-full
+      object-cover
+      opacity-80
+    "
+  />
+)}
           <div
             className="
               absolute
@@ -630,58 +646,90 @@ onMouseLeave={handleMouseUp}
       </div>
 
       {/* ADMIN */}
-      {isOwner && (
-        <div
-          className="
-            bg-[#18181b]
-            border
-            border-[#2b2b31]
-            rounded-2xl
-            p-5
-            mb-8
-          "
-        >
-          <h2 className="text-lg font-bold mb-4">
-            ⚙️ Administração
-          </h2>
+{isOwner && (
+  <div
+    className="
+      bg-[#18181b]
+      border
+      border-[#2b2b31]
+      rounded-2xl
+      p-5
+      mb-8
+    "
+  >
+    <h2 className="text-lg font-bold mb-4">
+      ⚙️ Administração
+    </h2>
 
-          <div className="flex gap-3">
-            <input
-              placeholder="Nova categoria"
-              className="
-                flex-1
-                bg-[#232329]
-                border
-                border-[#32323a]
-                rounded-xl
-                p-3
-              "
-              value={newCategory}
-              onChange={(e) =>
-                setNewCategory(
-                  e.target.value
-                )
-              }
-            />
+    {/* 🔥 UPLOAD MAPA */}
+    <div className="mb-6">
+      <label className="block mb-2 text-sm text-gray-400">
+        Upload do mapa do mundo
+      </label>
 
-            <button
-              onClick={
-                handleCreateCategory
-              }
-              className="
-                bg-blue-600
-                hover:bg-blue-500
-                transition
-                px-5
-                rounded-xl
-                font-semibold
-              "
-            >
-              Criar
-            </button>
-          </div>
-        </div>
-      )}
+      <input
+        type="file"
+        accept="image/*"
+        onChange={async (e) => {
+          const file =
+            e.target.files?.[0]
+
+          if (!file) return
+
+          try {
+            const data =
+              await uploadMapImage(
+                rpgId,
+                file
+              )
+
+            setWorldMap(
+  `http://127.0.0.1:8001/${data.world_map}`
+)
+          } catch (err) {
+            console.error(err)
+          }
+        }}
+      />
+    </div>
+
+    <div className="flex gap-3">
+      <input
+        placeholder="Nova categoria"
+        className="
+          flex-1
+          bg-[#232329]
+          border
+          border-[#32323a]
+          rounded-xl
+          p-3
+        "
+        value={newCategory}
+        onChange={(e) =>
+          setNewCategory(
+            e.target.value
+          )
+        }
+      />
+
+      <button
+        onClick={
+          handleCreateCategory
+        }
+        className="
+          bg-blue-600
+          hover:bg-blue-500
+          transition
+          px-5
+          rounded-xl
+          font-semibold
+        "
+      >
+        Criar
+      </button>
+    </div>
+  </div>
+)}
 
       {/* CREATE */}
       <div
