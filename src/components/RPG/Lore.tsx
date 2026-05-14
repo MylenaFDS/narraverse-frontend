@@ -485,9 +485,25 @@ function handlePanMove(
 ) {
   if (!isPanning) return
 
+  const newX =
+    e.clientX - panStart.x
+
+  const newY =
+    e.clientY - panStart.y
+
+  // 🔥 limite igual Google Maps
+  const limit = 250 * (zoom - 1)
+
   setOffset({
-    x: e.clientX - panStart.x,
-    y: e.clientY - panStart.y,
+    x: Math.max(
+      -limit,
+      Math.min(limit, newX)
+    ),
+
+    y: Math.max(
+      -limit,
+      Math.min(limit, newY)
+    ),
   })
 }
 
@@ -663,52 +679,112 @@ function handleWheel(
   </div>
 
   {/* ÁREA INTERATIVA */}
-  <div
-  ref={mapRef}
-  style={{
-    transform: `
-  translate3d(${offset.x}px, ${offset.y}px, 0)
-  scale(${zoom})
-`,
-    transformOrigin: "0 0",
-  }}
+  {/* ÁREA INTERATIVA */}
+<div
   className="
-  absolute
-  inset-0
-  transition-transform
-  duration-75
-  will-change-transform
-"
+    relative
+    h-[520px]
+    bg-[#0b0b0e]
+    overflow-hidden
+    rounded-b-2xl
+    cursor-grab
+    active:cursor-grabbing
+    select-none
+  "
+  onMouseDown={handlePanStart}
+  onMouseMove={(e) => {
+    handlePanMove(e)
+    handleMouseMove(e)
+  }}
+  onMouseUp={() => {
+    handlePanEnd()
+    handleMouseUp()
+  }}
+  onMouseLeave={() => {
+    handlePanEnd()
+    handleMouseUp()
+  }}
+  onWheel={handleWheel}
 >
-    {/* MAPA */}
+  {/* CONTROLES */}
+  <div
+    className="
+      absolute
+      top-4
+      right-4
+      z-40
+      flex
+      gap-2
+    "
+  >
+    <button
+      onClick={() =>
+        setZoom((prev) =>
+          Math.max(1, prev - 0.2)
+        )
+      }
+      className="
+        w-10
+        h-10
+        rounded-xl
+        bg-[#18181b]/90
+        border
+        border-[#2b2b31]
+      "
+    >
+      −
+    </button>
+
+    <button
+      onClick={() =>
+        setZoom((prev) =>
+          Math.min(4, prev + 0.2)
+        )
+      }
+      className="
+        w-10
+        h-10
+        rounded-xl
+        bg-[#18181b]/90
+        border
+        border-[#2b2b31]
+      "
+    >
+      +
+    </button>
+  </div>
+
+  {/* MAPA */}
+  <div
+    ref={mapRef}
+    className="absolute inset-0"
+    style={{
+      transform: `
+        translate(${offset.x}px, ${offset.y}px)
+        scale(${zoom})
+      `,
+      transformOrigin: "center center",
+      transition: isPanning
+        ? "none"
+        : "transform 0.1s ease-out",
+    }}
+  >
     {worldMap && (
       <img
         src={worldMap}
-        alt="Mapa do mundo"
+        alt="Mapa"
         draggable={false}
         className="
           absolute
           inset-0
           w-full
           h-full
-          object-contain
-          select-none
+          object-cover
           pointer-events-none
-          opacity-90
+          select-none
         "
       />
     )}
-
-    {/* OVERLAY */}
-    <div
-      className="
-        absolute
-        inset-0
-        opacity-20
-        bg-[radial-gradient(circle_at_center,#7c3aed_0%,transparent_70%)]
-        pointer-events-none
-      "
-    />
 
     {/* REGIÕES */}
     {mapRegions.map((region) => (
@@ -735,22 +811,16 @@ function handleWheel(
             setSelectedLore(loreItem)
           }
         }}
-        className={`
+        className="
           absolute
-          z-20
           rounded-full
           border-2
-          border-white/80
+          border-white
           shadow-2xl
           hover:scale-125
-          transition-all
-          duration-200
-          ${
-            isOwner
-              ? "cursor-move"
-              : "cursor-pointer"
-          }
-        `}
+          transition
+          z-30
+        "
         style={{
           top: `${region.pos_y}%`,
           left: `${region.pos_x}%`,
@@ -763,6 +833,7 @@ function handleWheel(
       />
     ))}
   </div>
+</div>
 </div>
         
       </div>
