@@ -39,6 +39,7 @@ export default function Lore({ rpgId }: Props) {
   const [hasMoved, setHasMoved] =useState(false)
   const [worldMap, setWorldMap] =useState("")
   const [selectedLore, setSelectedLore] = useState<Lore | null>(null)
+  const [zoom, setZoom] = useState<number>(1)
 
   useEffect(() => {
     async function load() {
@@ -446,7 +447,26 @@ setTimeout(() => {
   setHasMoved(false)
 }, 0)
 }
+// ===============================
+// 🔎 ZOOM SCROLL
+// ===============================
+function handleWheel(
+  e: React.WheelEvent<HTMLDivElement>
+) {
+  e.preventDefault()
 
+  setZoom((prev: number) => {
+    const next =
+      e.deltaY > 0
+        ? prev - 0.1
+        : prev + 0.1
+
+    return Math.min(
+      3,
+      Math.max(0.6, next)
+    )
+  })
+}
   // ===============================
   // UI
   // ===============================
@@ -514,122 +534,173 @@ setTimeout(() => {
         </div>
 
         <div
-          className="
-            relative
-  h-[420px]
-  bg-[#101014]
-  overflow-hidden
-            items-center
-            justify-center
-          "
-        >
-        {worldMap && (
-  <img
-    src={worldMap}
-    alt="Mapa do mundo"
-    className="
-      absolute
-      inset-0
-      w-full
-      h-full
-      object-cover
-      opacity-80
-    "
-  />
-)}
-          <div
-            className="
-              absolute
-              inset-0
-              opacity-20
-              bg-[radial-gradient(circle_at_center,#7c3aed_0%,transparent_70%)]
-            "
-          />
-
-          <div
-          ref={mapRef}
-          onMouseMove={handleMouseMove}
-onMouseUp={handleMouseUp}
-onMouseLeave={handleMouseUp}
-            className="
-              relative
-              w-[80%]
-              h-[75%]
-              border
-              border-dashed
-              border-purple-500/30
-              rounded-3xl
-              flex
-              items-center
-              justify-center
-            "
-          >
-            <span
   className="
-    absolute
-    text-gray-500/40
-    text-lg
-    pointer-events-none
-    z-0
+    relative
+    h-[520px]
+    bg-[#101014]
+    overflow-hidden
+    rounded-b-2xl
   "
 >
-  Área do mapa interativo
-</span>
+  {/* CONTROLES DE ZOOM */}
+  <div
+    className="
+      absolute
+      top-4
+      right-4
+      z-30
+      flex
+      gap-2
+    "
+  >
+    <button
+      onClick={() =>
+        setZoom((prev) =>
+          Math.max(0.6, prev - 0.2)
+        )
+      }
+      className="
+        w-10
+        h-10
+        rounded-xl
+        bg-[#18181b]/90
+        border
+        border-[#2b2b31]
+        hover:bg-[#232329]
+        transition
+        text-xl
+        font-bold
+      "
+    >
+      −
+    </button>
 
-            {mapRegions.map((region) => (
-  <button
-  key={region.id}
-  title={region.name}
-  draggable={false}
+    <button
+      onClick={() =>
+        setZoom((prev) =>
+          Math.min(3, prev + 0.2)
+        )
+      }
+      className="
+        w-10
+        h-10
+        rounded-xl
+        bg-[#18181b]/90
+        border
+        border-[#2b2b31]
+        hover:bg-[#232329]
+        transition
+        text-xl
+        font-bold
+      "
+    >
+      +
+    </button>
+  </div>
 
-  onMouseDown={() => {
-    if (isOwner) {
-      setDraggingRegion(region.id)
-      setHasMoved(false)
-    }
-  }}
+  {/* ÁREA INTERATIVA */}
+  <div
+    ref={mapRef}
+    onMouseMove={handleMouseMove}
+    onMouseUp={handleMouseUp}
+    onMouseLeave={handleMouseUp}
+    onWheel={handleWheel}
+    style={{
+      transform: `scale(${zoom})`,
+      transformOrigin: "center",
+    }}
+    className="
+      relative
+      w-full
+      h-full
+      transition-transform
+      duration-100
+    "
+  >
+    {/* MAPA */}
+    {worldMap && (
+      <img
+        src={worldMap}
+        alt="Mapa do mundo"
+        draggable={false}
+        className="
+          absolute
+          inset-0
+          w-full
+          h-full
+          object-cover
+          select-none
+          pointer-events-none
+          opacity-90
+        "
+      />
+    )}
 
-  onClick={() => {
-    // 🔥 se arrastou → não abre
-    if (hasMoved) return
+    {/* OVERLAY */}
+    <div
+      className="
+        absolute
+        inset-0
+        opacity-20
+        bg-[radial-gradient(circle_at_center,#7c3aed_0%,transparent_70%)]
+        pointer-events-none
+      "
+    />
 
-    if (!region.lore_id) return
+    {/* REGIÕES */}
+    {mapRegions.map((region) => (
+      <button
+        key={region.id}
+        title={region.name}
+        draggable={false}
+        onMouseDown={() => {
+          if (isOwner) {
+            setDraggingRegion(region.id)
+            setHasMoved(false)
+          }
+        }}
+        onClick={() => {
+          if (hasMoved) return
 
-const loreItem = lore.find(
-  (l) => l.id === region.lore_id
-)
+          if (!region.lore_id) return
 
-if (loreItem) {
-  setSelectedLore(loreItem)
-}
-  }}
+          const loreItem = lore.find(
+            (l) => l.id === region.lore_id
+          )
 
-  className={`
-    absolute
-    z-10
-    w-5
-    h-5
-    rounded-full
-    shadow-lg
-    hover:scale-125
-    transition
-    ${
-      isOwner
-        ? "cursor-move"
-        : "cursor-pointer"
-    }
-  `}
-  style={{
-    top: `${region.pos_y}%`,
-    left: `${region.pos_x}%`,
-    backgroundColor: region.color,
-    transform:
-      "translate(-50%, -50%)",
-  }}
-/>
-))}
-          </div>
-        </div>
+          if (loreItem) {
+            setSelectedLore(loreItem)
+          }
+        }}
+        className={`
+          absolute
+          z-20
+          rounded-full
+          border-2
+          border-white/80
+          shadow-2xl
+          hover:scale-125
+          transition-all
+          duration-200
+          ${
+            isOwner
+              ? "cursor-move"
+              : "cursor-pointer"
+          }
+        `}
+        style={{
+          top: `${region.pos_y}%`,
+          left: `${region.pos_x}%`,
+          width: `${18 * zoom}px`,
+          height: `${18 * zoom}px`,
+          backgroundColor: region.color,
+          transform:
+            "translate(-50%, -50%)",
+        }}
+      />
+    ))}
+  </div>
+</div>
         
       </div>
 
