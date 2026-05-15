@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from "react"
+import { useEffect, useState, useCallback } from "react"
 import axios from "axios"
 
 import {
@@ -36,8 +36,7 @@ export function useLore(rpgId: number) {
   const [newCategory, setNewCategory] = useState("")
 
   const [worldMap, setWorldMap] = useState("")
-  const [selectedLore, setSelectedLore] =
-    useState<Lore | null>(null)
+  
 
   const [isOwner, setIsOwner] =
     useState<boolean | null>(null)
@@ -48,8 +47,6 @@ export function useLore(rpgId: number) {
   const [editTitle, setEditTitle] = useState("")
   const [editContent, setEditContent] = useState("")
 
-  const mapRef =
-    useRef<HTMLDivElement | null>(null)
 
 const load = useCallback(async () => {
   try {
@@ -173,8 +170,6 @@ useEffect(() => {
     worldMap,
     setWorldMap,
 
-    selectedLore,
-    setSelectedLore,
 
     isOwner,
     editingId,
@@ -186,7 +181,7 @@ useEffect(() => {
     editContent,
     setEditContent,
 
-    mapRef,
+    
 
     handleCreate,
     handleDelete,
