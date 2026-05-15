@@ -3,7 +3,7 @@ import { useState, useEffect } from "react"
 
 import Turns from "../components/RPG/Turns"
 import Chat from "../components/RPG/Chat"
-import Lore from "../components/RPG/Lore"
+import Lore from "../components/RPG/Lore/Lore"
 import RPGSheets from "../components/RPG/RPGSheets"
 import { getRPG } from "../services/api"
 

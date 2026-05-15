@@ -1,7 +1,21 @@
 import { useEffect, useState, useRef } from "react"
-import { getLore, createLore, createMapRegion, getMapRegions,updateMapRegionPosition, uploadMapImage } from "../../services/api"
+
+import {
+  getLore,
+  createLore,
+  createMapRegion,
+  getMapRegions,
+  updateMapRegionPosition,
+  uploadMapImage,
+} from "../../../services/api"
+
 import axios from "axios"
-import type { Lore } from "../../types/lore"
+
+import type { Lore } from "../../../types/lore"
+
+import LoreMap from "./LoreMap"
+import LoreCard from "./LoreCard"
+import SelectedLoreModal from "./SelectedLoreModal"
 
 type Props = {
   rpgId: number
@@ -15,6 +29,10 @@ type MapRegion =
   pos_y: number 
   color: string 
   rpg_id: number }
+
+  export type {
+  MapRegion
+}
 
 export default function Lore({ rpgId }: Props) {
   const [lore, setLore] = useState<Lore[]>([])
@@ -369,19 +387,7 @@ setMapRegions((prev) => [
     return acc
   }, {})
 
-  // ===============================
-  // 🔍 FILTRO
-  // ===============================
-  function filterItem(item: Lore) {
-    return (
-      item.title
-        .toLowerCase()
-        .includes(search.toLowerCase()) ||
-      item.content
-        .toLowerCase()
-        .includes(search.toLowerCase())
-    )
-  }
+ 
 
 async function handleMouseMove(
   e: React.MouseEvent<HTMLDivElement>
@@ -572,271 +578,28 @@ function handleWheel(
 
       {/* MAPA */}
       
-      <div
-        className="
-          mb-10
-          bg-[#18181b]
-          border
-          border-[#2b2b31]
-          rounded-2xl
-          overflow-hidden
-        "
-      >
-        <div className="p-5 border-b border-[#2b2b31]">
-          <h2 className="text-2xl font-black">
-            🗺️ Mapa do Mundo
-          </h2>
-
-          <p className="text-gray-400 mt-1">
-            Futuramente você poderá
-            clicar em regiões do mapa
-            para abrir lores
-            relacionadas.
-          </p>
-        </div>
-
-       <div
-  className="
-    relative
-    h-[520px]
-    bg-[#0b0b0e]
-    overflow-hidden
-    rounded-b-2xl
-    cursor-grab
-    active:cursor-grabbing
-    select-none
-  "
-  onMouseDown={handlePanStart}
-  onMouseMove={(e) => {
-    handlePanMove(e)
-    handleMouseMove(e)
-  }}
-  onMouseUp={() => {
-    handlePanEnd()
-    handleMouseUp()
-  }}
-  onMouseLeave={() => {
-    handlePanEnd()
-    handleMouseUp()
-  }}
-  onWheel={handleWheel}
->
-
-  {/* CONTROLES DE ZOOM */}
-  <div
-    className="
-      absolute
-      top-4
-      right-4
-      z-30
-      flex
-      gap-2
-    "
-  >
-    <button
-      onClick={() =>
-  setZoom((prev: number) =>
-    Math.max(1, prev - 0.2)
-  )
-}
-      className="
-        w-10
-        h-10
-        rounded-xl
-        bg-[#18181b]/90
-        border
-        border-[#2b2b31]
-        hover:bg-[#232329]
-        transition
-        text-xl
-        font-bold
-      "
-    >
-      −
-    </button>
-
-    <button
-      onClick={() =>
-        setZoom((prev) =>
-          Math.min(3, prev + 0.2)
-        )
-      }
-      className="
-        w-10
-        h-10
-        rounded-xl
-        bg-[#18181b]/90
-        border
-        border-[#2b2b31]
-        hover:bg-[#232329]
-        transition
-        text-xl
-        font-bold
-      "
-    >
-      +
-    </button>
-  </div>
-
-  {/* ÁREA INTERATIVA */}
-  {/* ÁREA INTERATIVA */}
-<div
-  className="
-    relative
-    h-[520px]
-    bg-[#0b0b0e]
-    overflow-hidden
-    rounded-b-2xl
-    cursor-grab
-    active:cursor-grabbing
-    select-none
-  "
-  onMouseDown={handlePanStart}
-  onMouseMove={(e) => {
-    handlePanMove(e)
-    handleMouseMove(e)
-  }}
-  onMouseUp={() => {
-    handlePanEnd()
-    handleMouseUp()
-  }}
-  onMouseLeave={() => {
-    handlePanEnd()
-    handleMouseUp()
-  }}
-  onWheel={handleWheel}
->
-  {/* CONTROLES */}
-  <div
-    className="
-      absolute
-      top-4
-      right-4
-      z-40
-      flex
-      gap-2
-    "
-  >
-    <button
-      onClick={() =>
-        setZoom((prev) =>
-          Math.max(1, prev - 0.2)
-        )
-      }
-      className="
-        w-10
-        h-10
-        rounded-xl
-        bg-[#18181b]/90
-        border
-        border-[#2b2b31]
-      "
-    >
-      −
-    </button>
-
-    <button
-      onClick={() =>
-        setZoom((prev) =>
-          Math.min(4, prev + 0.2)
-        )
-      }
-      className="
-        w-10
-        h-10
-        rounded-xl
-        bg-[#18181b]/90
-        border
-        border-[#2b2b31]
-      "
-    >
-      +
-    </button>
-  </div>
-
-  {/* MAPA */}
-  <div
-    ref={mapRef}
-    className="absolute inset-0"
-    style={{
-      transform: `
-        translate(${offset.x}px, ${offset.y}px)
-        scale(${zoom})
-      `,
-      transformOrigin: "center center",
-      transition: isPanning
-        ? "none"
-        : "transform 0.1s ease-out",
-    }}
-  >
-    {worldMap && (
-      <img
-        src={worldMap}
-        alt="Mapa"
-        draggable={false}
-        className="
-          absolute
-          inset-0
-          w-full
-          h-full
-          object-cover
-          pointer-events-none
-          select-none
-        "
-      />
-    )}
-
-    {/* REGIÕES */}
-    {mapRegions.map((region) => (
-      <button
-        key={region.id}
-        title={region.name}
-        draggable={false}
-        onMouseDown={() => {
-          if (isOwner) {
-            setDraggingRegion(region.id)
-            setHasMoved(false)
-          }
-        }}
-        onClick={() => {
-          if (hasMoved) return
-
-          if (!region.lore_id) return
-
-          const loreItem = lore.find(
-            (l) => l.id === region.lore_id
-          )
-
-          if (loreItem) {
-            setSelectedLore(loreItem)
-          }
-        }}
-        className="
-          absolute
-          rounded-full
-          border-2
-          border-white
-          shadow-2xl
-          hover:scale-125
-          transition
-          z-30
-        "
-        style={{
-          top: `${region.pos_y}%`,
-          left: `${region.pos_x}%`,
-          width: `${18 * zoom}px`,
-          height: `${18 * zoom}px`,
-          backgroundColor: region.color,
-          transform:
-            "translate(-50%, -50%)",
-        }}
-      />
-    ))}
-  </div>
-</div>
-</div>
-        
-      </div>
+      <LoreMap
+  worldMap={worldMap}
+  mapRegions={mapRegions}
+  lore={lore}
+  zoom={zoom}
+  offset={offset}
+  isPanning={isPanning}
+  isOwner={isOwner}
+  hasMoved={hasMoved}
+  mapRef={mapRef}
+  setZoom={setZoom}
+  setOffset={setOffset}
+  setSelectedLore={setSelectedLore}
+  setDraggingRegion={setDraggingRegion}
+  setHasMoved={setHasMoved}
+  handlePanStart={handlePanStart}
+  handlePanMove={handlePanMove}
+  handlePanEnd={handlePanEnd}
+  handleMouseMove={handleMouseMove}
+  handleMouseUp={handleMouseUp}
+  handleWheel={handleWheel}
+/>
 
       {/* ADMIN */}
 {isOwner && (
@@ -1021,294 +784,58 @@ function handleWheel(
 
       {/* WIKI */}
       <div className="space-y-10">
-        {Object.keys(grouped).map(
-          (cat) => (
-            <div key={cat}>
-              <div
-                className="
-                  sticky
-                  top-0
-                  z-10
-                  bg-[#0f0f12]
-                  py-3
-                  mb-4
-                  border-b
-                  border-[#2a2a30]
-                "
-              >
-                <h2 className="text-2xl font-black">
-                  📂 {cat}
-                </h2>
-              </div>
-
-              <div className="space-y-3">
-                {grouped[cat]
-                  .filter(filterItem)
-                  .map((item) => (
-                    <div
-                     id={`lore-${item.id}`}
-                      key={item.id}
-                      draggable={
-                        isOwner || false
-                      }
-                      onDragStart={() =>
-                        handleDragStart(
-                          item.id
-                        )
-                      }
-                      onDragOver={(e) =>
-                        e.preventDefault()
-                      }
-                      onDrop={() =>
-                        handleDrop(
-                          item.id
-                        )
-                      }
-                      className="
-                        group
-                        bg-[#18181b]
-                        border
-                        border-[#26262c]
-                        hover:border-[#3a3a45]
-                        rounded-2xl
-                        p-5
-                        transition
-                      "
-                    >
-                      {editingId ===
-                      item.id ? (
-                        <>
-                          <input
-                            value={
-                              editTitle
-                            }
-                            onChange={(
-                              e
-                            ) =>
-                              setEditTitle(
-                                e.target
-                                  .value
-                              )
-                            }
-                            className="
-                              w-full
-                              bg-[#232329]
-                              border
-                              border-[#32323a]
-                              rounded-lg
-                              p-2
-                              mb-3
-                              text-xl
-                              font-bold
-                            "
-                          />
-
-                          <textarea
-                            value={
-                              editContent
-                            }
-                            onChange={(
-                              e
-                            ) =>
-                              setEditContent(
-                                e.target
-                                  .value
-                              )
-                            }
-                            className="
-                              w-full
-                              bg-[#232329]
-                              border
-                              border-[#32323a]
-                              rounded-lg
-                              p-3
-                              min-h-[160px]
-                            "
-                          />
-
-                          <div className="flex gap-2 mt-4">
-                            <button
-                              onClick={() =>
-                                handleSaveEdit(
-                                  item.id
-                                )
-                              }
-                              className="
-                                bg-green-600
-                                hover:bg-green-500
-                                px-4
-                                py-2
-                                rounded-lg
-                              "
-                            >
-                              Salvar
-                            </button>
-
-                            <button
-                              onClick={() =>
-                                setEditingId(
-                                  null
-                                )
-                              }
-                              className="
-                                bg-gray-700
-                                hover:bg-gray-600
-                                px-4
-                                py-2
-                                rounded-lg
-                              "
-                            >
-                              Cancelar
-                            </button>
-                          </div>
-                        </>
-                      ) : (
-                        <div className="flex flex-col">
-                          <div className="flex-1">
-                            <h3 className="text-2xl font-bold mb-3">
-                              {
-                                item.title
-                              }
-                            </h3>
-
-                            <p
-                              className="
-                                text-gray-300
-                                whitespace-pre-wrap
-                                leading-relaxed
-                              "
-                            >
-                              {
-                                item.content
-                              }
-                            </p>
-                          </div>
-
-                          {/* BOTÕES */}
-                          {isOwner && (
-                            <div
-                              className="
-                                mt-5
-                                pt-4
-
-                                border-t
-                                border-[#2a2a30]
-
-                                opacity-0
-                                group-hover:opacity-100
-
-                                transition-all
-                                duration-200
-
-                                flex
-                                items-center
-                                gap-2
-                              "
-                            >
-                              {/* EDITAR */}
-                              <button
-                                onClick={() => {
-                                  setEditingId(
-                                    item.id
-                                  )
-
-                                  setEditTitle(
-                                    item.title
-                                  )
-
-                                  setEditContent(
-                                    item.content
-                                  )
-                                }}
-                                className="
-                                  flex
-                                  items-center
-                                  gap-2
-
-                                  bg-[#232329]
-                                  hover:bg-yellow-500/15
-
-                                  border
-                                  border-[#34343c]
-                                  hover:border-yellow-500/40
-
-                                  text-gray-300
-                                  hover:text-yellow-300
-
-                                  px-3
-                                  py-2
-
-                                  rounded-xl
-
-                                  transition-all
-                                  duration-200
-
-                                  shadow-sm
-                                  hover:shadow-yellow-500/10
-                                "
-                              >
-                                <span className="text-sm">
-                                  ✏️
-                                </span>
-
-                                <span className="text-sm font-medium">
-                                  Editar
-                                </span>
-                              </button>
-
-                              {/* DELETAR */}
-                              <button
-                                onClick={() =>
-                                  handleDelete(
-                                    item.id
-                                  )
-                                }
-                                className="
-                                  flex
-                                  items-center
-                                  gap-2
-
-                                  bg-[#232329]
-                                  hover:bg-red-500/15
-
-                                  border
-                                  border-[#34343c]
-                                  hover:border-red-500/40
-
-                                  text-gray-300
-                                  hover:text-red-300
-
-                                  px-3
-                                  py-2
-
-                                  rounded-xl
-
-                                  transition-all
-                                  duration-200
-
-                                  shadow-sm
-                                  hover:shadow-red-500/10
-                                "
-                              >
-                                <span className="text-sm">
-                                  🗑️
-                                </span>
-
-                                <span className="text-sm font-medium">
-                                  Excluir
-                                </span>
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-              </div>
-            </div>
-          )
-        )}
+  {Object.keys(grouped).map((cat) => (
+    <div key={cat}>
+      <div
+        className="
+          sticky
+          top-0
+          z-10
+          bg-[#0f0f12]
+          py-3
+          mb-4
+          border-b
+          border-[#2a2a30]
+        "
+      >
+        <h2 className="text-2xl font-black">
+          📂 {cat}
+        </h2>
       </div>
+
+      <div className="space-y-3">
+        {grouped[cat]
+          .filter((item) => {
+            return (
+              item.title
+                .toLowerCase()
+                .includes(search.toLowerCase()) ||
+              item.content
+                .toLowerCase()
+                .includes(search.toLowerCase())
+            )
+          })
+          .map((item) => (
+            <LoreCard
+              key={item.id}
+              item={item}
+              isOwner={!!isOwner}
+              editingId={editingId}
+              editTitle={editTitle}
+              editContent={editContent}
+              setEditTitle={setEditTitle}
+              setEditContent={setEditContent}
+              setEditingId={setEditingId}
+              handleSaveEdit={handleSaveEdit}
+              handleDelete={handleDelete}
+              handleDragStart={handleDragStart}
+              handleDrop={handleDrop}
+            />
+          ))}
+      </div>
+    </div>
+  ))}
+</div>
 
       {/* SUGESTÕES */}
       {isOwner &&
@@ -1406,24 +933,10 @@ function handleWheel(
             </div>
           </div>
         )}
-        {selectedLore && (
-  <div className="fixed right-4 top-4 w-[400px] bg-[#18181b] p-6 rounded-2xl border border-[#2b2b31] z-50">
-    <h2 className="text-2xl font-bold mb-4">
-      {selectedLore.title}
-    </h2>
-
-    <p className="whitespace-pre-wrap text-gray-300">
-      {selectedLore.content}
-    </p>
-
-    <button
-      onClick={() => setSelectedLore(null)}
-      className="mt-4 bg-red-600 px-4 py-2 rounded-xl"
-    >
-      Fechar
-    </button>
-  </div>
-)}
+        <SelectedLoreModal
+  selectedLore={selectedLore}
+  onClose={() => setSelectedLore(null)}
+/>
     </div>
   )
 }
