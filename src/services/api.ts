@@ -175,14 +175,27 @@ export async function createLore(
 }
 export async function updateLore(
   loreId: number,
-  data: { title: string; content: string; category?: string; order?: number }
+  data: {
+    title: string
+    content: string
+    category?: string
+    order?: number
+  }
 ) {
-  const res = await api.put(`/rpg-lore/item/${loreId}`, data)
+  const res = await api.put(
+    `/rpg-lore/${loreId}`,
+    data
+  )
+
   return res.data
 }
 
-export async function deleteLore(loreId: number) {
-  await api.delete(`/rpg-lore/item/${loreId}`)
+export async function deleteLore(
+  loreId: number
+) {
+  await api.delete(
+    `/rpg-lore/${loreId}`
+  )
 }
 // ===============================
 // 🎮 RPG

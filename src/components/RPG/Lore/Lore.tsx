@@ -132,20 +132,23 @@ export default function Lore({ rpgId }: Props) {
   // ✏️ EDITAR
   // ===============================
   async function handleSaveEdit(
-    id: number
-  ) {
-    
+  id: number
+) {
+  const currentLore =
+    lore.find((l) => l.id === id)
 
-    await updateLore(id, {
-  title: editTitle,
-  content: editContent,
-})
+  await updateLore(id, {
+    title: editTitle,
+    content: editContent,
+    category:
+      currentLore?.category ??
+      "Mundo",
+  })
 
-    await load()
+  await load()
 
-    setEditingId(null)
-  }
-
+  setEditingId(null)
+}
   // ===============================
   // 🗑️ DELETAR
   // ===============================
