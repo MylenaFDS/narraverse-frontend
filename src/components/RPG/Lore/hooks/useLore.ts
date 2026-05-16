@@ -82,6 +82,8 @@ const load = useCallback(async () => {
 setCategories(catRes || [])
     const rpg =
   await getRPG(rpgId)
+  console.log("RPG:", rpg)
+console.log("IS OWNER:", rpg.is_owner)
 
 setWorldMap(
   rpg.world_map
