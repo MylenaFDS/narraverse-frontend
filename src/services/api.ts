@@ -323,3 +323,13 @@ export async function getLoreSuggestions(
 
   return res.data
 }
+
+export async function approveLoreSuggestion(
+  loreId: number
+) {
+  const res = await api.put(
+    `/rpg-lore/${loreId}/approve`
+  )
+
+  return res.data
+}

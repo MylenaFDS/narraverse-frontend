@@ -3,10 +3,11 @@ import { useState } from "react"
 import {
   updateMapRegionPosition,
   uploadMapImage,
-  updateLore
+  updateLore,
+  approveLoreSuggestion,
 } from "../../../services/api"
 
-import axios from "axios"
+
 
 import type { Lore } from "../../../types/lore"
 
@@ -539,47 +540,20 @@ const grouped =
 
                     <button
                       onClick={async () => {
-                        const token =
-                          localStorage.getItem(
-                            "token"
-                          )
+  await approveLoreSuggestion(
+    item.id
+  )
 
-                        await axios.put(
-                          `http://127.0.0.1:8001/rpg-lore/${item.id}/approve`,
-                          {},
-                          {
-                            headers:
-                              {
-                                Authorization: `Bearer ${token}`,
-                              },
-                          }
-                        )
+  await load()
 
-                        await load()
-
-                        setSuggestions(
-                          (
-                            prev
-                          ) =>
-                            prev.filter(
-                              (
-                                s
-                              ) =>
-                                s.id !==
-                                item.id
-                            )
-                        )
-                      }}
-                      className="
-                        bg-green-600
-                        hover:bg-green-500
-                        transition
-                        px-4
-                        py-2
-                        rounded-xl
-                        font-semibold
-                      "
-                    >
+  setSuggestions(
+    (prev) =>
+      prev.filter(
+        (s) =>
+          s.id !== item.id
+      )
+  )
+}}>
                       Aprovar
                       sugestão
                     </button>
