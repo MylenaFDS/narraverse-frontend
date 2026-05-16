@@ -1,13 +1,18 @@
 import { useEffect, useState, useCallback } from "react"
-import axios from "axios"
+
 
 import {
   getLore,
   createLore,
+  deleteLore,
   createMapRegion,
   getMapRegions,
   updateMapRegionPosition,
   uploadMapImage,
+  getRPG,
+  getLoreCategories,
+  createLoreCategory,
+  getLoreSuggestions,
 } from "../../../../services/api"
 
 import type { Lore } from "../../../../types/lore"
@@ -52,8 +57,7 @@ export function useLore(rpgId: number) {
 
 const load = useCallback(async () => {
   try {
-    const token =
-      localStorage.getItem("token")
+    
 
     const loreData = await getLore(rpgId)
 
@@ -72,22 +76,16 @@ const load = useCallback(async () => {
         : []
     )
 
-    const catRes = await axios.get(
-      `http://127.0.0.1:8001/rpg-lore/${rpgId}/categories`
-    )
+    const catRes =
+  await getLoreCategories(rpgId)
+
+setCategories(catRes || [])
 
     setCategories(
       catRes.data || []
     )
 
-    const res = await axios.get(
-      `http://127.0.0.1:8001/rpgs/${rpgId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    )
+    const res = await getRPG(rpgId)
 
     setWorldMap(
       res.data.world_map
@@ -98,16 +96,12 @@ const load = useCallback(async () => {
     setIsOwner(res.data.is_owner)
 
     if (res.data.is_owner) {
-  const sug = await axios.get(
-    `http://127.0.0.1:8001/rpg-lore/${rpgId}/suggestions`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  )
+  const sug =
+  await getLoreSuggestions(rpgId)
 
-  setSuggestions(sug.data || [])
+setSuggestions(sug || [])
+
+
 } else {
   setSuggestions([])
 }
@@ -196,17 +190,9 @@ useEffect(() => {
 
 
   async function handleDelete(id: number) {
-    const token =
-      localStorage.getItem("token")
+    
 
-    await axios.delete(
-      `http://127.0.0.1:8001/rpg-lore/${id}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    )
+    await deleteLore(id)
 
     await load()
   }
@@ -215,30 +201,19 @@ useEffect(() => {
   if (!newCategory.trim())
     return
 
-  const token =
-    localStorage.getItem("token")
+ 
 
   try {
-    await axios.post(
-      `http://127.0.0.1:8001/rpg-lore/${rpgId}/categories`,
-      {
-        name: newCategory,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    )
+    await createLoreCategory(
+  rpgId,
+  newCategory
+)
 
     const catRes =
-      await axios.get(
-        `http://127.0.0.1:8001/rpg-lore/${rpgId}/categories`
-      )
+  await getLoreCategories(rpgId)
 
-    setCategories(
-      catRes.data || []
-    )
+setCategories(catRes || [])
+
 
     setNewCategory("")
   } catch (err) {

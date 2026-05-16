@@ -283,3 +283,43 @@ export async function uploadMapImage(
 
   return res.data
 }
+
+// ===============================
+// 📂 LORE CATEGORIES
+// ===============================
+
+export async function getLoreCategories(
+  rpgId: number
+) {
+  const res = await api.get(
+    `/rpg-lore/${rpgId}/categories`
+  )
+
+  return res.data
+}
+
+export async function createLoreCategory(
+  rpgId: number,
+  name: string
+) {
+  const res = await api.post(
+    `/rpg-lore/${rpgId}/categories`,
+    { name }
+  )
+
+  return res.data
+}
+
+// ===============================
+// 💡 LORE SUGGESTIONS
+// ===============================
+
+export async function getLoreSuggestions(
+  rpgId: number
+) {
+  const res = await api.get(
+    `/rpg-lore/${rpgId}/suggestions`
+  )
+
+  return res.data
+}

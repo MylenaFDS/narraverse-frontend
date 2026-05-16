@@ -3,6 +3,7 @@ import { useState } from "react"
 import {
   updateMapRegionPosition,
   uploadMapImage,
+  updateLore
 } from "../../../services/api"
 
 import axios from "axios"
@@ -132,21 +133,12 @@ export default function Lore({ rpgId }: Props) {
   async function handleSaveEdit(
     id: number
   ) {
-    const token =
-      localStorage.getItem("token")
+    
 
-    await axios.put(
-      `http://127.0.0.1:8001/rpg-lore/${id}`,
-      {
-        title: editTitle,
-        content: editContent,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    )
+    await updateLore(id, {
+  title: editTitle,
+  content: editContent,
+})
 
     await load()
 
