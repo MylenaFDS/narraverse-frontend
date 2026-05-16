@@ -1,10 +1,6 @@
-import { useEffect, useState, useRef } from "react"
+import { useState } from "react"
 
 import {
-  getLore,
-  createLore,
-  createMapRegion,
-  getMapRegions,
   updateMapRegionPosition,
   uploadMapImage,
 } from "../../../services/api"
@@ -16,6 +12,9 @@ import type { Lore } from "../../../types/lore"
 import LoreMap from "./LoreMap"
 import LoreCard from "./LoreCard"
 import SelectedLoreModal from "./SelectedLoreModal"
+import { useLoreMap } from "./hooks/useLoreMap"
+import { useLore } from "./hooks/useLore"
+import { groupLore } from "./utils/groupLore"
 
 type Props = {
   rpgId: number
@@ -35,205 +34,97 @@ type MapRegion =
 }
 
 export default function Lore({ rpgId }: Props) {
-  const [lore, setLore] = useState<Lore[]>([])
-  const [suggestions, setSuggestions] = useState<Lore[]>([])
-  const [categories, setCategories] = useState<string[]>([])
-  const [newCategory, setNewCategory] = useState("")
-
-  const [title, setTitle] = useState("")
-  const [content, setContent] = useState("")
-  const [category, setCategory] = useState("")
-  const [search, setSearch] = useState("")
-
-  const [isOwner, setIsOwner] = useState<boolean | null>(null)
-
-  const [editingId, setEditingId] = useState<number | null>(null)
-  const [editTitle, setEditTitle] = useState("")
-  const [editContent, setEditContent] = useState("")
-
+ 
   const [draggedId, setDraggedId] = useState<number | null>(null)
-  const [mapRegions, setMapRegions] =useState<MapRegion[]>([])
-  const mapRef = useRef<HTMLDivElement | null>(null)
-  const [hasMoved, setHasMoved] =useState(false)
-  const [worldMap, setWorldMap] =useState("")
-  const [selectedLore, setSelectedLore] = useState<Lore | null>(null)
-  const [zoom, setZoom] = useState(1.2)
+  const {
+  lore,
+  setLore,
 
-const [offset, setOffset] = useState({
-  x: 0,
-  y: 0,
+  suggestions,
+  setSuggestions,
+
+  categories,
+  
+
+  mapRegions,
+  setMapRegions,
+
+  title,
+  setTitle,
+
+  content,
+  setContent,
+
+  category,
+  setCategory,
+
+  search,
+  setSearch,
+
+  newCategory,
+  setNewCategory,
+
+  worldMap,
+  setWorldMap,
+
+  isOwner,
+
+  editingId,
+  setEditingId,
+
+  editTitle,
+  setEditTitle,
+
+  editContent,
+  setEditContent,
+
+  handleCreate,
+  handleDelete,
+  handleCreateCategory,
+  load,
+} = useLore(rpgId)
+ 
+  const {
+  mapRef,
+
+  selectedLore,
+  setSelectedLore,
+
+  zoom,
+  setZoom,
+
+  offset,
+  setOffset,
+
+  isPanning,
+
+  setDraggingRegion,
+
+  hasMoved,
+  setHasMoved,
+
+  handleMouseMove,
+  handleMouseUp,
+
+  handlePanStart,
+  handlePanMove,
+  handlePanEnd,
+
+  handleWheel,
+} = useLoreMap({
+  lore,
+  mapRegions,
+  setMapRegions,
+  updateMapRegionPosition,
 })
 
-const [isPanning, setIsPanning] =
-  useState(false)
 
-const [panStart, setPanStart] =
-  useState({
-    x: 0,
-    y: 0,
-  })
-
-  useEffect(() => {
-    async function load() {
-      try {
-        const token = localStorage.getItem("token")
-
-        const loreData = await getLore(rpgId)
-
-        setLore(
-          Array.isArray(loreData)
-            ? loreData
-            : []
-        )
-      const mapData = await getMapRegions(rpgId)
-       setMapRegions( 
-        Array.isArray(mapData)
-         ? mapData 
-         : [] 
-        )
-      
-        const catRes = await axios.get(
-          `http://127.0.0.1:8001/rpg-lore/${rpgId}/categories`
-        )
-
-        const cats = catRes.data || []
-
-        const finalCats = cats.includes("Mundo")
-  ? cats
-  : ["Mundo", ...cats]
-
-setCategories(finalCats)
-
-setCategory("Mundo")
-
-        const res = await axios.get(
-          `http://127.0.0.1:8001/rpgs/${rpgId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        )
-       setWorldMap(
-  res.data.world_map
-    ? `http://127.0.0.1:8001/${res.data.world_map}`
-    : ""
-)
-        const owner = res.data.is_owner
-
-        setIsOwner(owner)
-
-        if (owner) {
-          const sug = await axios.get(
-            `http://127.0.0.1:8001/rpg-lore/${rpgId}/suggestions`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          )
-
-          setSuggestions(sug.data || [])
-        }
-      } catch (err) {
-        console.error(err)
-      }
-    }
-
-    load()
-  }, [rpgId])
+ 
 
   // ===============================
 // ✍️ CRIAR
 // ===============================
-async function handleCreate() {
-  if (!title || !content || !category)
-    return
 
-  const createdLore = await createLore(
-    rpgId,
-    {
-      title,
-      content,
-      category,
-    }
-  )
-
-  // 🔥 cria região automática no mapa
-  if (category === "Mundo") {
-  try {
-  let finalX = 0
-let finalY = 0
-let isTooClose = true
-
-while (isTooClose) {
-  finalX =
-    Math.floor(Math.random() * 70) + 15
-
-  finalY =
-    Math.floor(Math.random() * 60) + 20
-
-  isTooClose = mapRegions.some((region) => {
-    const dx =
-      region.pos_x - finalX
-
-    const dy =
-      region.pos_y - finalY
-
-    const distance = Math.sqrt(
-      dx * dx + dy * dy
-    )
-
-    return distance < 10
-  })
-}
-   const colors = [
-  "#a855f7",
-  "#ef4444",
-  "#3b82f6",
-  "#22c55e",
-  "#eab308",
-]
-
-const color =
-  colors[
-    Math.floor(
-      Math.random() * colors.length
-    )
-  ]
-
-const newRegion =
-  await createMapRegion(rpgId, {
-    name: title,
-    lore_id: createdLore.id,
-    pos_x: finalX,
-    pos_y: finalY,
-    color,
-  })
-
-setMapRegions((prev) => [
-  ...prev,
-  newRegion,
-])
-  } catch (err) {
-    console.error(
-      "Erro criando região:",
-      err
-    )
-  }
-}
-
-  setTitle("")
-  setContent("")
-
-  const data = await getLore(rpgId)
-
-  setLore(
-    Array.isArray(data)
-      ? data
-      : []
-  )
-}
 
   // ===============================
   // ✏️ EDITAR
@@ -257,13 +148,7 @@ setMapRegions((prev) => [
       }
     )
 
-    const data = await getLore(rpgId)
-
-    setLore(
-      Array.isArray(data)
-        ? data
-        : []
-    )
+    await load()
 
     setEditingId(null)
   }
@@ -271,69 +156,9 @@ setMapRegions((prev) => [
   // ===============================
   // 🗑️ DELETAR
   // ===============================
-  async function handleDelete(
-    id: number
-  ) {
-    const confirmDelete = confirm(
-      "Tem certeza que deseja excluir esta lore?"
-    )
+  
 
-    if (!confirmDelete) return
-
-    const token =
-      localStorage.getItem("token")
-
-    await axios.delete(
-      `http://127.0.0.1:8001/rpg-lore/${id}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    )
-
-    const data = await getLore(rpgId)
-
-    setLore(
-      Array.isArray(data)
-        ? data
-        : []
-    )
-  }
-
-  // ===============================
-  // ➕ CATEGORIA
-  // ===============================
-  async function handleCreateCategory() {
-    if (!newCategory.trim()) return
-
-    const token =
-      localStorage.getItem("token")
-
-    try {
-      await axios.post(
-        `http://127.0.0.1:8001/rpg-lore/${rpgId}/categories`,
-        {
-          name: newCategory,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      )
-
-      const catRes = await axios.get(
-        `http://127.0.0.1:8001/rpg-lore/${rpgId}/categories`
-      )
-
-      setCategories(catRes.data || [])
-
-      setNewCategory("")
-    } catch (err) {
-      console.error(err)
-    }
-  }
+  
 
   // ===============================
   // 🔄 DRAG
@@ -341,8 +166,7 @@ setMapRegions((prev) => [
   function handleDragStart(id: number) {
     setDraggedId(id)
   }
-  const [draggingRegion, setDraggingRegion] =
-  useState<number | null>(null)
+ 
 
   function handleDrop(targetId: number) {
     if (draggedId === null) return
@@ -369,172 +193,23 @@ setMapRegions((prev) => [
     setDraggedId(null)
   }
 
-  // ===============================
-  // 📂 AGRUPAR
-  // ===============================
-  const grouped = lore.reduce<
-    Record<string, Lore[]>
-  >((acc, item) => {
-    const cat =
-      item.category || "Sem categoria"
-
-    if (!acc[cat]) {
-      acc[cat] = []
-    }
-
-    acc[cat].push(item)
-
-    return acc
-  }, {})
 
  
 
-async function handleMouseMove(
-  e: React.MouseEvent<HTMLDivElement>
-) {
-  if (!isOwner) return
 
-  if (
-    draggingRegion === null ||
-    !mapRef.current
-  )
-    return
 
-  // 🔥 detecta movimento real
-  setHasMoved(true)
-
-  const rect =
-    mapRef.current.getBoundingClientRect()
-
-  const x =
-    ((e.clientX - rect.left) /
-      rect.width) *
-    100
-
-  const y =
-    ((e.clientY - rect.top) /
-      rect.height) *
-    100
-
-  const finalX = Math.max(
-    5,
-    Math.min(95, x)
-  )
-
-  const finalY = Math.max(
-    5,
-    Math.min(95, y)
-  )
-
-  setMapRegions((prev) =>
-    prev.map((r) =>
-      r.id === draggingRegion
-        ? {
-            ...r,
-            pos_x: finalX,
-            pos_y: finalY,
-          }
-        : r
-    )
-  )
-}
-
-async function handleMouseUp() {
-  if (draggingRegion === null)
-    return
-
-  const region = mapRegions.find(
-    (r) => r.id === draggingRegion
-  )
-
-  if (!region) return
-
-  try {
-    await updateMapRegionPosition(
-      region.id,
-      {
-        pos_x: Math.round(region.pos_x),
-        pos_y: Math.round(region.pos_y),
-      }
-    )
-  } catch (err) {
-    console.error(err)
-  }
-
-  setDraggingRegion(null)
-
-setTimeout(() => {
-  setHasMoved(false)
-}, 0)
-}
 
 // ===============================
 // ✋ PAN DO MAPA
 // ===============================
-function handlePanStart(
-  e: React.MouseEvent<HTMLDivElement>
-) {
-  // 🔥 não inicia pan enquanto arrasta região
-  if (draggingRegion !== null)
-    return
 
-  setIsPanning(true)
-
-  setPanStart({
-    x: e.clientX - offset.x,
-    y: e.clientY - offset.y,
-  })
-}
-
-function handlePanMove(
-  e: React.MouseEvent<HTMLDivElement>
-) {
-  if (!isPanning) return
-
-  const newX =
-    e.clientX - panStart.x
-
-  const newY =
-    e.clientY - panStart.y
-
-  // 🔥 limite igual Google Maps
-  const limit = 250 * (zoom - 1)
-
-  setOffset({
-    x: Math.max(
-      -limit,
-      Math.min(limit, newX)
-    ),
-
-    y: Math.max(
-      -limit,
-      Math.min(limit, newY)
-    ),
-  })
-}
-
-function handlePanEnd() {
-  setIsPanning(false)
-}
 
 // ===============================
-// 🔍 ZOOM SCROLL
+// 📂 AGRUPAR
 // ===============================
-function handleWheel(
-  e: React.WheelEvent<HTMLDivElement>
-) {
-  e.preventDefault()
+const grouped =
+  groupLore(lore)
 
-  const delta =
-    e.deltaY > 0 ? -0.1 : 0.1
-
-  setZoom((prev: number) =>
-    Math.min(
-      3,
-      Math.max(1, prev + delta)
-    )
-  )
-}
   // ===============================
   // UI
   // ===============================
@@ -888,18 +563,7 @@ function handleWheel(
                           }
                         )
 
-                        const data =
-                          await getLore(
-                            rpgId
-                          )
-
-                        setLore(
-                          Array.isArray(
-                            data
-                          )
-                            ? data
-                            : []
-                        )
+                        await load()
 
                         setSuggestions(
                           (

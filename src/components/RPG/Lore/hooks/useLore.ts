@@ -11,6 +11,8 @@ import {
 } from "../../../../services/api"
 
 import type { Lore } from "../../../../types/lore"
+import { generateRegionPosition }
+from "../utils/generateRegionPosition"
 
 type MapRegion = {
   id: number
@@ -94,6 +96,21 @@ const load = useCallback(async () => {
     )
 
     setIsOwner(res.data.is_owner)
+
+    if (res.data.is_owner) {
+  const sug = await axios.get(
+    `http://127.0.0.1:8001/rpg-lore/${rpgId}/suggestions`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  )
+
+  setSuggestions(sug.data || [])
+} else {
+  setSuggestions([])
+}
   } catch (err) {
     console.error(err)
   }
@@ -109,19 +126,74 @@ useEffect(() => {
 
 
   async function handleCreate() {
-    if (!title || !content) return
+  if (!title || !content)
+    return
 
+  const createdLore =
     await createLore(rpgId, {
       title,
       content,
       category,
     })
 
-    setTitle("")
-    setContent("")
+  if (category === "Mundo") {
+    try {
+      const {
+  finalX,
+  finalY,
+} =
+  generateRegionPosition(
+    mapRegions
+  )
+      const colors = [
+        "#a855f7",
+        "#ef4444",
+        "#3b82f6",
+        "#22c55e",
+        "#eab308",
+      ]
 
-    await load()
+      const color =
+        colors[
+          Math.floor(
+            Math.random() *
+              colors.length
+          )
+        ]
+
+      const newRegion =
+        await createMapRegion(
+          rpgId,
+          {
+            name: title,
+            lore_id:
+              createdLore.id,
+            pos_x: finalX,
+            pos_y: finalY,
+            color,
+          }
+        )
+
+      setMapRegions(
+        (prev) => [
+          ...prev,
+          newRegion,
+        ]
+      )
+    } catch (err) {
+      console.error(
+        "Erro criando região:",
+        err
+      )
+    }
   }
+
+  setTitle("")
+  setContent("")
+
+  await load()
+}
+
 
   async function handleDelete(id: number) {
     const token =
@@ -138,6 +210,41 @@ useEffect(() => {
 
     await load()
   }
+
+  async function handleCreateCategory() {
+  if (!newCategory.trim())
+    return
+
+  const token =
+    localStorage.getItem("token")
+
+  try {
+    await axios.post(
+      `http://127.0.0.1:8001/rpg-lore/${rpgId}/categories`,
+      {
+        name: newCategory,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    )
+
+    const catRes =
+      await axios.get(
+        `http://127.0.0.1:8001/rpg-lore/${rpgId}/categories`
+      )
+
+    setCategories(
+      catRes.data || []
+    )
+
+    setNewCategory("")
+  } catch (err) {
+    console.error(err)
+  }
+}
 
   return {
     lore,
@@ -185,6 +292,7 @@ useEffect(() => {
 
     handleCreate,
     handleDelete,
+    handleCreateCategory,
     load,
 
     uploadMapImage,
