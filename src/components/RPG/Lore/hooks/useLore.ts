@@ -80,28 +80,24 @@ const load = useCallback(async () => {
   await getLoreCategories(rpgId)
 
 setCategories(catRes || [])
+    const rpg =
+  await getRPG(rpgId)
 
-    setCategories(
-      catRes.data || []
-    )
+setWorldMap(
+  rpg.world_map
+    ? `http://127.0.0.1:8001/${rpg.world_map}`
+    : ""
+)
 
-    const res = await getRPG(rpgId)
+setIsOwner(rpg.is_owner)
 
-    setWorldMap(
-      res.data.world_map
-        ? `http://127.0.0.1:8001/${res.data.world_map}`
-        : ""
-    )
-
-    setIsOwner(res.data.is_owner)
-
-    if (res.data.is_owner) {
+if (rpg.is_owner) {
   const sug =
-  await getLoreSuggestions(rpgId)
+    await getLoreSuggestions(
+      rpgId
+    )
 
-setSuggestions(sug || [])
-
-
+  setSuggestions(sug || [])
 } else {
   setSuggestions([])
 }
