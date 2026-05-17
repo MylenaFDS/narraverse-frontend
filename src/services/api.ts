@@ -206,6 +206,61 @@ export async function getRPG(id: number) {
 }
 
 // ===============================
+// 👥 PARTICIPANTES / CONVITES
+// ===============================
+
+export async function getPendingRequests(
+  rpgId: number
+) {
+  const res = await api.get(
+    `/rpgs/${rpgId}/requests`
+  )
+
+  return res.data
+}
+
+export async function updateParticipantStatus(
+  rpgId: number,
+  userId: number,
+  status: "accepted" | "rejected"
+) {
+  const res = await api.put(
+    `/rpgs/${rpgId}/participants/${userId}?status=${status}`
+  )
+
+  return res.data
+}
+
+// 🔥 ADICIONAR AQUI
+export async function getMyInvites() {
+  const res = await api.get(
+    "/rpgs/invites"
+  )
+
+  return res.data
+}
+
+// 🔥 ADICIONAR AQUI
+export async function acceptInvite(
+  rpgId: number
+) {
+  const res = await api.put(
+    `/rpgs/invites/${rpgId}/accept`
+  )
+
+  return res.data
+}
+
+export async function rejectInvite(
+  rpgId: number
+) {
+  const res = await api.put(
+    `/rpgs/invites/${rpgId}/reject`
+  )
+
+  return res.data
+}
+// ===============================
 // 📄 FICHA
 // ===============================
 export async function getSheetFields(rpgId: number) {
