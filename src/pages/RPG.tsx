@@ -7,7 +7,11 @@ import Lore from "../components/RPG/Lore/Lore"
 import RPGSheets from "../components/RPG/RPGSheets"
 import { getRPG } from "../services/api"
 
-type Tab = "turns" | "chat" | "characters" | "lore"
+type Tab =
+  | "turns"
+  | "chat"
+  | "characters"
+  | "lore"
 
 type RPGType = {
   id: number
@@ -17,14 +21,17 @@ type RPGType = {
 
 export default function RPG() {
   const { id } = useParams()
+
   const rpgId = Number(id)
 
-  // 🔥 AGORA COMEÇA NA ENCICLOPÉDIA
-  const [activeTab, setActiveTab] = useState<Tab>("lore")
+  const [activeTab, setActiveTab] =
+    useState<Tab>("lore")
 
-  const [rpg, setRpg] = useState<RPGType | null>(null)
+  const [rpg, setRpg] =
+    useState<RPGType | null>(null)
 
-  const isValid = id && !isNaN(rpgId)
+  const isValid =
+    id && !isNaN(rpgId)
 
   useEffect(() => {
     if (!isValid) return
@@ -34,8 +41,13 @@ export default function RPG() {
       .catch(() => setRpg(null))
   }, [rpgId, isValid])
 
-  if (!isValid) return <div>RPG inválido</div>
-  if (!rpg) return <div>Carregando RPG...</div>
+  if (!isValid) {
+    return <div>RPG inválido</div>
+  }
+
+  if (!rpg) {
+    return <div>Carregando RPG...</div>
+  }
 
   function tabClass(tab: Tab) {
     return `
@@ -57,33 +69,47 @@ export default function RPG() {
           <h2>{rpg.name}</h2>
         </div>
 
-        {/* 🔥 AGORA TUDO É ABA */}
+        {/* ABAS */}
         <div className="flex gap-3 mt-4 text-xl font-display text-[#e0a96d]">
 
           <button
-            onClick={() => setActiveTab("lore")}
+            onClick={() =>
+              setActiveTab("lore")
+            }
             className={tabClass("lore")}
           >
             Enciclopédia
           </button>
 
           <button
-            onClick={() => setActiveTab("characters")}
-            className={tabClass("characters")}
+            onClick={() =>
+              setActiveTab("characters")
+            }
+            className={tabClass(
+              "characters"
+            )}
           >
             Fichas
           </button>
 
           <button
-            onClick={() => setActiveTab("turns")}
-            className={tabClass("turns")}
+            onClick={() =>
+              setActiveTab("turns")
+            }
+            className={tabClass(
+              "turns"
+            )}
           >
             Turnos
           </button>
 
           <button
-            onClick={() => setActiveTab("chat")}
-            className={tabClass("chat")}
+            onClick={() =>
+              setActiveTab("chat")
+            }
+            className={tabClass(
+              "chat"
+            )}
           >
             Chat
           </button>
@@ -95,22 +121,57 @@ export default function RPG() {
 
         <div className="rpg-panel">
 
-          {activeTab === "lore" && (
-            <div>
-              <Lore rpgId={rpgId} />
-            </div>
-          )}
+          {/* LORE */}
+          <div
+            style={{
+              display:
+                activeTab ===
+                "lore"
+                  ? "block"
+                  : "none",
+            }}
+          >
+            <Lore rpgId={rpgId} />
+          </div>
 
-          {activeTab === "characters" && (
-            <div>
-              <RPGSheets rpgId={rpgId} />
-            </div>
-          )}
+          {/* FICHAS */}
+          <div
+            style={{
+              display:
+                activeTab ===
+                "characters"
+                  ? "block"
+                  : "none",
+            }}
+          >
+            <RPGSheets
+              rpgId={rpgId}
+            />
+          </div>
 
-          {activeTab === "turns" && <Turns rpgId={rpgId} />}
+          {/* TURNOS */}
+          <div
+            style={{
+              display:
+                activeTab ===
+                "turns"
+                  ? "block"
+                  : "none",
+            }}
+          >
+            <Turns rpgId={rpgId} />
+          </div>
 
-          {/* 🔥 MANTÉM CHAT MONTADO (evita reconectar WS toda hora) */}
-          <div style={{ display: activeTab === "chat" ? "block" : "none" }}>
+          {/* CHAT */}
+          <div
+            style={{
+              display:
+                activeTab ===
+                "chat"
+                  ? "block"
+                  : "none",
+            }}
+          >
             <Chat rpgId={rpgId} />
           </div>
 
@@ -118,6 +179,7 @@ export default function RPG() {
 
         {/* SIDEBAR */}
         <div className="rpg-sidebar">
+
           <div className="rpg-panel text-xl font-display text-[#e0a96d]">
             Jogadores
           </div>
@@ -125,6 +187,7 @@ export default function RPG() {
           <div className="rpg-panel text-xl font-display text-[#e0a96d]">
             Anotações
           </div>
+
         </div>
 
       </div>

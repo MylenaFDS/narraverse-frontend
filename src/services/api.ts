@@ -49,22 +49,38 @@ api.interceptors.response.use(
       }
 
       try {
-        const res = await axios.post(`${API_URL}/auth/refresh`, {
-          refresh_token: refreshToken,
-        })
+  const res = await axios.post(
+    `${API_URL}/auth/refresh`,
+    {
+      refresh_token: refreshToken,
+    }
+  )
 
-        const newToken = res.data.access_token
-        localStorage.setItem("token", newToken)
+  const newToken = res.data.access_token
 
-        originalRequest.headers.Authorization = `Bearer ${newToken}`
+  // ✅ salva token novo
+  localStorage.setItem("token", newToken)
 
-        return api(originalRequest)
-      } catch (err) {
-        console.error("Erro ao renovar token:", err)
+  // 🔥 AVISA O APP QUE O TOKEN FOI ATUALIZADO
+  window.dispatchEvent(
+    new Event("token-refreshed")
+  )
 
-        localStorage.clear()
-        return Promise.reject(error)
-      }
+  originalRequest.headers.Authorization =
+    `Bearer ${newToken}`
+
+  return api(originalRequest)
+
+} catch (err) {
+  console.error(
+    "Erro ao renovar token:",
+    err
+  )
+
+  localStorage.clear()
+
+  return Promise.reject(error)
+}
     }
 
     return Promise.reject(error)
@@ -259,6 +275,14 @@ export async function rejectInvite(
   )
 
   return res.data
+}
+
+export async function getInviteCount() {
+  const res = await api.get(
+    "/rpgs/invites"
+  )
+
+  return res.data.length
 }
 // ===============================
 // 📄 FICHA

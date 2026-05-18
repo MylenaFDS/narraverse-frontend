@@ -98,63 +98,122 @@ if (myChars.length > 0) {
 
   let ws: WebSocket | null = null
   let isMounted = true
+  let reconnectTimeout: number | null = null
 
   function connect() {
+    // evita conexão duplicada
+    if (
+      ws &&
+      (
+        ws.readyState === WebSocket.OPEN ||
+        ws.readyState === WebSocket.CONNECTING
+      )
+    ) {
+      return
+    }
+
     ws = new WebSocket(
-      `ws://localhost:8000/ws/rpg/${rpgId}/turns?token=${token}`
+      `ws://127.0.0.1:8001/ws/rpg/${rpgId}/turns?token=${token}`
     )
 
     wsRef.current = ws
 
     ws.onopen = () => {
-  console.log("✅ WS conectado (turns)")
-
-  // 🔥 força sincronização
-  getTurns(rpgId).then(setTurns)
-}
+      console.log("✅ WS conectado (turns)")
+      
+    }
 
     ws.onmessage = (event) => {
-  const message = JSON.parse(event.data)
+      const message = JSON.parse(event.data)
 
-  console.log("📩 WS RECEBIDO:", message)
+      console.log("📩 WS RECEBIDO:", message)
 
-  if (message.type === "new_turn") {
-  setTurns((prev) => {
-  const exists = prev.some((t) => t.id === message.data.id)
-  if (exists) return prev
+      if (message.type === "new_turn") {
+        setTurns((prev) => {
+          const exists = prev.some(
+            (t) => t.id === message.data.id
+          )
 
-  const updated = [...prev, message.data]
+          if (exists) return prev
 
-  return updated.sort(
-    (a, b) =>
-      new Date(a.created_at).getTime() -
-      new Date(b.created_at).getTime()
-  )
-})
-}
-}
+          const updated = [
+            ...prev,
+            message.data,
+          ]
+
+          return updated.sort(
+            (a, b) =>
+              new Date(a.created_at).getTime() -
+              new Date(b.created_at).getTime()
+          )
+        })
+      }
+    }
 
     ws.onerror = () => {
       console.log("🔥 WS erro")
-      ws?.close()
     }
 
-    ws.onclose = () => {
-      console.log("❌ WS desconectado")
+    ws.onclose = (event) => {
+  console.log(
+    "❌ WS desconectado",
+    event.code
+  )
 
-      // 🔥 RECONEXÃO AUTOMÁTICA
-      if (isMounted && ws?.readyState !== WebSocket.OPEN) {
-  setTimeout(connect, 2000)
+  wsRef.current = null
+
+  if (!isMounted) return
+
+  // 🚫 NÃO reconecta se token inválido
+  if (event.code === 1008) {
+    console.log(
+      "⛔ Token inválido no WS — aguardando refresh"
+    )
+
+    return
+  }
+
+  reconnectTimeout = window.setTimeout(() => {
+    connect()
+  }, 2000)
 }
-    }
   }
 
   connect()
 
+  function handleTokenRefresh() {
+  console.log("🔄 Token renovado → reconectando WS")
+
+  ws?.close()
+
+  setTimeout(() => {
+    connect()
+  }, 300)
+}
+
+window.addEventListener(
+  "token-refreshed",
+  handleTokenRefresh
+)
+
+// 👇 cleanup
   return () => {
     isMounted = false
-    ws?.close()
-  }
+
+    if (reconnectTimeout) {
+      clearTimeout(
+        reconnectTimeout
+      )
+    }
+
+    window.removeEventListener(
+      "token-refreshed",
+      handleTokenRefresh
+    )
+
+  wsRef.current?.close()
+    wsRef.current = null
+}
 }, [rpgId])
 
 useEffect(() => {

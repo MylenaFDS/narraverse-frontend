@@ -1,79 +1,184 @@
-import { useEffect, useRef, useCallback, type ReactNode } from "react"
+import {
+  useEffect,
+  useRef,
+  useCallback,
+  type ReactNode,
+} from "react"
 import Navbar from "./Navbar"
 import { Link } from "react-router-dom"
 import NotificationToast from "./NotificationToast"
 import { useNotifications } from "../contexts/useNotifications"
 
-export default function Layout({ children }: { children: ReactNode }) {
-  const { addNotification } = useNotifications()
+export default function Layout({
+  children,
+}: {
+  children: ReactNode
+}) {
+  const { addNotification } =
+    useNotifications()
 
-  const wsRef = useRef<WebSocket | null>(null)
-  const hasConnected = useRef(false)
+  const wsRef =
+    useRef<WebSocket | null>(null)
 
-  const connectWSRef = useRef<() => void>(() => {})
+  const hasConnected =
+    useRef(false)
 
-  const connectWS = useCallback(() => {
-    const token = localStorage.getItem("token")
-    if (!token) return
+  const connectWSRef =
+    useRef<() => void>(() => {})
 
-    const ws = new WebSocket(
-      `ws://127.0.0.1:8001/ws/notifications?token=${token}`
-    )
+  const reconnectTimeoutRef =
+    useRef<number | null>(null)
 
-    wsRef.current = ws
+  const unmountedRef =
+    useRef(false)
 
-    ws.onopen = () => {
-      console.log("🔔 WS NOTIFICATIONS conectado")
-    }
+  const connectWS =
+    useCallback(() => {
+      const token =
+        localStorage.getItem(
+          "token"
+        )
 
-    ws.onmessage = (event) => {
-      try {
-        const msg = JSON.parse(event.data)
+      if (!token) return
 
-        if (msg.type === "notification") {
-          addNotification(msg.message, {
-            meta: {
-              turn_id: msg.turn_id,
-              rpg_id: msg.rpg_id,
-              isNew: true,
-            },
-          })
-        }
-      } catch (err) {
-        console.error("Erro ao processar notificação:", err)
+      // 🚫 evita conexão duplicada
+      if (
+        wsRef.current &&
+        (
+          wsRef.current
+            .readyState ===
+            WebSocket.OPEN ||
+          wsRef.current
+            .readyState ===
+            WebSocket.CONNECTING
+        )
+      ) {
+        return
       }
-    }
 
-    ws.onerror = () => {
-      console.log("⚠️ WS erro")
-      ws.close()
-    }
+      const ws =
+        new WebSocket(
+          `ws://127.0.0.1:8001/ws/notifications?token=${token}`
+        )
 
-    ws.onclose = () => {
-      console.log("❌ WS caiu — reconectando em 3s...")
-      setTimeout(() => {
-        connectWSRef.current()
-      }, 3000)
-    }
-  }, [addNotification])
+      wsRef.current = ws
 
-  // ✅ AGORA CORRETO
+      ws.onopen = () => {
+        console.log(
+          "🔔 WS NOTIFICATIONS conectado"
+        )
+      }
+
+      ws.onmessage = (
+        event
+      ) => {
+        try {
+          const msg =
+            JSON.parse(
+              event.data
+            )
+
+          if (
+            msg.type ===
+            "notification"
+          ) {
+            addNotification(
+              msg.message,
+              {
+                meta: {
+                  turn_id:
+                    msg.turn_id,
+                  rpg_id:
+                    msg.rpg_id,
+                  isNew: true,
+                },
+              }
+            )
+          }
+        } catch (err) {
+          console.error(
+            "Erro ao processar notificação:",
+            err
+          )
+        }
+      }
+
+      ws.onerror = () => {
+        console.log(
+          "⚠️ WS erro"
+        )
+      }
+
+      ws.onclose = () => {
+        console.log(
+          "❌ WS caiu"
+        )
+
+        wsRef.current =
+          null
+
+        // 🚫 evita reconnect ao desmontar
+        if (
+          unmountedRef.current
+        ) {
+          return
+        }
+
+        reconnectTimeoutRef.current =
+          window.setTimeout(
+            () => {
+              connectWSRef.current()
+            },
+            3000
+          )
+      }
+    }, [addNotification])
+
   useEffect(() => {
-    connectWSRef.current = connectWS
+    connectWSRef.current =
+      connectWS
   }, [connectWS])
 
   useEffect(() => {
-    const token = localStorage.getItem("token")
+    const token =
+      localStorage.getItem(
+        "token"
+      )
+
     if (!token) return
 
-    if (hasConnected.current) return
-    hasConnected.current = true
+    unmountedRef.current =
+      false
+
+    if (
+      hasConnected.current
+    ) {
+      return
+    }
+
+    hasConnected.current =
+      true
 
     connectWS()
 
     return () => {
+      unmountedRef.current =
+        true
+
+      if (
+        reconnectTimeoutRef.current
+      ) {
+        clearTimeout(
+          reconnectTimeoutRef.current
+        )
+      }
+
       wsRef.current?.close()
-      hasConnected.current = false
+      wsRef.current =
+        null
+
+      hasConnected.current =
+        false
     }
   }, [connectWS])
 
@@ -82,7 +187,9 @@ export default function Layout({ children }: { children: ReactNode }) {
       <header className="border-b border-[#3a1f24] bg-[#2a1519] px-6 py-4 flex justify-between items-center">
         <h1 className="text-xl font-display text-[#e0a96d]">
           <Link to="/home">
-            <h1>Narraverse</h1>
+            <h1>
+              Narraverse
+            </h1>
           </Link>
         </h1>
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { getMe } from "../services/api"
+import { getMe, getInviteCount } from "../services/api"
 import { Link, useNavigate } from "react-router-dom"
 import { useNotifications } from "../contexts/useNotifications"
 import type { Notification } from "../types/notification"
@@ -13,6 +13,7 @@ type User = {
 export default function Navbar() {
   const [user, setUser] = useState<User | null>(null)
   const [open, setOpen] = useState(false)
+  const [inviteCount, setInviteCount] = useState(0)
 
   const { notifications, markAllAsRead } = useNotifications()
 
@@ -34,7 +35,21 @@ useEffect(() => {
     setUser(data)
   }
 
+  async function loadInvites() {
+    try {
+      const count =
+        await getInviteCount()
+
+      if (!mounted) return
+
+      setInviteCount(count)
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
   loadUser()
+  loadInvites()
 
   return () => {
     mounted = false
@@ -62,7 +77,34 @@ function handleClickNotification(n: Notification) {
       <Link to="/search" className="hover:text-[#e0a96d] transition">
         Buscar
       </Link>
+      <Link
+  to="/home"
+  className="
+    hover:text-[#e0a96d]
+    transition
+    relative
+    flex
+    items-center
+  "
+>
+  Convites
 
+  {inviteCount > 0 && (
+    <span
+      className="
+        ml-2
+        bg-red-600
+        text-white
+        text-xs
+        px-2
+        py-1
+        rounded-full
+      "
+    >
+      {inviteCount}
+    </span>
+  )}
+</Link>
       {user && (
         <>
           <Link to="/profile" className="hover:text-[#e0a96d] transition">
