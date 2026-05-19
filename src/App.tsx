@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, Outlet } from "react-router-dom"
+import { Routes, Route, Navigate } from "react-router-dom"
 
 import Layout from "./components/Layout"
 import PrivateRoute from "./components/PrivateRoute"
@@ -10,31 +10,54 @@ import Login from "./pages/Login"
 import Register from "./pages/Register"
 import Profile from "./pages/Profile"
 
-// 🔥 wrapper do layout privado
-function ProtectedLayout() {
-  return (
-    <PrivateRoute>
-      <Layout>
-        <Outlet />
-      </Layout>
-    </PrivateRoute>
-  )
-}
-
 export default function App() {
   return (
     <Routes>
       {/* públicas */}
-      <Route path="/" element={<Navigate to="/login" />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+      <Route
+        path="/login"
+        element={<Login />}
+      />
+
+      <Route
+        path="/register"
+        element={<Register />}
+      />
 
       {/* privadas */}
-      <Route element={<ProtectedLayout />}>
-        <Route path="/home" element={<Home />} />
-        <Route path="/search" element={<Search />} />
-        <Route path="/rpg/:id" element={<RPG />} />
-        <Route path="/profile" element={<Profile />} />
+      <Route element={<PrivateRoute />}>
+        {/* layout persistente */}
+        <Route element={<Layout />}>
+          <Route
+            path="/"
+            element={
+              <Navigate
+                to="/home"
+                replace
+              />
+            }
+          />
+
+          <Route
+            path="/home"
+            element={<Home />}
+          />
+
+          <Route
+            path="/search"
+            element={<Search />}
+          />
+
+          <Route
+            path="/rpg/:id"
+            element={<RPG />}
+          />
+
+          <Route
+            path="/profile"
+            element={<Profile />}
+          />
+        </Route>
       </Route>
     </Routes>
   )

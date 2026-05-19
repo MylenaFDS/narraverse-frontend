@@ -2,18 +2,15 @@ import {
   useEffect,
   useRef,
   useCallback,
-  type ReactNode,
+  
 } from "react"
 import Navbar from "./Navbar"
-import { Link } from "react-router-dom"
+import { Outlet, Link } from "react-router-dom"
 import NotificationToast from "./NotificationToast"
 import { useNotifications } from "../contexts/useNotifications"
 
-export default function Layout({
-  children,
-}: {
-  children: ReactNode
-}) {
+
+export default function Layout() {
   const { addNotification } =
     useNotifications()
 
@@ -139,7 +136,7 @@ const handleNotification =
       </header>
 
       <main className="p-6 max-w-5xl mx-auto">
-        {children}
+        <Outlet />
       </main>
     </div>
   )
