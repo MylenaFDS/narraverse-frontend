@@ -8,32 +8,37 @@ export default function Login() {
   const navigate = useNavigate()
 
   async function handleLogin() {
-    try {
-      const data = await login(email, password)
+  try {
+    // 🔥 limpa sessão antiga ANTES de logar
+    localStorage.clear()
 
-      if (!data.access_token) {
-        alert("Login falhou")
-        return
-      }
+    const data = await login(email, password)
 
-      // ✅ salva tokens corretamente
-      localStorage.setItem("token", data.access_token)
-      localStorage.setItem("refresh_token", data.refresh_token)
-
-      const user = await getMe()
-
-      if (!user) {
-        throw new Error("Erro ao buscar usuário")
-      }
-
-      localStorage.setItem("user_id", user.id)
-
-      navigate("/home")
-    } catch (err) {
-      console.error(err)
-      alert("Erro ao fazer login")
+    if (!data.access_token) {
+      alert("Login falhou")
+      return
     }
+
+    // ✅ salva tokens
+    localStorage.setItem("token", data.access_token)
+    localStorage.setItem("refresh_token", data.refresh_token)
+
+    const user = await getMe()
+
+    if (!user) {
+      throw new Error("Erro ao buscar usuário")
+    }
+
+    localStorage.setItem("user_id", String(user.id))
+
+    console.log("USER LOGADO:", user.id)
+
+    navigate("/home")
+  } catch (err) {
+    console.error(err)
+    alert("Erro ao fazer login")
   }
+}
 
   return (
     <div className="max-w-md mx-auto mt-20">

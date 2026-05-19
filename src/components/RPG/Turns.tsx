@@ -420,8 +420,9 @@ useEffect(() => {
   const name =
     getCharacterName(turn.character_id) || `Usuário ${turn.user_id}`
   const isHighlighted = location.hash === `#turn-${turn.id}`
-  const isMe = false // 👉 depois você pode ligar com user logado
+  const loggedUserId = Number(localStorage.getItem("user_id"))
 
+const isMe = turn.user_id === loggedUserId
   return (
     <div
   id={`turn-${turn.id}`}
@@ -466,15 +467,17 @@ useEffect(() => {
                 {name}
               </span>
 
-              <button
-  onClick={(e) => {
-    e.stopPropagation()
-    handleDeleteTurn(turn.id)
-  }}
-                className="text-red-400 text-xs opacity-70 hover:opacity-100"
-              >
-                Deletar
-              </button>
+              {isMe && (
+  <button
+    onClick={(e) => {
+      e.stopPropagation()
+      handleDeleteTurn(turn.id)
+    }}
+    className="text-red-400 text-xs opacity-70 hover:opacity-100"
+  >
+    Deletar
+  </button>
+)}
             </div>
 
             {/* TEXTO */}
