@@ -20,167 +20,108 @@ export default function Layout({
   const wsRef =
     useRef<WebSocket | null>(null)
 
-  const hasConnected =
-    useRef(false)
-
-  const connectWSRef =
-    useRef<() => void>(() => {})
-
-  const reconnectTimeoutRef =
-    useRef<number | null>(null)
-
-  const unmountedRef =
-    useRef(false)
-
-  const connectWS =
-    useCallback(() => {
-      const token =
-        localStorage.getItem(
-          "token"
-        )
-
-      if (!token) return
-
-      // 🚫 evita conexão duplicada
-      if (
-        wsRef.current &&
-        (
-          wsRef.current
-            .readyState ===
-            WebSocket.OPEN ||
-          wsRef.current
-            .readyState ===
-            WebSocket.CONNECTING
-        )
-      ) {
-        return
+const handleNotification =
+  useCallback(
+    (
+      message: string,
+      meta?: {
+        turn_id?: number
+        rpg_id?: number
+        isNew?: boolean
       }
+    ) => {
+      addNotification(message, {
+        meta,
+      })
+    },
+    [addNotification]
+  )
 
-      const ws =
-        new WebSocket(
-          `ws://127.0.0.1:8001/ws/notifications?token=${token}`
-        )
 
-      wsRef.current = ws
+ 
+ useEffect(() => {
+  const token = localStorage.getItem("token")
 
-      ws.onopen = () => {
-        console.log(
-          "🔔 WS NOTIFICATIONS conectado"
-        )
-      }
+  if (!token) return
 
-      ws.onmessage = (
-        event
-      ) => {
-        try {
-          const msg =
-            JSON.parse(
-              event.data
-            )
+  // 🚫 evita duplicar conexão
+  if (
+    wsRef.current &&
+    (
+      wsRef.current.readyState === WebSocket.OPEN ||
+      wsRef.current.readyState === WebSocket.CONNECTING
+    )
+  ) {
+    return
+  }
 
-          if (
-            msg.type ===
-            "notification"
-          ) {
-            addNotification(
-              msg.message,
-              {
-                meta: {
-                  turn_id:
-                    msg.turn_id,
-                  rpg_id:
-                    msg.rpg_id,
-                  isNew: true,
-                },
-              }
-            )
-          }
-        } catch (err) {
-          console.error(
-            "Erro ao processar notificação:",
-            err
-          )
-        }
-      }
+  const ws = new WebSocket(
+    `ws://127.0.0.1:8001/ws/notifications?token=${token}`
+  )
 
-      ws.onerror = () => {
-        console.log(
-          "⚠️ WS erro"
-        )
-      }
+  wsRef.current = ws
 
-      ws.onclose = () => {
-        console.log(
-          "❌ WS caiu"
-        )
+  ws.onopen = () => {
+    console.log(
+      "🔔 WS NOTIFICATIONS conectado"
+    )
+  }
 
-        wsRef.current =
-          null
-
-        // 🚫 evita reconnect ao desmontar
-        if (
-          unmountedRef.current
-        ) {
-          return
-        }
-
-        reconnectTimeoutRef.current =
-          window.setTimeout(
-            () => {
-              connectWSRef.current()
-            },
-            3000
-          )
-      }
-    }, [addNotification])
-
-  useEffect(() => {
-    connectWSRef.current =
-      connectWS
-  }, [connectWS])
-
-  useEffect(() => {
-    const token =
-      localStorage.getItem(
-        "token"
+  ws.onmessage = (event) => {
+    try {
+      const msg = JSON.parse(
+        event.data
       )
 
-    if (!token) return
-
-    unmountedRef.current =
-      false
-
-    if (
-      hasConnected.current
-    ) {
-      return
-    }
-
-    hasConnected.current =
-      true
-
-    connectWS()
-
-    return () => {
-      unmountedRef.current =
-        true
-
       if (
-        reconnectTimeoutRef.current
+        msg.type === "notification"
       ) {
-        clearTimeout(
-          reconnectTimeoutRef.current
-        )
+        handleNotification(
+  msg.message,
+  {
+    turn_id:
+      msg.turn_id,
+    rpg_id:
+      msg.rpg_id,
+    isNew: true,
+  }
+)
       }
-
-      wsRef.current?.close()
-      wsRef.current =
-        null
-
-      hasConnected.current =
-        false
+    } catch (err) {
+      console.error(
+        "Erro WS:",
+        err
+      )
     }
-  }, [connectWS])
+  }
+
+  ws.onerror = (event) => {
+    console.log(
+      "⚠️ WS erro",
+      event
+    )
+  }
+
+  ws.onclose = (event) => {
+    console.log(
+      "❌ WS caiu",
+      event.code,
+      event.reason
+    )
+
+    wsRef.current = null
+  }
+
+  return () => {
+    console.log(
+      "🧹 cleanup ws"
+    )
+
+    ws.close()
+
+    wsRef.current = null
+  }
+}, [handleNotification])
 
   return (
     <div className="min-h-screen bg-[#1a0f12] text-[#f5e9e2]">
