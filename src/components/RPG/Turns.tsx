@@ -25,13 +25,33 @@ import { useLocation, useNavigate } from "react-router-dom"
 
 type Props = {
   rpgId: number
+  rpgOwnerId: number
 }
 
 type TurnWithReplies = RPGTurn & {
   replies: TurnWithReplies[]
 }
 
-export default function Turns({ rpgId }: Props) {
+function getAvatarColor(name: string) {
+  const colors = [
+    "from-red-500 to-red-700",
+    "from-purple-500 to-purple-700",
+    "from-green-500 to-green-700",
+    "from-blue-500 to-blue-700",
+    "from-yellow-500 to-yellow-700",
+    "from-pink-500 to-pink-700",
+  ]
+
+  const index =
+    name.length % colors.length
+
+  return colors[index]
+}
+
+export default function Turns({
+  rpgId,
+  rpgOwnerId,
+}: Props) {
   const [turns, setTurns] = useState<RPGTurn[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -460,17 +480,16 @@ const isMe = turn.user_id === loggedUserId
 
         {/* AVATAR */}
         <div
-  className="
+  className={`
     w-11 h-11 rounded-full
     bg-gradient-to-br
-    from-amber-400
-    to-yellow-700
+    ${getAvatarColor(name)}
     flex items-center justify-center
     text-black font-bold
     text-sm
-    border border-yellow-800
+    border border-black/20
     shadow-lg shrink-0
-  "
+  `}
 >
           {getInitials(name)}
         </div>
@@ -501,9 +520,34 @@ const isMe = turn.user_id === loggedUserId
 
             {/* HEADER */}
             <div className="flex justify-between items-center mb-2">
-              <span className="font-semibold text-[#e0a96d] tracking-wide text-[15px]">
-                {name}
-              </span>
+              <div className="flex items-center gap-2">
+  <span className="font-semibold text-[#e0a96d] tracking-wide text-[15px]">
+    {name}
+  </span>
+
+  {turn.user_id === rpgOwnerId ? (
+    <span className="
+      text-[10px]
+      px-2 py-[2px]
+      rounded-full
+      bg-yellow-700/20
+      text-yellow-400
+      border border-yellow-700/40
+    ">
+      Mestre
+    </span>
+  ) : (
+    <span className="
+      text-[10px]
+      px-2 py-[2px]
+      rounded-full
+      bg-[#2a2a2a]
+      text-gray-400
+    ">
+      Jogador
+    </span>
+  )}
+</div>
 
               {isMe && (
   <button

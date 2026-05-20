@@ -20,8 +20,8 @@ type RPGType = {
   id: number
   name: string
   description?: string
+  owner_id: number
 }
-
 export default function RPG() {
   const { id } = useParams()
   const location = useLocation()
@@ -169,7 +169,10 @@ export default function RPG() {
                   : "none",
             }}
           >
-            <Turns rpgId={rpgId} />
+            <Turns
+  rpgId={rpgId}
+  rpgOwnerId={rpg.owner_id}
+/>
           </div>
 
           {/* CHAT */}
