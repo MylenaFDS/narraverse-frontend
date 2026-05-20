@@ -221,7 +221,6 @@ useEffect(() => {
 
   const id = location.hash.replace("#turn-", "")
 
-  // 🔥 espera o DOM renderizar
   setTimeout(() => {
     const el = document.getElementById(`turn-${id}`)
 
@@ -428,7 +427,11 @@ const isMe = turn.user_id === loggedUserId
   id={`turn-${turn.id}`}
   key={turn.id}
   style={{ marginLeft: depth * 20 }}
-  onClick={() => navigate(`/rpg/${rpgId}#turn-${turn.id}`)}
+  onClick={() => {
+  if (location.hash !== `#turn-${turn.id}`) {
+    navigate(`/rpg/${rpgId}#turn-${turn.id}`)
+  }
+}}
   className={`cursor-pointer ${
         isHighlighted ? "bg-yellow-900/30 border border-yellow-500" : ""
       }`}

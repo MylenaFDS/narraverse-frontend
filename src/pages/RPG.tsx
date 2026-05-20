@@ -1,4 +1,7 @@
-import { useParams } from "react-router-dom"
+import {
+  useParams,
+  useLocation,
+} from "react-router-dom"
 import { useState, useEffect } from "react"
 
 import Turns from "../components/RPG/Turns"
@@ -21,11 +24,16 @@ type RPGType = {
 
 export default function RPG() {
   const { id } = useParams()
+  const location = useLocation()
 
   const rpgId = Number(id)
 
   const [activeTab, setActiveTab] =
-    useState<Tab>("lore")
+  useState<Tab>(() =>
+    location.hash.startsWith("#turn-")
+      ? "turns"
+      : "lore"
+  )
 
   const [rpg, setRpg] =
     useState<RPGType | null>(null)
@@ -40,6 +48,8 @@ export default function RPG() {
       .then(setRpg)
       .catch(() => setRpg(null))
   }, [rpgId, isValid])
+
+
 
   if (!isValid) {
     return <div>RPG inválido</div>
