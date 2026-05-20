@@ -426,7 +426,14 @@ const isMe = turn.user_id === loggedUserId
     <div
   id={`turn-${turn.id}`}
   key={turn.id}
-  style={{ marginLeft: depth * 20 }}
+  style={{
+  marginLeft: depth * 28,
+  borderLeft:
+    depth > 0
+      ? "2px solid rgba(224,169,109,.15)"
+      : "none",
+  paddingLeft: depth > 0 ? 14 : 0,
+}}
   onClick={() => {
   if (location.hash !== `#turn-${turn.id}`) {
     navigate(`/rpg/${rpgId}#turn-${turn.id}`)
@@ -440,12 +447,19 @@ const isMe = turn.user_id === loggedUserId
       <div className="flex items-start gap-3 mt-2">
 
         {/* AVATAR */}
-        <div className="
-          w-9 h-9 rounded-full 
-          bg-gradient-to-br from-yellow-500 to-yellow-700
-          text-black flex items-center justify-center 
-          text-xs font-bold shadow-md
-        ">
+        <div
+  className="
+    w-11 h-11 rounded-full
+    bg-gradient-to-br
+    from-amber-400
+    to-yellow-700
+    flex items-center justify-center
+    text-black font-bold
+    text-sm
+    border border-yellow-800
+    shadow-lg shrink-0
+  "
+>
           {getInitials(name)}
         </div>
 
@@ -453,20 +467,22 @@ const isMe = turn.user_id === loggedUserId
         <div className="flex-1">
 
           <div
-            className={`
-              p-3 rounded-lg transition-all duration-200
-              border border-[#3a2a2a]
-              ${isMe
-                ? "bg-transparent"
-                : "bg-transparent hover:bg-[#2a2a2a]"
-              }
-            `}
-            style={{ fontFamily: "Georgia, serif" }}
-          >
+  className={`
+    p-4 rounded-2xl transition-all duration-200
+    border backdrop-blur-sm
+    shadow-md hover:shadow-lg
+    ${
+      isHighlighted
+        ? "border-yellow-500 bg-yellow-900/20"
+        : "border-[#3a2a2a] bg-[#1b1515]/70 hover:bg-[#241c1c]"
+    }
+  `}
+  style={{ fontFamily: "Georgia, serif" }}
+>
 
             {/* HEADER */}
-            <div className="flex justify-between items-center mb-1">
-              <span className="font-semibold text-yellow-500 tracking-wide">
+            <div className="flex justify-between items-center mb-2">
+              <span className="font-semibold text-[#e0a96d] tracking-wide text-[15px]">
                 {name}
               </span>
 
@@ -506,7 +522,14 @@ const isMe = turn.user_id === loggedUserId
 
   
 }}
-    className="text-xs text-yellow-600 hover:text-yellow-400 mt-1 transition"
+    className="
+  text-xs
+  text-[#c99755]
+  hover:text-[#e0a96d]
+  mt-2
+  transition
+  font-medium
+"
   >
     Responder
   </button>
@@ -580,7 +603,7 @@ const isMe = turn.user_id === loggedUserId
       )}
 
       {/* INPUT */}
-      <div className="mt-4 flex gap-2 flex-col relative">
+      <div className="mt-8 flex gap-3 flex-col relative border-t border-[#3a2a2a] pt-5">
         <select
           value={selectedCharacterId ?? ""}
           onChange={(e) => setSelectedCharacterId(Number(e.target.value))}
