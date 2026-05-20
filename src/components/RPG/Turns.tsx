@@ -75,6 +75,7 @@ const [filteredReply, setFilteredReply] = useState<Character[]>([])
   const [sheetFields, setSheetFields] = useState<RPGSheetField[]>([])
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null)
   const [sheetData, setSheetData] = useState<Record<number, string>>({})
+  const [collapsed, setCollapsed] =useState<Record<number, boolean>>({})
   
   const wsRef = useRef<WebSocket | null>(null)
   const location = useLocation()
@@ -650,8 +651,34 @@ const isMe = turn.user_id === loggedUserId
   </div>
 )}
 
+{turn.replies.length > 0 && (
+  <button
+    onClick={(e) => {
+      e.stopPropagation()
+
+      setCollapsed((prev) => ({
+        ...prev,
+        [turn.id]:
+          !prev[turn.id],
+      }))
+    }}
+    className="
+      text-xs
+      text-gray-500
+      hover:text-[#e0a96d]
+      mt-2
+    "
+  >
+    {collapsed[turn.id]
+      ? `Mostrar respostas (${turn.replies.length})`
+      : `Ocultar respostas`}
+  </button>
+)}
       {/* REPLIES */}
-      {turn.replies.map((r) => renderTurn(r, depth + 1))}
+      {!collapsed[turn.id] &&
+  turn.replies.map((r) =>
+    renderTurn(r, depth + 1)
+)}
     </div>
   )
 }
@@ -709,8 +736,24 @@ const isMe = turn.user_id === loggedUserId
       {/* MODAL */}
       {selectedCharacter && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center">
-          <div className="bg-[#1f1f1f] p-6 rounded w-[400px]">
-            <h2 className="text-lg mb-4">{selectedCharacter.name}</h2>
+          <div className="
+  bg-gradient-to-br
+  from-[#211616]
+  to-[#161010]
+  border border-[#4a2f2f]
+  p-6
+  rounded-3xl
+  shadow-2xl
+  w-[450px]
+  max-h-[80vh]
+  overflow-y-auto
+">
+            <h2 className="
+  text-2xl
+  font-display
+  text-[#e0a96d]
+  mb-5
+">{selectedCharacter.name}</h2>
 
             {Object.entries(sheetData).map(([fieldId, value]) => {
               const fieldName =
