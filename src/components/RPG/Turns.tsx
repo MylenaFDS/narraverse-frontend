@@ -439,9 +439,21 @@ const isMe = turn.user_id === loggedUserId
     navigate(`/rpg/${rpgId}#turn-${turn.id}`)
   }
 }}
-  className={`cursor-pointer ${
-        isHighlighted ? "bg-yellow-900/30 border border-yellow-500" : ""
-      }`}
+  className={`
+  cursor-pointer
+  transition-all
+  duration-300
+  ${
+    isHighlighted
+      ? `
+        ring-2
+        ring-yellow-500/50
+        shadow-[0_0_30px_rgba(224,169,109,.15)]
+        rounded-2xl
+      `
+      : ""
+  }
+`}
 >
 
       <div className="flex items-start gap-3 mt-2">
@@ -468,13 +480,20 @@ const isMe = turn.user_id === loggedUserId
 
           <div
   className={`
-    p-4 rounded-2xl transition-all duration-200
+    p-4 rounded-2xl transition-all duration-300
     border backdrop-blur-sm
-    shadow-md hover:shadow-lg
+    shadow-md hover:shadow-xl
+    hover:scale-[1.01]
     ${
       isHighlighted
         ? "border-yellow-500 bg-yellow-900/20"
-        : "border-[#3a2a2a] bg-[#1b1515]/70 hover:bg-[#241c1c]"
+        : `
+          border-[#3a2a2a]
+          bg-gradient-to-br
+          from-[#211616]/90
+          to-[#161010]/90
+          hover:border-[#5a3c2d]
+        `
     }
   `}
   style={{ fontFamily: "Georgia, serif" }}

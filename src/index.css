@@ -154,22 +154,41 @@ body {
 
   /* ✍️ TEXTAREA RPG */
   .rpg-input {
-    @apply w-full p-3 rounded-lg;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(212, 175, 55, 0.2);
-    color: #f5e9e2;
-  }
+  background: rgba(28, 20, 20, 0.9);
+  border: 1px solid #4a2f2f;
+  border-radius: 14px;
+  padding: 12px 14px;
+  color: #f5e9e2;
+  transition: 0.2s ease;
+  outline: none;
+}
+
+.rpg-input:focus {
+  border-color: #e0a96d;
+  box-shadow: 0 0 0 3px rgba(224, 169, 109, 0.15);
+}
 
   /* 🔘 BOTÃO RPG */
   .rpg-btn {
-    @apply px-4 py-2 rounded-lg transition;
-    background: linear-gradient(145deg, #6e2a35, #4a1820);
-    border: 1px solid rgba(212, 175, 55, 0.3);
-  }
+  background: linear-gradient(
+    135deg,
+    #d9a35f,
+    #b77b33
+  );
 
-  .rpg-btn:hover {
-    background: linear-gradient(145deg, #7a2f3c, #5a1d26);
-  }
+  color: #1a0f12;
+  font-weight: bold;
+  border-radius: 14px;
+  padding: 10px 18px;
+
+  transition: 0.25s ease;
+}
+
+.rpg-btn:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 0 18px rgba(224,169,109,.3);
+}
 
   /* 🧭 Layout do RPG */
   .rpg-layout {
@@ -227,4 +246,20 @@ body {
 
 .animate-fade-in {
   animation: fade-in 0.3s ease;
+}
+
+@keyframes fadeInTurn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeInTurn 0.25s ease-out;
 }
