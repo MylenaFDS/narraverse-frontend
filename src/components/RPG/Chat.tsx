@@ -83,8 +83,11 @@ export default function Chat({ rpgId }: { rpgId: number }) {
       console.error("🔥 WS chat erro:", err)
     }
 
-    ws.onclose = () => {
-      console.log("❌ WS chat desconectado")
+    ws.onclose = (event) => {
+      console.log(
+  "🔌 WS chat fechado",
+  event.code
+)
     }
 
     wsRef.current = ws

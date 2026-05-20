@@ -156,9 +156,9 @@ if (myChars.length > 0) {
 
     ws.onclose = (event) => {
   console.log(
-    "❌ WS desconectado",
-    event.code
-  )
+  "🔌 WS turns fechado",
+  event.code
+)
 
   wsRef.current = null
 
