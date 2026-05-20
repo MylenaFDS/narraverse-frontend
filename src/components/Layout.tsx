@@ -33,7 +33,13 @@ const handleNotification =
     },
     [addNotification]
   )
+useEffect(() => {
+  console.log("🟢 Layout montou")
 
+  return () => {
+    console.log("🔴 Layout desmontou")
+  }
+}, [])
 
  
  useEffect(() => {
