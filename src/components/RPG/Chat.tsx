@@ -12,7 +12,8 @@ export default function Chat({ rpgId }: { rpgId: number }) {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
   const [editingMessage, setEditingMessage] = useState<Message | null>(null)
-
+  const [typingUsers, setTypingUsers] = useState<string[]>([])
+  const typingTimeout = useRef<number | null>(null)
   const wsRef = useRef<WebSocket | null>(null)
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
   const inputRef = useRef<HTMLTextAreaElement | null>(null)
@@ -58,22 +59,60 @@ export default function Chat({ rpgId }: { rpgId: number }) {
         const data = JSON.parse(event.data)
 
         if (data.type === "message") {
-          setMessages(prev => [...prev, data.data])
-        }
+  setMessages(prev => [...prev, data.data])
+}
 
-        else if (data.type === "delete") {
-          setMessages(prev => prev.filter(m => m.id !== data.message_id))
-        }
+else if (data.type === "delete") {
+  setMessages(prev =>
+    prev.filter(
+      m => m.id !== data.message_id
+    )
+  )
+}
 
-        else if (data.type === "edit") {
-          setMessages(prev =>
-            prev.map(m =>
-              m.id === data.data.id
-                ? { ...m, content: data.data.content }
-                : m
-            )
-          )
-        }
+else if (data.type === "edit") {
+  setMessages(prev =>
+    prev.map(m =>
+      m.id === data.data.id
+        ? {
+            ...m,
+            content:
+              data.data.content
+          }
+        : m
+    )
+  )
+}
+
+else if (
+  data.type === "typing_start"
+) {
+  setTypingUsers((prev) => {
+    if (
+      prev.includes(
+        data.username
+      )
+    ) {
+      return prev
+    }
+
+    return [
+      ...prev,
+      data.username,
+    ]
+  })
+}
+
+else if (
+  data.type === "typing_stop"
+) {
+  setTypingUsers((prev) =>
+    prev.filter(
+      (u) =>
+        u !== data.username
+    )
+  )
+}
       } catch (err) {
         console.error("Erro WS:", err)
       }
@@ -91,7 +130,15 @@ export default function Chat({ rpgId }: { rpgId: number }) {
     }
 
     wsRef.current = ws
-    return () => ws.close()
+    return () => {
+  ws.close()
+
+  if (typingTimeout.current) {
+    clearTimeout(
+      typingTimeout.current
+    )
+  }
+}
   }, [rpgId])
 
   // ===============================
@@ -187,20 +234,79 @@ export default function Chat({ rpgId }: { rpgId: number }) {
         })}
         <div ref={messagesEndRef} />
       </div>
-
+        {typingUsers.length > 0 && (
+  <div
+    className="
+      text-sm
+      italic
+      text-gray-400
+      px-3
+      pb-1
+      animate-pulse
+    "
+  >
+    {typingUsers.length === 1
+  ? `${typingUsers[0]} está digitando...`
+  : `${typingUsers.join(", ")} estão digitando...`
+}
+  </div>
+)}
       <div className="flex p-2 gap-2">
         <textarea
           ref={inputRef}
           value={input}
-          onChange={(e) => {
-            let value = e.target.value
-            const LIMIT = 40
-            const lines = value.split("\n")
-            const last = lines[lines.length - 1]
+ onChange={(e) => {
+  let value = e.target.value
 
-            if (last.length >= LIMIT) value += "\n"
-            setInput(value)
-          }}
+  const LIMIT = 40
+  const lines =
+    value.split("\n")
+
+  const last =
+    lines[lines.length - 1]
+
+  if (last.length >= LIMIT) {
+    value += "\n"
+  }
+
+  setInput(value)
+
+  // 🔥 typing start
+  if (
+  wsRef.current?.readyState ===
+  WebSocket.OPEN
+) {
+  wsRef.current.send(
+    JSON.stringify({
+      type: "typing_start",
+    })
+  )
+}
+
+  // 🔥 limpa timeout antigo
+  if (
+    typingTimeout.current
+  ) {
+    clearTimeout(
+      typingTimeout.current
+    )
+  }
+
+  // 🔥 typing stop
+  typingTimeout.current =
+    window.setTimeout(() => {
+      if (
+  wsRef.current?.readyState ===
+  WebSocket.OPEN
+) {
+  wsRef.current.send(
+    JSON.stringify({
+      type: "typing_stop",
+    })
+  )
+}
+    }, 1200)
+}}
           className="flex-1 bg-[#1a0f12] border p-2 rounded"
         />
 
