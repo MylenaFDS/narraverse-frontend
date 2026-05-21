@@ -76,6 +76,7 @@ const [filteredReply, setFilteredReply] = useState<Character[]>([])
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null)
   const [sheetData, setSheetData] = useState<Record<number, string>>({})
   const [collapsed, setCollapsed] =useState<Record<number, boolean>>({})
+  const [newTurnIds, setNewTurnIds] =useState<number[]>([])
   
   const wsRef = useRef<WebSocket | null>(null)
   const location = useLocation()
@@ -156,6 +157,18 @@ if (myChars.length > 0) {
           )
 
           if (exists) return prev
+          setNewTurnIds((prev) => [
+  ...prev,
+  message.data.id,
+])
+
+setTimeout(() => {
+  setNewTurnIds((prev) =>
+    prev.filter(
+      (id) => id !== message.data.id
+    )
+  )
+}, 3500)
 
           const updated = [
             ...prev,
@@ -500,13 +513,22 @@ const isMe = turn.user_id === loggedUserId
 
           <div
   className={`
-    p-4 rounded-2xl transition-all duration-300
+    p-4 rounded-2xl
+    transition-all duration-300
     border backdrop-blur-sm
-    shadow-md hover:shadow-xl
-    hover:scale-[1.01]
+    shadow-md
+    hover:shadow-xl
+    hover:-translate-y-[1px]
+    hover:border-[#7a5442]
+
     ${
-      isHighlighted
-        ? "border-yellow-500 bg-yellow-900/20"
+  newTurnIds.includes(turn.id)
+    ? "ring-2 ring-green-500/40"
+    : ""
+}
+
+${isHighlighted
+        ? "ring-2 ring-yellow-500/50 shadow-[0_0_30px_rgba(224,169,109,.15)]"
         : `
           border-[#3a2a2a]
           bg-gradient-to-br
@@ -521,33 +543,39 @@ const isMe = turn.user_id === loggedUserId
 
             {/* HEADER */}
             <div className="flex justify-between items-center mb-2">
-              <div className="flex items-center gap-2">
-  <span className="font-semibold text-[#e0a96d] tracking-wide text-[15px]">
-    {name}
-  </span>
+              <div className="flex flex-col">
+  <div className="flex items-center gap-2">
+    <span className="font-semibold text-[#e0a96d] tracking-wide text-[15px]">
+      {name}
+    </span>
 
-  {turn.user_id === rpgOwnerId ? (
-    <span className="
-      text-[10px]
-      px-2 py-[2px]
-      rounded-full
-      bg-yellow-700/20
-      text-yellow-400
-      border border-yellow-700/40
-    ">
-      Mestre
-    </span>
-  ) : (
-    <span className="
-      text-[10px]
-      px-2 py-[2px]
-      rounded-full
-      bg-[#2a2a2a]
-      text-gray-400
-    ">
-      Jogador
-    </span>
-  )}
+    {turn.user_id === rpgOwnerId ? (
+      <span className="
+        text-[10px]
+        px-2 py-[2px]
+        rounded-full
+        bg-yellow-700/20
+        text-yellow-400
+        border border-yellow-700/40
+      ">
+        Mestre
+      </span>
+    ) : (
+      <span className="
+        text-[10px]
+        px-2 py-[2px]
+        rounded-full
+        bg-[#2a2a2a]
+        text-gray-400
+      ">
+        Jogador
+      </span>
+    )}
+  </div>
+
+  <span className="text-[11px] text-gray-500">
+    Personagem ativo
+  </span>
 </div>
 
               {isMe && (
@@ -595,7 +623,7 @@ const isMe = turn.user_id === loggedUserId
   font-medium
 "
   >
-    Responder
+    ↳ Responder
   </button>
 )}
         </div>
@@ -734,49 +762,75 @@ const isMe = turn.user_id === loggedUserId
       </div>
 
       {/* MODAL */}
-      {selectedCharacter && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center">
-          <div className="
-  bg-gradient-to-br
-  from-[#211616]
-  to-[#161010]
-  border border-[#4a2f2f]
-  p-6
-  rounded-3xl
-  shadow-2xl
-  w-[450px]
-  max-h-[80vh]
-  overflow-y-auto
-">
-            <h2 className="
-  text-2xl
-  font-display
-  text-[#e0a96d]
-  mb-5
-">{selectedCharacter.name}</h2>
+{selectedCharacter && (
+  <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+    <div
+      className="
+        bg-gradient-to-br
+        from-[#211616]
+        to-[#161010]
+        border border-[#4a2f2f]
+        p-6
+        rounded-3xl
+        shadow-2xl
+        w-[450px]
+        max-h-[80vh]
+        overflow-y-auto
+      "
+    >
+      <h2
+        className="
+          text-2xl
+          font-display
+          text-[#e0a96d]
+          mb-5
+        "
+      >
+        {selectedCharacter.name}
+      </h2>
 
-            {Object.entries(sheetData).map(([fieldId, value]) => {
-              const fieldName =
-                sheetFields.find((f) => f.id === Number(fieldId))?.name ||
-                `Campo ${fieldId}`
+      <div className="space-y-3">
+        {Object.entries(sheetData).map(
+          ([fieldId, value]) => {
+            const fieldName =
+              sheetFields.find(
+                (f) =>
+                  f.id === Number(fieldId)
+              )?.name ||
+              `Campo ${fieldId}`
 
-              return (
-                <div key={fieldId} className="mb-2">
-                  <span className="text-gray-400">{fieldName}:</span>
-                  <p>{value}</p>
-                </div>
-              )
-            })}
+            return (
+              <div
+                key={fieldId}
+                className="
+                  bg-black/20
+                  border border-[#3a2a2a]
+                  rounded-xl
+                  p-3
+                "
+              >
+                <span className="text-gray-400">
+                  {fieldName}:
+                </span>
 
-            <button
-              onClick={() => setSelectedCharacter(null)}
-              className="mt-4 rpg-btn w-full"
-            >
-              Fechar
-            </button>
-          </div>
-        </div>
-      )}
+                <p>{value}</p>
+              </div>
+            )
+          }
+        )}
+      </div>
+
+      <button
+        onClick={() =>
+          setSelectedCharacter(null)
+        }
+        className="mt-5 rpg-btn w-full"
+      >
+        Fechar
+      </button>
+    </div>
+  </div>
+)}
     </>
   )
   
