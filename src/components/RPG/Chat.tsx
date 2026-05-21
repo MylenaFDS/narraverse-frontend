@@ -23,6 +23,7 @@ export default function Chat({ rpgId }: { rpgId: number }) {
   const [typingUsers, setTypingUsers] = useState<string[]>([])
   const [onlineUsers, setOnlineUsers] =useState<string[]>([])
   const [replyingTo, setReplyingTo] = useState<Message | null>(null)
+  const [highlightedMessageId, setHighlightedMessageId] = useState<number | null>(null)
   const typingTimeout = useRef<number | null>(null)
   const wsRef = useRef<WebSocket | null>(null)
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
@@ -433,7 +434,31 @@ reconnectTimeout =
       console.error("Erro ao deletar:", err)
     }
   }
+  function scrollToMessage(
+    messageId: number
+  ) {
+    const el =
+      document.getElementById(
+        `message-${messageId}`
+      )
 
+    if (!el) return
+
+    el.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    })
+
+    setHighlightedMessageId(
+      messageId
+    )
+
+    setTimeout(() => {
+      setHighlightedMessageId(
+        null
+      )
+    }, 2000)
+  }
   return (
     <div className="flex flex-col h-[500px] bg-transparent rounded-xl border border-yellow-900/30">
 
@@ -458,7 +483,16 @@ reconnectTimeout =
           const isMe = msg.user_id === myUserId
 
           return (
-            <div key={msg.id} className={`flex gap-2 ${isMe ? "justify-end" : ""}`}>
+            <div key={msg.id} id={`message-${msg.id}`} className={`flex gap-2 transition-all duration-500 ${
+  isMe
+    ? "justify-end"
+    : ""
+} ${
+  highlightedMessageId ===
+  msg.id
+    ? "scale-[1.02]"
+    : ""
+}`}>
               <div>
                 <div className="text-xs text-yellow-500">
                   {msg.username}
@@ -467,10 +501,18 @@ reconnectTimeout =
                 <div className="bg-[#2a1519] px-3 py-2 rounded-lg max-w-[420px] min-w-[180px]">
 
   {msg.reply_to && (
-    <div
-      className="
-  mb-2
-  border-l-4
+    <button
+  type="button"
+  onClick={() =>
+    scrollToMessage(
+      msg.reply_to!.id
+    )
+  }
+  className="
+    w-full
+    text-left
+    mb-2
+    border-l-4
   border-yellow-500
   bg-black/20
   rounded-md
@@ -487,7 +529,7 @@ reconnectTimeout =
       <div className="text-gray-300 break-words line-clamp-2">
         {msg.reply_to.content}
       </div>
-    </div>
+    </button>
   )}
 
   <div className="whitespace-pre-wrap break-words">
