@@ -45,102 +45,257 @@ export default function Chat({ rpgId }: { rpgId: number }) {
   }, [rpgId])
 
   // ===============================
-  // WS
-  // ===============================
-  useEffect(() => {
-    const token = localStorage.getItem("token")
-    if (!token) return
+// WS
+// ===============================
+useEffect(() => {
+  const token =
+    localStorage.getItem("token")
 
-    const ws = new WebSocket(
+  if (!token) return
+
+  let ws: WebSocket | null =
+    null
+
+  let isMounted = true
+
+  let reconnectTimeout:
+    number | null = null
+
+  function connect() {
+    // evita conexão duplicada
+    if (
+      ws &&
+      (
+        ws.readyState ===
+          WebSocket.OPEN ||
+        ws.readyState ===
+          WebSocket.CONNECTING
+      )
+    ) {
+      return
+    }
+
+    ws = new WebSocket(
       `ws://127.0.0.1:8001/ws/rpg/${rpgId}/chat?token=${token}`
     )
 
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data)
+    wsRef.current = ws
 
-        if (data.type === "message") {
-  setMessages(prev => [...prev, data.data])
-}
-
-else if (data.type === "delete") {
-  setMessages(prev =>
-    prev.filter(
-      m => m.id !== data.message_id
-    )
-  )
-}
-
-else if (data.type === "edit") {
-  setMessages(prev =>
-    prev.map(m =>
-      m.id === data.data.id
-        ? {
-            ...m,
-            content:
-              data.data.content
-          }
-        : m
-    )
-  )
-}
-
-else if (
-  data.type === "typing_start"
-) {
-  setTypingUsers((prev) => {
-    if (
-      prev.includes(
-        data.username
+    ws.onopen = () => {
+      console.log(
+        "✅ WS CHAT conectado"
       )
-    ) {
-      return prev
     }
 
-    return [
-      ...prev,
-      data.username,
-    ]
-  })
-}
+    ws.onmessage = (
+      event
+    ) => {
+      try {
+        const data =
+          JSON.parse(
+            event.data
+          )
 
-else if (
-  data.type === "typing_stop"
-) {
-  setTypingUsers((prev) =>
-    prev.filter(
-      (u) =>
-        u !== data.username
-    )
-  )
-}
+        if (
+          data.type ===
+          "message"
+        ) {
+          setMessages(
+            (prev) => [
+              ...prev,
+              data.data,
+            ]
+          )
+        }
+
+        else if (
+          data.type ===
+          "delete"
+        ) {
+          setMessages(
+            (prev) =>
+              prev.filter(
+                (m) =>
+                  m.id !==
+                  data.message_id
+              )
+          )
+        }
+
+        else if (
+          data.type ===
+          "edit"
+        ) {
+          setMessages(
+            (prev) =>
+              prev.map(
+                (m) =>
+                  m.id ===
+                  data.data.id
+                    ? {
+                        ...m,
+                        content:
+                          data
+                            .data
+                            .content,
+                      }
+                    : m
+              )
+          )
+        }
+
+        else if (
+          data.type ===
+          "typing_start"
+        ) {
+          setTypingUsers(
+            (prev) => {
+              if (
+                prev.includes(
+                  data.username
+                )
+              ) {
+                return prev
+              }
+
+              return [
+                ...prev,
+                data.username,
+              ]
+            }
+          )
+        }
+
+        else if (
+          data.type ===
+          "typing_stop"
+        ) {
+          setTypingUsers(
+            (prev) =>
+              prev.filter(
+                (u) =>
+                  u !==
+                  data.username
+              )
+          )
+        }
       } catch (err) {
-        console.error("Erro WS:", err)
+        console.error(
+          "Erro WS:",
+          err
+        )
       }
     }
 
-    ws.onerror = (err) => {
-      console.error("🔥 WS chat erro:", err)
-    }
-
-    ws.onclose = (event) => {
+    ws.onerror = () => {
       console.log(
-  "🔌 WS chat fechado",
-  event.code
-)
+        "⚠️ WS chat erro"
+      )
+
+      ws?.close()
     }
 
-    wsRef.current = ws
-    return () => {
-  ws.close()
+    ws.onclose = (
+      event
+    ) => {
+      console.log(
+        "🔌 WS chat fechado",
+        event.code
+      )
 
-  if (typingTimeout.current) {
-    clearTimeout(
-      typingTimeout.current
+      wsRef.current =
+        null
+
+      if (
+        !isMounted
+      ) {
+        return
+      }
+
+      // token inválido
+      if (
+        event.code ===
+        1008
+      ) {
+        console.log(
+          "⛔ Token inválido no chat WS"
+        )
+
+        return
+      }
+
+      const delay =
+  ws?.readyState ===
+  WebSocket.CLOSED
+    ? 4000
+    : 2500
+
+reconnectTimeout =
+  window.setTimeout(
+    () => {
+      if (!isMounted) return
+
+      console.log(
+        "🔄 Reconectando chat..."
+      )
+
+      connect()
+    },
+    delay
+  )
+    }
+  }
+
+  connect()
+
+  function handleTokenRefresh() {
+    console.log(
+      "🔄 Token renovado → reconectando chat"
+    )
+
+    ws?.close()
+
+    setTimeout(
+      () => {
+        connect()
+      },
+      300
     )
   }
-}
-  }, [rpgId])
+
+  window.addEventListener(
+    "token-refreshed",
+    handleTokenRefresh
+  )
+
+  return () => {
+    isMounted = false
+
+    if (
+      reconnectTimeout
+    ) {
+      clearTimeout(
+        reconnectTimeout
+      )
+    }
+
+    window.removeEventListener(
+      "token-refreshed",
+      handleTokenRefresh
+    )
+
+    if (
+      typingTimeout.current
+    ) {
+      clearTimeout(
+        typingTimeout.current
+      )
+    }
+
+    wsRef.current?.close()
+    wsRef.current = null
+  }
+}, [rpgId])
 
   useEffect(() => {
   const container =
