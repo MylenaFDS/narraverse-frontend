@@ -6,6 +6,14 @@ type Message = {
   user_id: number
   username?: string
   created_at: string
+
+  reply_to_message_id?: number | null
+
+  reply_to?: {
+    id: number
+    content: string
+    username: string
+  } | null
 }
 
 export default function Chat({ rpgId }: { rpgId: number }) {
@@ -14,6 +22,7 @@ export default function Chat({ rpgId }: { rpgId: number }) {
   const [editingMessage, setEditingMessage] = useState<Message | null>(null)
   const [typingUsers, setTypingUsers] = useState<string[]>([])
   const [onlineUsers, setOnlineUsers] =useState<string[]>([])
+  const [replyingTo, setReplyingTo] = useState<Message | null>(null)
   const typingTimeout = useRef<number | null>(null)
   const wsRef = useRef<WebSocket | null>(null)
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
@@ -353,39 +362,64 @@ reconnectTimeout =
   // SEND
   // ===============================
   async function sendMessage() {
-    if (!input.trim()) return
+  if (!input.trim()) return
 
-    const token = localStorage.getItem("token")
+  const token = localStorage.getItem("token")
 
-    try {
-      if (editingMessage) {
-        await fetch(`http://127.0.0.1:8001/rpg-chat/${editingMessage.id}`, {
+  try {
+    if (editingMessage) {
+      await fetch(
+        `http://127.0.0.1:8001/rpg-chat/${editingMessage.id}`,
+        {
           method: "PUT",
           headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            "Content-Type":
+              "application/json",
+            Authorization:
+              `Bearer ${token}`,
           },
-          body: JSON.stringify({ content: input }),
-        })
+          body: JSON.stringify({
+            content: input,
+            reply_to_message_id:
+              replyingTo?.id ?? null,
+          }),
+        }
+      )
 
-        setEditingMessage(null)
-      } else {
-        await fetch(`http://127.0.0.1:8001/rpg-chat/${rpgId}`, {
+      setEditingMessage(null)
+
+    } else {
+      await fetch(
+        `http://127.0.0.1:8001/rpg-chat/${rpgId}`,
+        {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            "Content-Type":
+              "application/json",
+            Authorization:
+              `Bearer ${token}`,
           },
-          body: JSON.stringify({ content: input }),
-        })
-      }
-
-      setInput("")
-      inputRef.current?.focus()
-    } catch (err) {
-      console.error("Erro ao enviar:", err)
+          body: JSON.stringify({
+            content: input,
+            reply_to_message_id:
+              replyingTo?.id ?? null,
+          }),
+        }
+      )
     }
+
+    setInput("")
+    setReplyingTo(null)
+
+    inputRef.current?.focus()
+
+  } catch (err) {
+    console.error(
+      "Erro ao enviar:",
+      err
+    )
   }
+}
 
   async function deleteMessage(id: number) {
     const token = localStorage.getItem("token")
@@ -430,24 +464,69 @@ reconnectTimeout =
                   {msg.username}
                 </div>
 
-                <div className="bg-[#2a1519] px-3 py-2 rounded-lg">
-                  {msg.content}
-                </div>
+                <div className="bg-[#2a1519] px-3 py-2 rounded-lg max-w-[420px] min-w-[180px]">
 
-                {isMe && (
-                  <div className="flex gap-2 text-[10px] text-gray-400 mt-1">
-                    <button onClick={() => {
-                      setEditingMessage(msg)
-                      setInput(msg.content)
-                    }}>
-                      editar
-                    </button>
+  {msg.reply_to && (
+    <div
+      className="
+  mb-2
+  border-l-4
+  border-yellow-500
+  bg-black/20
+  rounded-md
+  px-3
+  py-2
+  text-xs
+  max-w-full
+"
+    >
+      <div className="text-yellow-500 font-medium">
+        {msg.reply_to.username}
+      </div>
 
-                    <button onClick={() => deleteMessage(msg.id)}>
-                      excluir
-                    </button>
-                  </div>
-                )}
+      <div className="text-gray-300 break-words line-clamp-2">
+        {msg.reply_to.content}
+      </div>
+    </div>
+  )}
+
+  <div className="whitespace-pre-wrap break-words">
+    {msg.content}
+  </div>
+</div>
+
+                <div className="flex gap-2 text-[10px] text-gray-400 mt-1">
+
+  <button
+    onClick={() => {
+      setReplyingTo(msg)
+      inputRef.current?.focus()
+    }}
+  >
+    responder
+  </button>
+
+  {isMe && (
+    <>
+      <button
+        onClick={() => {
+          setEditingMessage(msg)
+          setInput(msg.content)
+        }}
+      >
+        editar
+      </button>
+
+      <button
+        onClick={() =>
+          deleteMessage(msg.id)
+        }
+      >
+        excluir
+      </button>
+    </>
+  )}
+</div>
               </div>
             </div>
           )
@@ -472,6 +551,42 @@ reconnectTimeout =
   </div>
 )}
       <div className="flex p-2 gap-2">
+        {replyingTo && (
+  <div
+    className="
+  mb-2
+  border-l-4
+  border-yellow-500
+  bg-black/20
+  rounded-md
+  px-3
+  py-2
+  text-xs
+  overflow-hidden
+"
+  >
+    <div className="flex justify-between">
+      <span className="text-yellow-500">
+        Respondendo a
+        {" "}
+        {replyingTo.username}
+      </span>
+
+      <button
+        onClick={() =>
+          setReplyingTo(null)
+        }
+        className="text-gray-400"
+      >
+        ✕
+      </button>
+    </div>
+
+    <p className="truncate text-gray-300">
+      {replyingTo.content}
+    </p>
+  </div>
+)}
         <textarea
   ref={inputRef}
   value={input}
