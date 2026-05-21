@@ -253,62 +253,73 @@ else if (
 )}
       <div className="flex p-2 gap-2">
         <textarea
-          ref={inputRef}
-          value={input}
- onChange={(e) => {
-  let value = e.target.value
+  ref={inputRef}
+  value={input}
+  onKeyDown={(e) => {
+    // 🔥 Enter envia
+    if (
+      e.key === "Enter" &&
+      !e.shiftKey
+    ) {
+      e.preventDefault()
 
-  const LIMIT = 40
-  const lines =
-    value.split("\n")
+      sendMessage()
+    }
+  }}
+  onChange={(e) => {
+    let value = e.target.value
 
-  const last =
-    lines[lines.length - 1]
+    const LIMIT = 40
+    const lines =
+      value.split("\n")
 
-  if (last.length >= LIMIT) {
-    value += "\n"
-  }
+    const last =
+      lines[lines.length - 1]
 
-  setInput(value)
+    if (last.length >= LIMIT) {
+      value += "\n"
+    }
 
-  // 🔥 typing start
-  if (
-  wsRef.current?.readyState ===
-  WebSocket.OPEN
-) {
-  wsRef.current.send(
-    JSON.stringify({
-      type: "typing_start",
-    })
-  )
-}
+    setInput(value)
 
-  // 🔥 limpa timeout antigo
-  if (
-    typingTimeout.current
-  ) {
-    clearTimeout(
+    // 🔥 typing start
+    if (
+      wsRef.current?.readyState ===
+      WebSocket.OPEN
+    ) {
+      wsRef.current.send(
+        JSON.stringify({
+          type: "typing_start",
+        })
+      )
+    }
+
+    // 🔥 limpa timeout antigo
+    if (
       typingTimeout.current
-    )
-  }
+    ) {
+      clearTimeout(
+        typingTimeout.current
+      )
+    }
 
-  // 🔥 typing stop
-  typingTimeout.current =
-    window.setTimeout(() => {
-      if (
-  wsRef.current?.readyState ===
-  WebSocket.OPEN
-) {
-  wsRef.current.send(
-    JSON.stringify({
-      type: "typing_stop",
-    })
-  )
-}
-    }, 1200)
-}}
-          className="flex-1 bg-[#1a0f12] border p-2 rounded"
-        />
+    // 🔥 typing stop
+    typingTimeout.current =
+      window.setTimeout(() => {
+        if (
+          wsRef.current?.readyState ===
+          WebSocket.OPEN
+        ) {
+          wsRef.current.send(
+            JSON.stringify({
+              type: "typing_stop",
+            })
+          )
+        }
+      }, 1200)
+  }}
+  className="flex-1 bg-[#1a0f12] border p-2 rounded"
+/>
 
         <button onClick={sendMessage}>
           {editingMessage ? "Salvar" : "➤"}
