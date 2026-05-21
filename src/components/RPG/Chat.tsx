@@ -17,6 +17,7 @@ export default function Chat({ rpgId }: { rpgId: number }) {
   const wsRef = useRef<WebSocket | null>(null)
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
   const inputRef = useRef<HTMLTextAreaElement | null>(null)
+  const chatContainerRef = useRef<HTMLDivElement | null>(null)
 
   const myUserId = Number(localStorage.getItem("user_id"))
 
@@ -141,6 +142,28 @@ else if (
 }
   }, [rpgId])
 
+  useEffect(() => {
+  const container =
+    chatContainerRef.current
+
+  if (!container) return
+
+  // distância até o final
+  const distanceFromBottom =
+    container.scrollHeight -
+    container.scrollTop -
+    container.clientHeight
+
+  // só scrolla se estiver perto do fim
+  const isNearBottom =
+    distanceFromBottom < 120
+
+  if (isNearBottom) {
+    messagesEndRef.current?.scrollIntoView({
+      behavior: "smooth",
+    })
+  }
+}, [messages])
   // ===============================
   // SEND
   // ===============================
@@ -199,7 +222,15 @@ else if (
         Chat do RPG
       </div>
 
-      <div className="flex-1 overflow-y-auto p-2 space-y-3">
+      <div
+  ref={chatContainerRef}
+  className="
+    flex-1
+    overflow-y-auto
+    p-2
+    space-y-3
+  "
+>
         {messages.map((msg) => {
           const isMe = msg.user_id === myUserId
 
