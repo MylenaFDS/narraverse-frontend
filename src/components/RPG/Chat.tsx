@@ -13,6 +13,7 @@ export default function Chat({ rpgId }: { rpgId: number }) {
   const [input, setInput] = useState("")
   const [editingMessage, setEditingMessage] = useState<Message | null>(null)
   const [typingUsers, setTypingUsers] = useState<string[]>([])
+  const [onlineUsers, setOnlineUsers] =useState<string[]>([])
   const typingTimeout = useRef<number | null>(null)
   const wsRef = useRef<WebSocket | null>(null)
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
@@ -179,6 +180,35 @@ useEffect(() => {
               )
           )
         }
+        else if (
+  data.type === "user_online"
+) {
+  setOnlineUsers((prev) => {
+    if (
+      prev.includes(
+        data.username
+      )
+    ) {
+      return prev
+    }
+
+    return [
+      ...prev,
+      data.username,
+    ]
+  })
+}
+
+else if (
+  data.type === "user_offline"
+) {
+  setOnlineUsers((prev) =>
+    prev.filter(
+      (u) =>
+        u !== data.username
+    )
+  )
+}
       } catch (err) {
         console.error(
           "Erro WS:",
@@ -376,7 +406,11 @@ reconnectTimeout =
       <div className="border-b border-transparent text-xl p-2 flex gap-3 mt-4 font-display text-[#e0a96d]">
         Chat do RPG
       </div>
-
+<div className="text-xs text-green-400">
+  {onlineUsers.length === 0
+    ? "Ninguém online"
+    : `${onlineUsers.length} online • ${onlineUsers.join(", ")}`}
+</div>
       <div
   ref={chatContainerRef}
   className="
