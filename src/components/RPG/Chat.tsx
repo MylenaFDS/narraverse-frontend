@@ -487,14 +487,15 @@ reconnectTimeout =
     messages[index - 1]
 
   const isGrouped =
-    prevMessage?.user_id ===
-    msg.user_id
+  prevMessage?.user_id === msg.user_id &&
+  !msg.reply_to
 
           return (
             <div
   key={msg.id}
   id={`message-${msg.id}`}
   className={`
+    group
     flex
     gap-2
     transition-all
@@ -508,7 +509,7 @@ reconnectTimeout =
     }
     ${
       isGrouped
-        ? "mt-1"
+        ? "mt-[2px]"
         : "mt-4"
     }
   `}
@@ -520,7 +521,26 @@ reconnectTimeout =
   </div>
 )}
 
-                <div className="bg-[#2a1519] px-3 py-2 rounded-lg max-w-[420px] min-w-[180px]">
+                <div
+  className={`
+    bg-[#2a1519]
+    px-3
+    py-2
+    max-w-[280px]
+    
+    transition-all
+
+    ${
+      isMe
+        ? isGrouped
+          ? "rounded-2xl rounded-tr-sm"
+          : "rounded-2xl rounded-br-sm"
+        : isGrouped
+          ? "rounded-2xl rounded-tl-sm"
+          : "rounded-2xl rounded-bl-sm"
+    }
+  `}
+>
 
   {msg.reply_to && (
     <button
@@ -559,7 +579,18 @@ reconnectTimeout =
   </div>
 </div>
 
-                <div className="flex gap-2 text-[10px] text-gray-400 mt-1">
+                <div
+  className="
+    flex
+    gap-2
+    text-[10px]
+    text-gray-400
+    mt-1
+    opacity-0
+    group-hover:opacity-100
+    transition
+  "
+>
 
   <button
     onClick={() => {
@@ -590,7 +621,8 @@ reconnectTimeout =
       </button>
     </>
   )}
-</div>
+  </div>
+
               </div>
             </div>
           )
@@ -654,6 +686,13 @@ reconnectTimeout =
         <textarea
   ref={inputRef}
   value={input}
+  rows={1}
+onInput={(e) => {
+  e.currentTarget.style.height = "auto"
+
+  e.currentTarget.style.height =
+    `${e.currentTarget.scrollHeight}px`
+}}
   onKeyDown={(e) => {
     // 🔥 Enter envia
     if (
@@ -717,7 +756,7 @@ reconnectTimeout =
         }
       }, 1200)
   }}
-  className="flex-1 bg-[#1a0f12] border p-2 rounded"
+  className="flex-1 bg-[#1a0f12] border p-2 rounded resize-none overflow-hidden"
 />
 
         <button onClick={sendMessage}>
