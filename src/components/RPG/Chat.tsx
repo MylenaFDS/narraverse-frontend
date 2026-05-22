@@ -472,6 +472,17 @@ reconnectTimeout =
     }
   )
 }
+
+function getInitials(name?: string) {
+  if (!name) return "?"
+
+  return name
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase()
+}
   return (
     <div className="flex flex-col h-[500px] bg-transparent rounded-xl border border-yellow-900/30">
 
@@ -503,6 +514,9 @@ reconnectTimeout =
   prevMessage?.user_id === msg.user_id &&
   !msg.reply_to
 
+  const showAvatar =
+  !isGrouped && !isMe
+
           return (
             <div
   key={msg.id}
@@ -527,7 +541,34 @@ reconnectTimeout =
     }
   `}
 >
-              <div>
+  {showAvatar ? (
+    <div
+      className="
+        w-8
+        h-8
+        rounded-full
+        bg-gradient-to-br
+        from-yellow-500
+        to-yellow-800
+        text-black
+        text-xs
+        font-bold
+        flex
+        items-center
+        justify-center
+        shrink-0
+        self-start mt-6
+      "
+    >
+      {getInitials(msg.username)}
+    </div>
+  ) : (
+    !isMe && (
+      <div className="w-8 shrink-0" />
+    )
+  )}
+
+  <div>
                 {!isGrouped && (
   <div className="flex gap-2 items-center text-xs mb-1">
     <span className="text-yellow-500">
