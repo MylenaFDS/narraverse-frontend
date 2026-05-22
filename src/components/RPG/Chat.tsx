@@ -476,27 +476,49 @@ reconnectTimeout =
     flex-1
     overflow-y-auto
     p-2
-    space-y-3
+    
   "
 >
-        {messages.map((msg) => {
-          const isMe = msg.user_id === myUserId
+        {messages.map((msg, index) => {
+  const isMe =
+    msg.user_id === myUserId
+
+  const prevMessage =
+    messages[index - 1]
+
+  const isGrouped =
+    prevMessage?.user_id ===
+    msg.user_id
 
           return (
-            <div key={msg.id} id={`message-${msg.id}`} className={`flex gap-2 transition-all duration-500 ${
-  isMe
-    ? "justify-end"
-    : ""
-} ${
-  highlightedMessageId ===
-  msg.id
-    ? "scale-[1.02]"
-    : ""
-}`}>
+            <div
+  key={msg.id}
+  id={`message-${msg.id}`}
+  className={`
+    flex
+    gap-2
+    transition-all
+    duration-500
+    ${isMe ? "justify-end" : ""}
+    ${
+      highlightedMessageId ===
+      msg.id
+        ? "scale-[1.02]"
+        : ""
+    }
+    ${
+      isGrouped
+        ? "mt-1"
+        : "mt-4"
+    }
+  `}
+>
               <div>
-                <div className="text-xs text-yellow-500">
-                  {msg.username}
-                </div>
+                {!isGrouped && (
+  <div className="text-xs text-yellow-500 mb-1">
+    {msg.username}
+  </div>
+)}
 
                 <div className="bg-[#2a1519] px-3 py-2 rounded-lg max-w-[420px] min-w-[180px]">
 
