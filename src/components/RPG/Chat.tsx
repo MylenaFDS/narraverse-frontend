@@ -459,6 +459,19 @@ reconnectTimeout =
       )
     }, 2000)
   }
+
+ function formatTime(date: string) {
+  const localDate =
+    new Date(date + "Z")
+
+  return localDate.toLocaleTimeString(
+    "pt-BR",
+    {
+      hour: "2-digit",
+      minute: "2-digit",
+    }
+  )
+}
   return (
     <div className="flex flex-col h-[500px] bg-transparent rounded-xl border border-yellow-900/30">
 
@@ -516,8 +529,14 @@ reconnectTimeout =
 >
               <div>
                 {!isGrouped && (
-  <div className="text-xs text-yellow-500 mb-1">
-    {msg.username}
+  <div className="flex gap-2 items-center text-xs mb-1">
+    <span className="text-yellow-500">
+      {msg.username}
+    </span>
+
+    <span className="text-gray-500">
+      {formatTime(msg.created_at)}
+    </span>
   </div>
 )}
 
@@ -591,7 +610,7 @@ reconnectTimeout =
     transition
   "
 >
-
+{formatTime(msg.created_at)}
   <button
     onClick={() => {
       setReplyingTo(msg)
