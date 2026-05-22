@@ -6,6 +6,8 @@ type Message = {
   user_id: number
   username?: string
   created_at: string
+  updated_at?: string | null
+  is_edited?: boolean
 
   reply_to_message_id?: number | null
 
@@ -145,10 +147,10 @@ useEffect(() => {
                   data.data.id
                     ? {
                         ...m,
-                        content:
-                          data
-                            .data
-                            .content,
+    content:
+      data.data.content,
+    is_edited:
+  data.data.is_edited,
                       }
                     : m
               )
@@ -635,8 +637,14 @@ function getInitials(name?: string) {
   )}
 
   <div className="whitespace-pre-wrap break-words">
-    {msg.content}
-  </div>
+  {msg.content}
+
+  {msg.is_edited && (
+    <span className="ml-2 text-[10px] text-gray-500">
+      editado
+    </span>
+  )}
+</div>
 </div>
 
                 <div
