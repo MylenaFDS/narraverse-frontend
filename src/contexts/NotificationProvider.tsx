@@ -57,7 +57,11 @@ function normalizeNotification(
         "number"
           ? meta.turn_id
           : undefined,
-
+      chat_message_id:
+        typeof meta.chat_message_id ===
+        "number"
+          ? meta.chat_message_id
+          : undefined,
       rpg_id:
         typeof meta.rpg_id ===
         "number"
@@ -145,6 +149,7 @@ export function NotificationProvider({
         data?: {
           meta?: {
             turn_id?: number
+            chat_message_id?: number
             rpg_id?: number
             isNew?: boolean
           }
@@ -153,15 +158,14 @@ export function NotificationProvider({
         setNotifications(
           (prev) => {
             const alreadyExists =
-              prev.some(
-                (n) =>
-                  n.message ===
-                    message &&
-                  n.meta
-                    ?.turn_id ===
-                    data?.meta
-                      ?.turn_id
-              )
+  prev.some(
+    (n) =>
+      n.message === message &&
+      n.meta?.turn_id ===
+        data?.meta?.turn_id &&
+      n.meta?.chat_message_id ===
+        data?.meta?.chat_message_id
+  )
 
             if (
               alreadyExists

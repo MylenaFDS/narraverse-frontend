@@ -5,10 +5,11 @@ export type Notification = {
   message: string
   read: boolean
   meta?: {
-    turn_id?: number
-    rpg_id?: number
-    isNew?: boolean
-  }
+  turn_id?: number
+  chat_message_id?: number
+  rpg_id?: number
+  isNew?: boolean
+}
 }
 
 export type ContextType = {
@@ -17,10 +18,11 @@ export type ContextType = {
     msg: string,
     data?: {
       meta?: {
-        turn_id?: number
-        rpg_id?: number
-        isNew?: boolean
-      }
+  turn_id?: number
+  chat_message_id?: number
+  rpg_id?: number
+  isNew?: boolean
+}
     }
   ) => void
   markAllAsRead: () => void

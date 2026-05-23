@@ -62,8 +62,24 @@ useEffect(() => {
 }
 
 function handleClickNotification(n: Notification) {
-  if (n.meta?.rpg_id !== undefined && n.meta?.turn_id !== undefined){
-    navigate(`/rpg/${n.meta.rpg_id}#turn-${n.meta.turn_id}`)
+  if (
+    n.meta?.rpg_id !== undefined &&
+    n.meta?.turn_id !== undefined
+  ) {
+    navigate(
+      `/rpg/${n.meta.rpg_id}#turn-${n.meta.turn_id}`
+    )
+    setOpen(false)
+    return
+  }
+
+  if (
+    n.meta?.rpg_id !== undefined &&
+    n.meta?.chat_message_id !== undefined
+  ) {
+    navigate(
+      `/rpg/${n.meta.rpg_id}?tab=chat#message-${n.meta.chat_message_id}`
+    )
     setOpen(false)
   }
 }

@@ -26,6 +26,19 @@ export default function Chat({ rpgId }: { rpgId: number }) {
   const [onlineUsers, setOnlineUsers] =useState<string[]>([])
   const [replyingTo, setReplyingTo] = useState<Message | null>(null)
   const [highlightedMessageId, setHighlightedMessageId] = useState<number | null>(null)
+  const [mentionQuery, setMentionQuery] =
+  useState("")
+
+const [showMentionDropdown, setShowMentionDropdown] =
+  useState(false)
+  const mentionUsers =
+  onlineUsers.filter((username) =>
+    username
+      .toLowerCase()
+      .includes(
+        mentionQuery.toLowerCase()
+      )
+  )
   const typingTimeout = useRef<number | null>(null)
   const wsRef = useRef<WebSocket | null>(null)
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
@@ -485,6 +498,106 @@ function getInitials(name?: string) {
     .slice(0, 2)
     .toUpperCase()
 }
+
+function renderMarkdown(
+  text: string
+) {
+  const parts = text.split(
+    /(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`|\|\|[^|]+\|\||@\w+)/g
+  )
+
+  return parts.map((part, index) => {
+
+    // menção
+    if (
+      part.startsWith("@")
+    ) {
+      return (
+        <span
+          key={index}
+          className="
+            text-blue-400
+            font-medium
+          "
+        >
+          {part}
+        </span>
+      )
+    }
+
+    // negrito
+    if (
+      part.startsWith("**") &&
+      part.endsWith("**")
+    ) {
+      return (
+        <strong key={index}>
+          {part.slice(2, -2)}
+        </strong>
+      )
+    }
+
+    // itálico
+    if (
+      part.startsWith("*") &&
+      part.endsWith("*")
+    ) {
+      return (
+        <em key={index}>
+          {part.slice(1, -1)}
+        </em>
+      )
+    }
+
+    // código
+    if (
+      part.startsWith("`") &&
+      part.endsWith("`")
+    ) {
+      return (
+        <code
+          key={index}
+          className="
+            bg-black/30
+            px-1
+            py-[1px]
+            rounded
+            text-yellow-300
+            text-sm
+          "
+        >
+          {part.slice(1, -1)}
+        </code>
+      )
+    }
+
+    // spoiler
+    if (
+      part.startsWith("||") &&
+      part.endsWith("||")
+    ) {
+      return (
+        <span
+          key={index}
+          className="
+            bg-black
+            text-black
+            hover:text-gray-200
+            px-1
+            rounded
+            cursor-pointer
+            transition
+          "
+        >
+          {part.slice(2, -2)}
+        </span>
+      )
+    }
+
+    return part
+  })
+}
+
   return (
     <div className="flex flex-col h-[500px] bg-transparent rounded-xl border border-yellow-900/30">
 
@@ -631,13 +744,13 @@ function getInitials(name?: string) {
       </div>
 
       <div className="text-gray-300 break-words line-clamp-2">
-        {msg.reply_to.content}
+        {renderMarkdown(msg.reply_to.content)}
       </div>
     </button>
   )}
 
   <div className="whitespace-pre-wrap break-words">
-  {msg.content}
+  {renderMarkdown(msg.content)}
 
   {msg.is_edited && (
     <span className="ml-2 text-[10px] text-gray-500">
@@ -747,9 +860,56 @@ function getInitials(name?: string) {
     </div>
 
     <p className="truncate text-gray-300">
-      {replyingTo.content}
+      {renderMarkdown(replyingTo.content)}
     </p>
   </div>
+)}
+
+{showMentionDropdown &&
+  mentionUsers.length > 0 && (
+    <div
+      className="
+        mb-2
+        bg-[#1a0f12]
+        border
+        border-yellow-700/40
+        rounded-lg
+        overflow-hidden
+      "
+    >
+      {mentionUsers.map(
+        (username) => (
+          <button
+            key={username}
+            type="button"
+            onClick={() => {
+              const newValue =
+                input.replace(
+                  /@\w*$/,
+                  `@${username} `
+                )
+
+              setInput(newValue)
+
+              setShowMentionDropdown(false)
+
+              inputRef.current?.focus()
+            }}
+            className="
+              block
+              w-full
+              text-left
+              px-3
+              py-2
+              hover:bg-yellow-900/20
+              transition
+            "
+          >
+            @{username}
+          </button>
+        )
+      )}
+    </div>
 )}
         <textarea
   ref={inputRef}
@@ -787,6 +947,16 @@ onInput={(e) => {
     }
 
     setInput(value)
+
+    const match =
+  value.match(/@(\w+)$/)
+
+if (match) {
+  setMentionQuery(match[1])
+  setShowMentionDropdown(true)
+} else {
+  setShowMentionDropdown(false)
+}
 
     // 🔥 typing start
     if (
