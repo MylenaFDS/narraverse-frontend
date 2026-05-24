@@ -4,6 +4,7 @@ export type Character = {
   description?: string
   history?: string | null
   world_lore_id?: number | null
+  image_url?: string | null
   user_id: number
   rpg_id: number
 }
@@ -27,6 +28,7 @@ export type CharacterCreatePayload = {
   name: string
   history: string
   world_lore_id: number
+  image_url?: string
   sheet: SheetValueInput[]
 }
 

@@ -6,6 +6,7 @@ import {
   createCharacter,
   getCharacterSheet,
   saveCharacterSheet,
+  uploadCharacterImage,
 } from "../../services/characters"
 
 import {
@@ -46,8 +47,10 @@ export default function RPGSheets({ rpgId }: Props) {
   const [newCharacterHistory, setNewCharacterHistory] =
   useState("")
 
-const [newCharacterWorldId, setNewCharacterWorldId] =
-  useState<number | "">("")
+const [newCharacterWorldId, setNewCharacterWorldId] = useState<number | "">("")
+
+const [newCharacterImageFile, setNewCharacterImageFile] =
+  useState<File | null>(null)
 
 const [worldOptions, setWorldOptions] =
   useState<LoreItem[]>([])
@@ -175,6 +178,7 @@ const otherCharacters =
   name: newCharacterName,
   history: newCharacterHistory,
   world_lore_id: Number(newCharacterWorldId),
+  
   sheet: sheetFields.map((f) => ({
     field_id: f.id,
     value: sheetData[f.id] || "",
@@ -182,11 +186,21 @@ const otherCharacters =
 }
 
     const char = await createCharacter(rpgId, payload)
+    let finalChar = char
 
-    setCharacters((prev) => [...prev, char])
+if (newCharacterImageFile) {
+  finalChar = await uploadCharacterImage(
+    char.id,
+    newCharacterImageFile
+  )
+}
+
+    setCharacters((prev) => [...prev, finalChar])
     setNewCharacterName("")
     setNewCharacterHistory("")
 setNewCharacterWorldId("")
+setNewCharacterWorldId("")
+setNewCharacterImageFile(null)
     setSheetData({})
   }
 
@@ -237,7 +251,17 @@ function openWorldLore(
     `/rpg/${rpgId}?tab=lore#lore-${worldId}`
   )
 }
+function getCharacterImageUrl(
+  imageUrl?: string | null
+) {
+  if (!imageUrl) return null
 
+  if (imageUrl.startsWith("http")) {
+    return imageUrl
+  }
+
+  return `http://127.0.0.1:8001/${imageUrl}`
+}
   if (!isValid) return <div>RPG inválido</div>
 
   return (
@@ -300,9 +324,18 @@ function openWorldLore(
           text-black
           shadow-lg
           shrink-0
+          overflow-hidden
         "
       >
-        {getInitial(selectedCharacter.name)}
+        {getCharacterImageUrl(selectedCharacter.image_url) ? (
+  <img
+    src={getCharacterImageUrl(selectedCharacter.image_url)!}
+    alt={selectedCharacter.name}
+    className="w-full h-full object-cover"
+  />
+) : (
+  getInitial(selectedCharacter.name)
+)}
       </div>
 
       <div className="min-w-0">
@@ -444,6 +477,20 @@ function openWorldLore(
                 onChange={(e) => setNewCharacterName(e.target.value)}
                 className="rpg-input w-full mb-3"
               />
+              <label className="text-sm text-[#c9ada7]">
+  Imagem do personagem
+</label>
+
+<input
+  type="file"
+  accept="image/*"
+  onChange={(e) =>
+    setNewCharacterImageFile(
+      e.target.files?.[0] ?? null
+    )
+  }
+  className="rpg-input w-full mb-3"
+/>
               <label className="text-sm text-[#c9ada7]">
   Mundo
 </label>
@@ -622,24 +669,34 @@ function openWorldLore(
             >
               <div className="flex items-center gap-3 mb-4">
                 <div
-                  className="
-                    w-12
-                    h-12
-                    rounded-full
-                    bg-gradient-to-br
-                    from-[#e0a96d]
-                    to-[#8b5e34]
-                    text-black
-                    font-bold
-                    text-lg
-                    flex
-                    items-center
-                    justify-center
-                    shadow
-                  "
-                >
-                  {getInitial(c.name)}
-                </div>
+  className="
+    w-12
+    h-12
+    rounded-full
+    overflow-hidden
+    bg-gradient-to-br
+    from-[#e0a96d]
+    to-[#8b5e34]
+    text-black
+    font-bold
+    text-lg
+    flex
+    items-center
+    justify-center
+    shadow
+    shrink-0
+  "
+>
+  {getCharacterImageUrl(c.image_url) ? (
+    <img
+      src={getCharacterImageUrl(c.image_url)!}
+      alt={c.name}
+      className="w-full h-full object-cover"
+    />
+  ) : (
+    getInitial(c.name)
+  )}
+</div>
 
                 <div className="min-w-0">
                   <div className="text-[#e0a96d] font-semibold truncate">
@@ -729,23 +786,34 @@ function openWorldLore(
             >
               <div className="flex items-center gap-3 mb-4">
                 <div
-                  className="
-                    w-12
-                    h-12
-                    rounded-full
-                    bg-[#3a1f24]
-                    border
-                    border-yellow-900/40
-                    text-[#e0a96d]
-                    font-bold
-                    text-lg
-                    flex
-                    items-center
-                    justify-center
-                  "
-                >
-                  {getInitial(c.name)}
-                </div>
+  className="
+    w-12
+    h-12
+    rounded-full
+    overflow-hidden
+    bg-gradient-to-br
+    from-[#e0a96d]
+    to-[#8b5e34]
+    text-black
+    font-bold
+    text-lg
+    flex
+    items-center
+    justify-center
+    shadow
+    shrink-0
+  "
+>
+  {getCharacterImageUrl(c.image_url) ? (
+    <img
+      src={getCharacterImageUrl(c.image_url)!}
+      alt={c.name}
+      className="w-full h-full object-cover"
+    />
+  ) : (
+    getInitial(c.name)
+  )}
+</div>
 
                 <div className="min-w-0">
                   <div className="text-[#e0a96d] font-semibold truncate">

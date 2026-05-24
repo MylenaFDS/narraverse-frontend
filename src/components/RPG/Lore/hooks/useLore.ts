@@ -118,17 +118,30 @@ useEffect(() => {
 
 
   async function handleCreate() {
-  if (!title || !content)
-    return
+  console.log("CRIANDO LORE", {
+    title,
+    content,
+    category,
+  })
+
+  if (!title.trim() || !content.trim()) {
+  alert("Preencha título e conteúdo da lore.")
+  return
+}
+
+  const finalCategory =
+    category || "Mundo"
 
   const createdLore =
     await createLore(rpgId, {
       title,
       content,
-      category,
+      category: finalCategory,
     })
 
-  if (category === "Mundo") {
+
+
+  if (finalCategory === "Mundo"){
     try {
       const {
   finalX,

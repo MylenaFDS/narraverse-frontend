@@ -79,3 +79,32 @@ export async function getMyCharacters() {
   const res = await api.get("/characters/me")
   return res.data
 }
+
+export async function uploadCharacterImage(
+  characterId: number,
+  file: File
+): Promise<Character> {
+  const formData = new FormData()
+
+  formData.append("file", file)
+
+  const res = await fetch(
+    `${API}/characters/${characterId}/image`,
+    {
+      method: "POST",
+      headers: {
+        Authorization:
+          `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: formData,
+    }
+  )
+
+  if (!res.ok) {
+    throw new Error(
+      "Erro ao enviar imagem do personagem"
+    )
+  }
+
+  return res.json()
+}
