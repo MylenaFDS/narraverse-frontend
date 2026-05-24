@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom"
+import { useParams, useNavigate } from "react-router-dom"
 import { useEffect, useState } from "react"
 
 import {
@@ -34,7 +34,7 @@ type LoreItem = {
 
 export default function RPGSheets({ rpgId }: Props) {
   const { id } = useParams()
-  
+  const navigate = useNavigate()
 
   const [characters, setCharacters] = useState<Character[]>([])
   const [sheetFields, setSheetFields] = useState<RPGSheetField[]>([])
@@ -204,6 +204,40 @@ setNewCharacterWorldId("")
     await saveCharacterSheet(selectedCharacter.id, payload)
   }
 
+  function getInitial(name: string) {
+  return name.charAt(0).toUpperCase()
+}
+
+function getWorldTitle(worldId?: number | null) {
+  return (
+    worldOptions.find(
+      (w) => w.id === worldId
+    )?.title ??
+    "Mundo indefinido"
+  )
+}
+
+function getHistoryPreview(
+  history?: string | null
+) {
+  if (!history) {
+    return "Sem história registrada."
+  }
+
+  return history.length > 80
+    ? `${history.slice(0, 80)}...`
+    : history
+}
+function openWorldLore(
+  worldId?: number | null
+) {
+  if (!worldId) return
+
+  navigate(
+    `/rpg/${rpgId}?tab=lore#lore-${worldId}`
+  )
+}
+
   if (!isValid) return <div>RPG inválido</div>
 
   return (
@@ -236,45 +270,165 @@ setNewCharacterWorldId("")
             // ✏️ EDITAR PERSONAGEM
             // ===============================
             <>
-              <h2 className="text-xl font-display text-[#e0a96d] mb-3">
-                {selectedCharacter.name}
-              </h2>
+  <div
+    className="
+      rounded-2xl
+      border
+      border-yellow-900/30
+      bg-gradient-to-br
+      from-[#241216]
+      to-[#12090b]
+      p-6
+      shadow-[0_0_25px_rgba(0,0,0,0.35)]
+    "
+  >
+    {/* HEADER */}
+    <div className="flex items-start gap-5 mb-8">
+      <div
+        className="
+          w-20
+          h-20
+          rounded-full
+          bg-gradient-to-br
+          from-[#e0a96d]
+          to-[#8b5e34]
+          flex
+          items-center
+          justify-center
+          text-3xl
+          font-bold
+          text-black
+          shadow-lg
+          shrink-0
+        "
+      >
+        {getInitial(selectedCharacter.name)}
+      </div>
 
-              {sheetFields.map((field) => (
-                <div key={field.id} className="mb-2">
-                  <label>{field.name}</label>
+      <div className="min-w-0">
+        <h2 className="text-3xl font-display text-[#e0a96d]">
+          {selectedCharacter.name}
+        </h2>
 
-                  <input
-                    type={field.field_type}
-                    value={sheetData[field.id] || ""}
-                    onChange={(e) =>
-                      setSheetData({
-                        ...sheetData,
-                        [field.id]: e.target.value,
-                      })
-                    }
-                    className="rpg-input w-full"
-                  />
-                </div>
-              ))}
+        <button
+  type="button"
+  onClick={() =>
+    openWorldLore(
+      selectedCharacter.world_lore_id
+    )
+  }
+  className="
+    inline-flex
+    mt-2
+    rounded-full
+    border
+    border-yellow-900/40
+    bg-black/20
+    px-3
+    py-1
+    text-sm
+    text-[#e0a96d]
+    hover:bg-yellow-900/20
+    transition
+  "
+>
+  {getWorldTitle(
+    selectedCharacter.world_lore_id
+  )}
+</button>
+      </div>
+    </div>
 
-              <button
-                onClick={handleSaveSheet}
-                className="rpg-btn w-full mt-3"
-              >
-                Salvar ficha
-              </button>
+    {/* HISTÓRIA */}
+    <div
+      className="
+        rounded-2xl
+        border
+        border-[#3a1f24]
+        bg-black/20
+        p-5
+        mb-8
+      "
+    >
+      <div className="text-sm uppercase tracking-[0.2em] text-[#e0a96d]/70 mb-3">
+        História
+      </div>
 
-              <button
-                onClick={() => {
-                  setSelectedCharacter(null)
-                  setSheetData({})
-                }}
-                className="text-sm mt-3 text-[#c9ada7]"
-              >
-                ← Voltar
-              </button>
-            </>
+      <p className="text-[#c9ada7] leading-relaxed whitespace-pre-wrap">
+        {selectedCharacter.history ||
+          "Sem história registrada."}
+      </p>
+    </div>
+
+    {/* ATRIBUTOS */}
+    <div>
+      <div className="text-sm uppercase tracking-[0.2em] text-[#e0a96d]/70 mb-4">
+        Atributos
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-4">
+        {sheetFields.map((field) => (
+          <div
+            key={field.id}
+            className="
+              rounded-xl
+              border
+              border-[#3a1f24]
+              bg-black/15
+              p-4
+            "
+          >
+            <label className="block text-sm text-[#c9ada7]/70 mb-2">
+              {field.name}
+            </label>
+
+            <input
+              type={field.field_type}
+              value={
+                sheetData[field.id] || ""
+              }
+              onChange={(e) =>
+                setSheetData({
+                  ...sheetData,
+                  [field.id]:
+                    e.target.value,
+                })
+              }
+              className="rpg-input w-full"
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {/* BOTÕES */}
+    <div className="flex gap-3 mt-8">
+      <button
+        onClick={handleSaveSheet}
+        className="rpg-btn"
+      >
+        Salvar ficha
+      </button>
+
+      <button
+        onClick={() => {
+          setSelectedCharacter(null)
+          setSheetData({})
+        }}
+        className="
+          px-4 py-2
+          rounded-lg
+          border
+          border-[#3a1f24]
+          hover:bg-[#2a1519]
+          transition
+        "
+      >
+        ← Voltar
+      </button>
+    </div>
+  </div>
+</>
           ) : (
             // ===============================
             // ➕ CRIAR PERSONAGEM
@@ -422,95 +576,222 @@ setNewCharacterWorldId("")
           )}
                </div>
 
+       
         {/* 🎠 CARROSSÉIS */}
-        <div className="rpg-panel space-y-6 w-full max-w-full min-w-0 overflow-hidden text-gray-100">
-      <section>
-    <h3 className="text-lg font-display text-[#e0a96d] mb-3">
-      Meus personagens
-    </h3>
+<div className="rpg-panel space-y-8 w-full max-w-full min-w-0 overflow-hidden text-gray-100">
+  <section>
+    <div className="flex items-center justify-between mb-3">
+      <h3 className="text-lg font-display text-[#e0a96d]">
+        Meus personagens
+      </h3>
 
-    <div className="w-full max-w-full min-w-0 overflow-x-auto overflow-y-hidden pb-2">
-  <div className="flex gap-3 w-max"> 
-      {myCharacters.length === 0 ? (
-        <p className="text-sm text-[#c9ada7]/60">
-          Você ainda não criou personagens.
-        </p>
-      ) : (
-        myCharacters.map((c) => (
-          <button
-            key={c.id}
-            onClick={() => handleSelectCharacter(c)}
-            className="
-              min-w-[160px] max-w-[160px] shrink-0 
-              rounded-xl
-              border
-              border-yellow-900/30
-              bg-[#2a1519]
-              p-4
-              text-left
-              hover:bg-[#3a1f24]
-              transition
-            "
-          >
-            <div className="text-[#e0a96d] font-semibold">
-              {c.name}
-            </div>
-
-            <div className="text-xs text-[#c9ada7]/60 mt-1">
-              Sua ficha
-            </div>
-          </button>
-        ))
-      )}
+      <span className="text-xs text-[#c9ada7]/50">
+        {myCharacters.length}
+      </span>
     </div>
+
+    <div className="w-full max-w-full min-w-0 overflow-x-auto overflow-y-hidden pb-3">
+      <div className="flex gap-4 w-max">
+        {myCharacters.length === 0 ? (
+          <p className="text-sm text-[#c9ada7]/60">
+            Você ainda não criou personagens.
+          </p>
+        ) : (
+          myCharacters.map((c) => (
+            <button
+              key={c.id}
+              onClick={() => handleSelectCharacter(c)}
+              className="
+                group
+                min-w-[220px]
+                max-w-[220px]
+                shrink-0
+                rounded-2xl
+                border
+                border-yellow-900/40
+                bg-gradient-to-br
+                from-[#2a1519]
+                to-[#140b0d]
+                p-4
+                text-left
+                hover:border-[#e0a96d]/70
+                hover:shadow-[0_0_18px_rgba(224,169,109,0.18)]
+                transition-all
+                duration-300
+              "
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div
+                  className="
+                    w-12
+                    h-12
+                    rounded-full
+                    bg-gradient-to-br
+                    from-[#e0a96d]
+                    to-[#8b5e34]
+                    text-black
+                    font-bold
+                    text-lg
+                    flex
+                    items-center
+                    justify-center
+                    shadow
+                  "
+                >
+                  {getInitial(c.name)}
+                </div>
+
+                <div className="min-w-0">
+                  <div className="text-[#e0a96d] font-semibold truncate">
+                    {c.name}
+                  </div>
+
+                  <div className="text-[11px] text-[#c9ada7]/60">
+                    Sua ficha
+                  </div>
+                </div>
+              </div>
+
+              <div
+                className="
+                  inline-flex
+                  max-w-full
+                  rounded-full
+                  border
+                  border-yellow-900/40
+                  bg-black/25
+                  px-2
+                  py-1
+                  text-[11px]
+                  text-[#e0a96d]
+                  mb-3
+                "
+              >
+                <span className="truncate">
+                  {getWorldTitle(c.world_lore_id)}
+                </span>
+              </div>
+
+              <p className="text-xs text-[#c9ada7]/70 leading-relaxed line-clamp-3">
+                {getHistoryPreview(c.history)}
+              </p>
+
+              <div className="mt-4 text-[11px] text-[#e0a96d]/70 opacity-0 group-hover:opacity-100 transition">
+                Abrir ficha →
+              </div>
+            </button>
+          ))
+        )}
+      </div>
     </div>
   </section>
 
   <section>
-    <h3 className="text-lg font-display text-[#e0a96d] mb-3">
-      Outros personagens
-    </h3>
+    <div className="flex items-center justify-between mb-3">
+      <h3 className="text-lg font-display text-[#e0a96d]">
+        Outros personagens
+      </h3>
 
-    <div className="w-full max-w-full min-w-0 overflow-x-auto overflow-y-hidden pb-2">
-      <div className="flex gap-3 w-max"> 
-          {otherCharacters.length === 0 ? (
-            <p className="text-sm text-[#c9ada7]/60">
-              Nenhum personagem de outros usuários.
-            </p>
-          ) : (
-            otherCharacters.map((c) => (
-              <button
-                key={c.id}
-                onClick={() => handleSelectCharacter(c)}
+      <span className="text-xs text-[#c9ada7]/50">
+        {otherCharacters.length}
+      </span>
+    </div>
+
+    <div className="w-full max-w-full min-w-0 overflow-x-auto overflow-y-hidden pb-3">
+      <div className="flex gap-4 w-max">
+        {otherCharacters.length === 0 ? (
+          <p className="text-sm text-[#c9ada7]/60">
+            Nenhum personagem de outros usuários.
+          </p>
+        ) : (
+          otherCharacters.map((c) => (
+            <button
+              key={c.id}
+              onClick={() => handleSelectCharacter(c)}
+              className="
+                group
+                min-w-[220px]
+                max-w-[220px]
+                shrink-0
+                rounded-2xl
+                border
+                border-[#3a1f24]
+                bg-gradient-to-br
+                from-black/30
+                to-[#1a0f12]
+                p-4
+                text-left
+                hover:border-[#e0a96d]/50
+                hover:bg-[#2a1519]
+                transition-all
+                duration-300
+              "
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div
+                  className="
+                    w-12
+                    h-12
+                    rounded-full
+                    bg-[#3a1f24]
+                    border
+                    border-yellow-900/40
+                    text-[#e0a96d]
+                    font-bold
+                    text-lg
+                    flex
+                    items-center
+                    justify-center
+                  "
+                >
+                  {getInitial(c.name)}
+                </div>
+
+                <div className="min-w-0">
+                  <div className="text-[#e0a96d] font-semibold truncate">
+                    {c.name}
+                  </div>
+
+                  <div className="text-[11px] text-[#c9ada7]/60">
+                    Outro jogador
+                  </div>
+                </div>
+              </div>
+
+              <div
                 className="
-                  min-w-[160px] max-w-[160px] shrink-0 
-                  rounded-xl
+                  inline-flex
+                  max-w-full
+                  rounded-full
                   border
                   border-[#3a1f24]
-                  bg-black/20
-                  p-4
-                  text-left
-                  hover:bg-[#2a1519]
-                  transition
+                  bg-black/25
+                  px-2
+                  py-1
+                  text-[11px]
+                  text-[#c9ada7]/70
+                  mb-3
                 "
               >
-                <div className="text-[#e0a96d] font-semibold">
-                  {c.name}
-                </div>
+                <span className="truncate">
+                  {getWorldTitle(c.world_lore_id)}
+                </span>
+              </div>
 
-                <div className="text-xs text-[#c9ada7]/60 mt-1">
-                  Personagem de outro jogador
-                </div>
-              </button>
-          
+              <p className="text-xs text-[#c9ada7]/65 leading-relaxed line-clamp-3">
+                {getHistoryPreview(c.history)}
+              </p>
 
-            ))
-          )}
-        </div>
+              <div className="mt-4 text-[11px] text-[#e0a96d]/70 opacity-0 group-hover:opacity-100 transition">
+                Ver ficha →
+              </div>
+            </button>
+          ))
+        )}
+      </div>
     </div>
-   </section>
-
-        </div>
+  </section>
+</div>
       </div>
     </div>
   )
