@@ -42,10 +42,12 @@ export default function RPG() {
 const currentTab: Tab =
   urlTab === "chat"
     ? "chat"
-    : location.hash.startsWith("#turn-")
-      ? "turns"
-      : activeTab
-
+    : urlTab === "lore"
+      ? "lore"
+      : location.hash.startsWith("#turn-")
+        ? "turns"
+        : activeTab
+        
   const [rpg, setRpg] =
     useState<RPGType | null>(null)
 
