@@ -109,14 +109,22 @@ useEffect(() => {
   }
 
   ws.onclose = (event) => {
-    console.log(
-      "❌ WS caiu",
-      event.code,
-      event.reason
-    )
+  console.log(
+    "❌ WS caiu",
+    event.code,
+    event.reason
+  )
 
-    wsRef.current = null
+  wsRef.current = null
+
+  if (
+    event.code === 1008 ||
+    event.code === 403
+  ) {
+    localStorage.removeItem("token")
+    localStorage.removeItem("refresh_token")
   }
+}
 
   return () => {
     console.log(

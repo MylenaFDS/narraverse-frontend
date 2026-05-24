@@ -195,17 +195,18 @@ setTimeout(() => {
 )
 
   wsRef.current = null
-
+  
   if (!isMounted) return
 
   // 🚫 NÃO reconecta se token inválido
-  if (event.code === 1008) {
-    console.log(
-      "⛔ Token inválido no WS — aguardando refresh"
-    )
-
-    return
-  }
+  if (
+  event.code === 1008 ||
+  event.code === 1006
+) {
+  localStorage.removeItem("token")
+  localStorage.removeItem("refresh_token")
+  return
+}
 
   reconnectTimeout = window.setTimeout(() => {
     connect()

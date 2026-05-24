@@ -270,15 +270,13 @@ else if (
 
       // token inválido
       if (
-        event.code ===
-        1008
-      ) {
-        console.log(
-          "⛔ Token inválido no chat WS"
-        )
-
-        return
-      }
+  event.code === 1008 ||
+  event.code === 1006
+) {
+  localStorage.removeItem("token")
+  localStorage.removeItem("refresh_token")
+  return
+}
 
       const delay =
   ws?.readyState ===
