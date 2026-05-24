@@ -35,6 +35,17 @@ export default function RPG() {
       : "lore"
   )
 
+  const urlTab = new URLSearchParams(
+  location.search
+).get("tab")
+
+const currentTab: Tab =
+  urlTab === "chat"
+    ? "chat"
+    : location.hash.startsWith("#turn-")
+      ? "turns"
+      : activeTab
+
   const [rpg, setRpg] =
     useState<RPGType | null>(null)
 
@@ -63,7 +74,7 @@ export default function RPG() {
     return `
       px-3 py-1 rounded transition
       ${
-        activeTab === tab
+        currentTab === tab
           ? "bg-[#e0a96d] text-black"
           : "hover:bg-[#2a2a2a]"
       }
@@ -135,7 +146,7 @@ export default function RPG() {
           <div
             style={{
               display:
-                activeTab ===
+                currentTab ===
                 "lore"
                   ? "block"
                   : "none",
@@ -148,7 +159,7 @@ export default function RPG() {
           <div
             style={{
               display:
-                activeTab ===
+                currentTab ===
                 "characters"
                   ? "block"
                   : "none",
@@ -163,7 +174,7 @@ export default function RPG() {
           <div
             style={{
               display:
-                activeTab ===
+                currentTab ===
                 "turns"
                   ? "block"
                   : "none",
@@ -179,7 +190,7 @@ export default function RPG() {
           <div
             style={{
               display:
-                activeTab ===
+                currentTab ===
                 "chat"
                   ? "block"
                   : "none",

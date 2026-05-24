@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react"
+import { useLocation } from "react-router-dom"
 
 type Message = {
   id: number
@@ -28,8 +29,7 @@ export default function Chat({ rpgId }: { rpgId: number }) {
   const [highlightedMessageId, setHighlightedMessageId] = useState<number | null>(null)
   const [mentionQuery, setMentionQuery] =
   useState("")
-
-const [showMentionDropdown, setShowMentionDropdown] =
+  const [showMentionDropdown, setShowMentionDropdown] =
   useState(false)
   const mentionUsers =
   onlineUsers.filter((username) =>
@@ -46,6 +46,7 @@ const [showMentionDropdown, setShowMentionDropdown] =
   const chatContainerRef = useRef<HTMLDivElement | null>(null)
 
   const myUserId = Number(localStorage.getItem("user_id"))
+  const location = useLocation()
 
   // ===============================
   // LOAD
@@ -374,6 +375,56 @@ reconnectTimeout =
     })
   }
 }, [messages])
+
+useEffect(() => {
+  if (
+    !location.hash ||
+    messages.length === 0
+  ) {
+    return
+  }
+
+  if (
+    !location.hash.startsWith(
+      "#message-"
+    )
+  ) {
+    return
+  }
+
+  const id =
+    location.hash.replace(
+      "#message-",
+      ""
+    )
+
+  setTimeout(() => {
+    const el =
+      document.getElementById(
+        `message-${id}`
+      )
+
+    if (!el) return
+
+    el.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    })
+
+    setHighlightedMessageId(
+      Number(id)
+    )
+
+    setTimeout(() => {
+      setHighlightedMessageId(
+        null
+      )
+    }, 2000)
+  }, 200)
+}, [
+  location.hash,
+  messages,
+])
   // ===============================
   // SEND
   // ===============================

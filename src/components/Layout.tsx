@@ -23,6 +23,7 @@ const handleNotification =
       message: string,
       meta?: {
         turn_id?: number
+        chat_message_id?: number
         rpg_id?: number
         isNew?: boolean
       }
@@ -84,6 +85,8 @@ useEffect(() => {
   {
     turn_id:
       msg.turn_id,
+    chat_message_id:
+      msg.chat_message_id,
     rpg_id:
       msg.rpg_id,
     isNew: true,
