@@ -13,6 +13,7 @@ import {
   createSheetField,
   updateSheetField,
   getRPG,
+  getLore,
 } from "../../services/api"
 
 import type {
@@ -24,6 +25,11 @@ import type {
 
 type Props = {
   rpgId: number
+}
+type LoreItem = {
+  id: number
+  title: string
+  category?: string | null
 }
 
 export default function RPGSheets({ rpgId }: Props) {
@@ -37,6 +43,14 @@ export default function RPGSheets({ rpgId }: Props) {
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null)
 
   const [newCharacterName, setNewCharacterName] = useState("")
+  const [newCharacterHistory, setNewCharacterHistory] =
+  useState("")
+
+const [newCharacterWorldId, setNewCharacterWorldId] =
+  useState<number | "">("")
+
+const [worldOptions, setWorldOptions] =
+  useState<LoreItem[]>([])
 
   const [isOwner, setIsOwner] = useState(false)
 
@@ -68,14 +82,21 @@ const otherCharacters =
 
     async function fetchAll() {
       try {
-        const [chars, fields, rpg] = await Promise.all([
-          getCharacters(rpgId),
-          getSheetFields(rpgId),
-          getRPG(rpgId),
-        ])
+        const [chars, fields, rpg, lore] = await Promise.all([
+  getCharacters(rpgId),
+  getSheetFields(rpgId),
+  getRPG(rpgId),
+  getLore(rpgId),
+])
 
         setCharacters(chars)
         setSheetFields(fields)
+        setWorldOptions(
+  lore.filter(
+    (item: LoreItem) =>
+      item.category === "Mundo"
+  )
+)
 
         const userId = Number(localStorage.getItem("user_id"))
         setIsOwner(userId === rpg.owner_id)
@@ -142,20 +163,30 @@ const otherCharacters =
   // 🚀 CRIAR PERSONAGEM
   // ===============================
   async function handleCreateCharacter() {
-    if (!newCharacterName.trim()) return
+    if (
+  !newCharacterName.trim() ||
+  !newCharacterHistory.trim() ||
+  newCharacterWorldId === ""
+) {
+  return
+}
 
     const payload: CharacterCreatePayload = {
-      name: newCharacterName,
-      sheet: sheetFields.map((f) => ({
-        field_id: f.id,
-        value: sheetData[f.id] || "",
-      })),
-    }
+  name: newCharacterName,
+  history: newCharacterHistory,
+  world_lore_id: Number(newCharacterWorldId),
+  sheet: sheetFields.map((f) => ({
+    field_id: f.id,
+    value: sheetData[f.id] || "",
+  })),
+}
 
     const char = await createCharacter(rpgId, payload)
 
     setCharacters((prev) => [...prev, char])
     setNewCharacterName("")
+    setNewCharacterHistory("")
+setNewCharacterWorldId("")
     setSheetData({})
   }
 
@@ -259,7 +290,47 @@ const otherCharacters =
                 onChange={(e) => setNewCharacterName(e.target.value)}
                 className="rpg-input w-full mb-3"
               />
+              <label className="text-sm text-[#c9ada7]">
+  Mundo
+</label>
 
+<select
+  value={newCharacterWorldId}
+  onChange={(e) =>
+    setNewCharacterWorldId(
+      e.target.value
+        ? Number(e.target.value)
+        : ""
+    )
+  }
+  className="rpg-input w-full mb-3"
+>
+  <option value="">
+    Selecione um mundo
+  </option>
+
+  {worldOptions.map((world) => (
+    <option
+      key={world.id}
+      value={world.id}
+    >
+      {world.title}
+    </option>
+  ))}
+</select>
+
+<label className="text-sm text-[#c9ada7]">
+  História
+</label>
+
+<textarea
+  placeholder="Conte a história do personagem..."
+  value={newCharacterHistory}
+  onChange={(e) =>
+    setNewCharacterHistory(e.target.value)
+  }
+  className="rpg-input w-full mb-3 min-h-[120px] resize-y"
+/>
               {sheetFields.map((field) => (
                 <div key={field.id} className="mb-2">
                   <label>{field.name}</label>
