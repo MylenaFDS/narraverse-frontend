@@ -140,7 +140,7 @@ const currentTab: Tab =
       {/* LAYOUT */}
       <div className="rpg-layout max-w-5xl mx-auto">
 
-        <div className="rpg-panel">
+        <div className="rpg-panel min-w-0 overflow-hidden">
 
           {/* LORE */}
           <div

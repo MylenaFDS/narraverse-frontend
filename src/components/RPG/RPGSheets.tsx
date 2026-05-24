@@ -47,6 +47,18 @@ export default function RPGSheets({ rpgId }: Props) {
   const [editingFieldName, setEditingFieldName] = useState("")
 
   const isValid = id && !isNaN(rpgId)
+  const loggedUserId =
+  Number(localStorage.getItem("user_id"))
+
+const myCharacters =
+  characters.filter(
+    (c) => c.user_id === loggedUserId
+  )
+
+const otherCharacters =
+  characters.filter(
+    (c) => c.user_id !== loggedUserId
+  )
 
   // ===============================
   // FETCH
@@ -164,11 +176,29 @@ export default function RPGSheets({ rpgId }: Props) {
   if (!isValid) return <div>RPG inválido</div>
 
   return (
-    <div className="rpg-bg min-h-screen p-6">
-      <div className="rpg-layout max-w-5xl mx-auto">
+  <div className="space-y-6 w-full max-w-full min-w-0 overflow-hidden text-gray-100">
 
-        {/* MAIN */}
-        <div className="rpg-panel flex-1">
+    <div className="flex items-center justify-between ">
+      <div>
+        <h2 className="text-2xl font-display text-[#e0a96d]">
+          Fichas
+        </h2>
+
+        <p className="text-sm text-[#c9ada7]/70">
+          Crie, edite e acompanhe os personagens deste RPG.
+        </p>
+      </div>
+
+      <div className="text-xs text-[#c9ada7]/60">
+        {characters.length} personagem
+        {characters.length === 1 ? "" : "s"}
+      </div>
+    </div>
+
+    <div className="w-full min-w-0 space-y-6">
+
+  {/* MAIN */}
+  <div className="rpg-panel">
 
           {selectedCharacter ? (
             // ===============================
@@ -319,32 +349,97 @@ export default function RPGSheets({ rpgId }: Props) {
               )}
             </>
           )}
+               </div>
 
-        </div>
+        {/* 🎠 CARROSSÉIS */}
+        <div className="rpg-panel space-y-6 w-full max-w-full min-w-0 overflow-hidden text-gray-100">
+      <section>
+    <h3 className="text-lg font-display text-[#e0a96d] mb-3">
+      Meus personagens
+    </h3>
 
-        {/* SIDEBAR */}
-        <div className="rpg-sidebar">
-          <div className="rpg-panel">
-            <h2 className="text-xl font-display text-[#e0a96d]">
-              Personagens
-            </h2>
+    <div className="w-full max-w-full min-w-0 overflow-x-auto overflow-y-hidden pb-2">
+  <div className="flex gap-3 w-max"> 
+      {myCharacters.length === 0 ? (
+        <p className="text-sm text-[#c9ada7]/60">
+          Você ainda não criou personagens.
+        </p>
+      ) : (
+        myCharacters.map((c) => (
+          <button
+            key={c.id}
+            onClick={() => handleSelectCharacter(c)}
+            className="
+              min-w-[160px] max-w-[160px] shrink-0 
+              rounded-xl
+              border
+              border-yellow-900/30
+              bg-[#2a1519]
+              p-4
+              text-left
+              hover:bg-[#3a1f24]
+              transition
+            "
+          >
+            <div className="text-[#e0a96d] font-semibold">
+              {c.name}
+            </div>
 
-            {characters.map((c) => (
-              <div
+            <div className="text-xs text-[#c9ada7]/60 mt-1">
+              Sua ficha
+            </div>
+          </button>
+        ))
+      )}
+    </div>
+    </div>
+  </section>
+
+  <section>
+    <h3 className="text-lg font-display text-[#e0a96d] mb-3">
+      Outros personagens
+    </h3>
+
+    <div className="w-full max-w-full min-w-0 overflow-x-auto overflow-y-hidden pb-2">
+      <div className="flex gap-3 w-max"> 
+          {otherCharacters.length === 0 ? (
+            <p className="text-sm text-[#c9ada7]/60">
+              Nenhum personagem de outros usuários.
+            </p>
+          ) : (
+            otherCharacters.map((c) => (
+              <button
                 key={c.id}
                 onClick={() => handleSelectCharacter(c)}
-                className={`cursor-pointer p-2 rounded ${
-                  selectedCharacter?.id === c.id
-                    ? "bg-[#3a1f24]"
-                    : "hover:bg-[#2b2d31]"
-                }`}
+                className="
+                  min-w-[160px] max-w-[160px] shrink-0 
+                  rounded-xl
+                  border
+                  border-[#3a1f24]
+                  bg-black/20
+                  p-4
+                  text-left
+                  hover:bg-[#2a1519]
+                  transition
+                "
               >
-                {c.name}
-              </div>
-            ))}
-          </div>
-        </div>
+                <div className="text-[#e0a96d] font-semibold">
+                  {c.name}
+                </div>
 
+                <div className="text-xs text-[#c9ada7]/60 mt-1">
+                  Personagem de outro jogador
+                </div>
+              </button>
+          
+
+            ))
+          )}
+        </div>
+    </div>
+   </section>
+
+        </div>
       </div>
     </div>
   )
