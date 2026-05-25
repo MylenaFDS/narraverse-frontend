@@ -328,7 +328,7 @@ function getCharacterImageUrl(
 
   <div className="relative z-10 p-6">
     {/* HEADER */}
-    <div className="flex items-start gap-5 mb-8">
+    <div className="flex items-center gap-5 mb-8">
       <div
         className="
           w-20
@@ -423,16 +423,34 @@ function getCharacterImageUrl(
       <div className="grid md:grid-cols-2 gap-4">
         {sheetFields.map((field) => (
           <div
-            key={field.id}
-            className="
-              rounded-xl
-              border
-              border-[#3a1f24]
-              bg-black/15
-              p-4
-            "
-          >
-            <label className="block text-sm text-[#c9ada7]/70 mb-2">
+  key={field.id}
+  className="
+    group
+    relative
+    overflow-hidden
+    rounded-2xl
+    border
+    border-[#4a2329]
+    bg-gradient-to-br
+    from-[#1b0c10]
+    to-[#12080a]
+    p-4
+    transition-all
+    duration-300
+    hover:border-[#e0a96d]/40
+    hover:shadow-[0_0_18px_rgba(224,169,109,0.08)]
+  "
+>
+            <label
+  className="
+    block
+    text-[11px]
+    uppercase
+    tracking-[0.15em]
+    text-[#e0a96d]/70
+    mb-3
+  "
+>
               {field.name}
             </label>
 
@@ -448,7 +466,22 @@ function getCharacterImageUrl(
                     e.target.value,
                 })
               }
-              className="rpg-input w-full"
+              className="
+  w-full
+  rounded-xl
+  border
+  border-[#4a2329]
+  bg-black/30
+  px-4
+  py-3
+  text-[#f5d7b2]
+  outline-none
+  transition-all
+  duration-300
+  focus:border-[#e0a96d]
+  focus:bg-black/40
+  focus:shadow-[0_0_12px_rgba(224,169,109,0.15)]
+"
             />
           </div>
         ))}
@@ -567,7 +600,22 @@ function getCharacterImageUrl(
                         [field.id]: e.target.value,
                       })
                     }
-                    className="rpg-input w-full"
+                    className="
+  w-full
+  rounded-xl
+  border
+  border-[#4a2329]
+  bg-black/30
+  px-4
+  py-3
+  text-[#f5d7b2]
+  outline-none
+  transition-all
+  duration-300
+  focus:border-[#e0a96d]
+  focus:bg-black/40
+  focus:shadow-[0_0_12px_rgba(224,169,109,0.15)]
+"
                   />
                 </div>
               ))}
