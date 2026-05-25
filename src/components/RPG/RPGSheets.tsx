@@ -295,17 +295,38 @@ function getCharacterImageUrl(
             // ===============================
             <>
   <div
-    className="
-      rounded-2xl
-      border
-      border-yellow-900/30
-      bg-gradient-to-br
-      from-[#241216]
-      to-[#12090b]
-      p-6
-      shadow-[0_0_25px_rgba(0,0,0,0.35)]
-    "
-  >
+  className="
+    relative
+    overflow-hidden
+    rounded-2xl
+    border
+    border-yellow-900/30
+    bg-gradient-to-br
+    from-[#241216]
+    to-[#12090b]
+    shadow-[0_0_25px_rgba(0,0,0,0.35)]
+  "
+>
+  {getCharacterImageUrl(selectedCharacter.image_url) && (
+    <div className="absolute inset-x-0 top-0 h-44 overflow-hidden">
+      <img
+        src={getCharacterImageUrl(selectedCharacter.image_url)!}
+        alt={selectedCharacter.name}
+        className="
+          w-full
+          h-full
+          object-cover
+          opacity-35
+          blur-sm
+          scale-110
+        "
+      />
+
+      <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-[#241216]/70 to-[#12090b]" />
+    </div>
+  )}
+
+  <div className="relative z-10 p-6">
     {/* HEADER */}
     <div className="flex items-start gap-5 mb-8">
       <div
@@ -459,8 +480,9 @@ function getCharacterImageUrl(
       >
         ← Voltar
       </button>
-    </div>
+        </div>
   </div>
+</div>
 </>
           ) : (
             // ===============================
