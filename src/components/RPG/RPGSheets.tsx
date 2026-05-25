@@ -471,10 +471,11 @@ function getCharacterImageUrl(
   rounded-xl
   border
   border-[#4a2329]
-  bg-black/30
+  bg-[#12080a]/80
   px-4
   py-3
   text-[#f5d7b2]
+  placeholder:text-[#c9ada7]/25
   outline-none
   transition-all
   duration-300
@@ -605,10 +606,11 @@ function getCharacterImageUrl(
   rounded-xl
   border
   border-[#4a2329]
-  bg-black/30
+  bg-[#12080a]/80
   px-4
   py-3
   text-[#f5d7b2]
+  placeholder:text-[#c9ada7]/25
   outline-none
   transition-all
   duration-300
