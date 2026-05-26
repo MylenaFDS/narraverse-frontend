@@ -62,6 +62,7 @@ const [worldOptions, setWorldOptions] =
 
   const [editingFieldId, setEditingFieldId] = useState<number | null>(null)
   const [editingFieldName, setEditingFieldName] = useState("")
+  const [isCreatingCharacter, setIsCreatingCharacter] = useState(false)
 
   const isValid = id && !isNaN(rpgId)
   const loggedUserId =
@@ -532,11 +533,11 @@ pattern={field.field_type === "number" ? "[0-9]*" : undefined}
   </div>
 </div>
 </>
-          ) : (
-            // ===============================
-            // ➕ CRIAR PERSONAGEM
-            // ===============================
-            <>
+          ) : isCreatingCharacter ? (
+  // ===============================
+  // ➕ CRIAR PERSONAGEM
+  // ===============================
+  <>
               <h2 className="text-xl font-display text-[#e0a96d]">
                 Criar personagem
               </h2>
@@ -641,7 +642,24 @@ pattern={field.field_type === "number" ? "[0-9]*" : undefined}
               >
                 Criar personagem
               </button>
-
+              <button
+  type="button"
+  onClick={() => {
+    setIsCreatingCharacter(false)
+    setSheetData({})
+  }}
+  className="
+    w-full mt-3
+    px-4 py-2
+    rounded-lg
+    border
+    border-[#3a1f24]
+    hover:bg-[#2a1519]
+    transition
+  "
+>
+  ← Voltar
+</button>
               {/* 👑 CAMPOS */}
               {isOwner && (
                 <div className="mt-6 border-t pt-4">
@@ -703,8 +721,26 @@ pattern={field.field_type === "number" ? "[0-9]*" : undefined}
                     </div>
                   ))}
                 </div>
-              )}
+                           )}
             </>
+          ) : (
+            <div className="text-center py-10">
+              <h2 className="text-2xl font-display text-[#e0a96d] mb-3">
+                Fichas de personagens
+              </h2>
+
+              <p className="text-[#c9ada7]/70 mb-6">
+                Selecione um personagem abaixo ou crie uma nova ficha.
+              </p>
+
+              <button
+                type="button"
+                onClick={() => setIsCreatingCharacter(true)}
+                className="rpg-btn"
+              >
+                + Novo personagem
+              </button>
+            </div>
           )}
                </div>
 
