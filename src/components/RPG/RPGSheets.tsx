@@ -262,6 +262,22 @@ function getCharacterImageUrl(
 
   return `http://127.0.0.1:8001/${imageUrl}`
 }
+
+function handleSheetChange(
+  field: RPGSheetField,
+  value: string
+) {
+  const finalValue =
+    field.field_type === "number"
+      ? value.replace(/[^0-9]/g, "")
+      : value
+
+  setSheetData((prev) => ({
+    ...prev,
+    [field.id]: finalValue,
+  }))
+}
+
   if (!isValid) return <div>RPG inválido</div>
 
   return (
@@ -455,17 +471,15 @@ function getCharacterImageUrl(
             </label>
 
             <input
-              type={field.field_type}
+              type="text"
+inputMode={field.field_type === "number" ? "numeric" : "text"}
+pattern={field.field_type === "number" ? "[0-9]*" : undefined}
               value={
                 sheetData[field.id] || ""
               }
               onChange={(e) =>
-                setSheetData({
-                  ...sheetData,
-                  [field.id]:
-                    e.target.value,
-                })
-              }
+  handleSheetChange(field, e.target.value)
+}
               className="
   w-full
   rounded-xl
@@ -593,14 +607,13 @@ function getCharacterImageUrl(
                   <label>{field.name}</label>
 
                   <input
-                    type={field.field_type}
+                    type="text"
+inputMode={field.field_type === "number" ? "numeric" : "text"}
+pattern={field.field_type === "number" ? "[0-9]*" : undefined}
                     value={sheetData[field.id] || ""}
                     onChange={(e) =>
-                      setSheetData({
-                        ...sheetData,
-                        [field.id]: e.target.value,
-                      })
-                    }
+  handleSheetChange(field, e.target.value)
+}
                     className="
   w-full
   rounded-xl
