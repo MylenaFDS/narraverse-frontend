@@ -15,6 +15,7 @@ import {
   updateSheetField,
   getRPG,
   getLore,
+  deleteSheetField
 } from "../../services/api"
 
 import type {
@@ -162,6 +163,26 @@ const otherCharacters =
     setEditingFieldId(null)
     setEditingFieldName("")
   }
+
+  async function handleDeleteField(fieldId: number) {
+  const confirmDelete = window.confirm(
+    "Tem certeza que deseja excluir este campo?"
+  )
+
+  if (!confirmDelete) return
+
+  await deleteSheetField(fieldId)
+
+  setSheetFields((prev) =>
+    prev.filter((field) => field.id !== fieldId)
+  )
+
+  setSheetData((prev) => {
+    const updated = { ...prev }
+    delete updated[fieldId]
+    return updated
+  })
+}
 
   // ===============================
   // 🚀 CRIAR PERSONAGEM
@@ -708,14 +729,21 @@ pattern={field.field_type === "number" ? "[0-9]*" : undefined}
                         <>
                           <span className="flex-1">{f.name}</span>
                           <button
-                            onClick={() => {
-                              setEditingFieldId(f.id)
-                              setEditingFieldName(f.name)
-                            }}
-                            className="text-[#e0a96d]"
-                          >
-                            Editar
-                          </button>
+  onClick={() => {
+    setEditingFieldId(f.id)
+    setEditingFieldName(f.name)
+  }}
+  className="text-[#e0a96d]"
+>
+  Editar
+</button>
+
+<button
+  onClick={() => handleDeleteField(f.id)}
+  className="text-red-400 hover:text-red-300 transition"
+>
+  Excluir
+</button>
                         </>
                       )}
                     </div>
@@ -734,12 +762,63 @@ pattern={field.field_type === "number" ? "[0-9]*" : undefined}
               </p>
 
               <button
-                type="button"
-                onClick={() => setIsCreatingCharacter(true)}
-                className="rpg-btn"
-              >
-                + Novo personagem
-              </button>
+  type="button"
+  onClick={() => setIsCreatingCharacter(true)}
+  className="
+    group
+    mx-auto
+    flex
+    flex-col
+    items-center
+    justify-center
+    gap-4
+    w-[240px]
+    h-[280px]
+    rounded-3xl
+    border
+    border-dashed
+    border-[#e0a96d]/30
+    bg-gradient-to-br
+    from-[#1a0d10]
+    to-[#12080a]
+    hover:border-[#e0a96d]/70
+    hover:shadow-[0_0_25px_rgba(224,169,109,0.18)]
+    transition-all
+    duration-500
+  "
+>
+  <div
+    className="
+      flex
+      items-center
+      justify-center
+      w-20
+      h-20
+      rounded-full
+      border
+      border-[#e0a96d]/40
+      bg-black/30
+      text-5xl
+      text-[#e0a96d]
+      group-hover:scale-110
+      group-hover:rotate-90
+      transition-all
+      duration-500
+    "
+  >
+    +
+  </div>
+
+  <div className="text-center">
+    <h3 className="text-xl font-display text-[#e0a96d]">
+      Novo personagem
+    </h3>
+
+    <p className="text-sm text-[#c9ada7]/60 mt-2 px-6">
+      Crie uma nova ficha para este universo.
+    </p>
+  </div>
+</button>
             </div>
           )}
                </div>

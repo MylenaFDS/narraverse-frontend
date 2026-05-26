@@ -308,6 +308,10 @@ export async function updateSheetField(
   return res.data
 }
 
+export async function deleteSheetField(fieldId: number) {
+  await api.delete(`/rpg-sheet-fields/${fieldId}`)
+}
+
 // ===============================
 // 🗺️ MAPA
 // ===============================
