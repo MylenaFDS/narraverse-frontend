@@ -309,7 +309,7 @@ export async function updateSheetField(
 }
 
 export async function deleteSheetField(fieldId: number) {
-  await api.delete(`/rpg-sheet-fields/${fieldId}`)
+  await api.delete(`/sheet-fields/${fieldId}`)
 }
 
 // ===============================

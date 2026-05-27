@@ -7,6 +7,7 @@ import {
   getCharacterSheet,
   saveCharacterSheet,
   uploadCharacterImage,
+  updateCharacter,
 } from "../../services/characters"
 
 import {
@@ -64,6 +65,10 @@ const [worldOptions, setWorldOptions] =
   const [editingFieldId, setEditingFieldId] = useState<number | null>(null)
   const [editingFieldName, setEditingFieldName] = useState("")
   const [isCreatingCharacter, setIsCreatingCharacter] = useState(false)
+  const [editCharacterName, setEditCharacterName] = useState("")
+const [editCharacterHistory, setEditCharacterHistory] = useState("")
+const [editCharacterWorldId, setEditCharacterWorldId] = useState<number | "">("")
+const [editCharacterImageFile, setEditCharacterImageFile] = useState<File | null>(null)
 
   const isValid = id && !isNaN(rpgId)
   const loggedUserId =
@@ -117,22 +122,34 @@ const otherCharacters =
   // 🎯 SELECIONAR PERSONAGEM
   // ===============================
   async function handleSelectCharacter(char: Character) {
-    setSelectedCharacter(char)
+  setSelectedCharacter(char)
 
-    try {
-      const sheet = await getCharacterSheet(char.id)
+  setEditCharacterName(char.name)
 
-      const formatted: Record<number, string> = {}
+  setEditCharacterHistory(
+    char.history || ""
+  )
 
-      sheet.forEach((item: CharacterSheetValue) => {
-        formatted[item.field_id] = item.value
-      })
+  setEditCharacterWorldId(
+    char.world_lore_id || ""
+  )
 
-      setSheetData(formatted)
-    } catch {
-      setSheetData({})
-    }
+  setEditCharacterImageFile(null)
+
+  try {
+    const sheet = await getCharacterSheet(char.id)
+
+    const formatted: Record<number, string> = {}
+
+    sheet.forEach((item: CharacterSheetValue) => {
+      formatted[item.field_id] = item.value
+    })
+
+    setSheetData(formatted)
+  } catch {
+    setSheetData({})
   }
+}
 
   // ===============================
   // ➕ CAMPO
@@ -239,7 +256,26 @@ setNewCharacterImageFile(null)
 
     await saveCharacterSheet(selectedCharacter.id, payload)
   }
+  async function handleSaveCharacterInfo() {
+  if (!selectedCharacter) return
 
+  const updated = await updateCharacter(selectedCharacter.id, {
+    name: editCharacterName,
+    history: editCharacterHistory,
+    world_lore_id: editCharacterWorldId,
+    image: editCharacterImageFile,
+  })
+
+  setSelectedCharacter(updated)
+
+  setCharacters((prev) =>
+    prev.map((char) =>
+      char.id === updated.id ? updated : char
+    )
+  )
+
+  setEditCharacterImageFile(null)
+}
   function getInitial(name: string) {
   return name.charAt(0).toUpperCase()
 }
@@ -433,6 +469,63 @@ const isCharacterOwner =
       </div>
     </div>
 
+    {isCharacterOwner && (
+  <div className="grid md:grid-cols-2 gap-3 mb-8">
+    <input
+      value={editCharacterName}
+      onChange={(e) =>
+        setEditCharacterName(e.target.value)
+      }
+      className="rpg-input"
+      placeholder="Nome do personagem"
+    />
+
+    <select
+      value={editCharacterWorldId}
+      onChange={(e) =>
+        setEditCharacterWorldId(
+          e.target.value
+            ? Number(e.target.value)
+            : ""
+        )
+      }
+      className="rpg-input"
+    >
+      <option value="">
+        Selecione um mundo
+      </option>
+
+      {worldOptions.map((world) => (
+        <option
+          key={world.id}
+          value={world.id}
+        >
+          {world.title}
+        </option>
+      ))}
+    </select>
+
+    <input
+      type="file"
+      accept="image/*"
+      onChange={(e) =>
+        setEditCharacterImageFile(
+          e.target.files?.[0] ?? null
+        )
+      }
+      className="rpg-input md:col-span-2"
+    />
+
+    <button
+      type="button"
+      onClick={handleSaveCharacterInfo}
+      className="rpg-btn md:col-span-2"
+    >
+      Salvar dados do personagem
+    </button>
+  </div>
+)}
+
     {/* HISTÓRIA */}
     <div
       className="
@@ -448,10 +541,19 @@ const isCharacterOwner =
         História
       </div>
 
-      <p className="text-[#c9ada7] leading-relaxed whitespace-pre-wrap">
-        {selectedCharacter.history ||
-          "Sem história registrada."}
-      </p>
+      {isCharacterOwner ? (
+  <textarea
+    value={editCharacterHistory}
+    onChange={(e) =>
+      setEditCharacterHistory(e.target.value)
+    }
+    className="rpg-input w-full min-h-[140px] resize-y"
+  />
+) : (
+  <p className="text-[#c9ada7] leading-relaxed whitespace-pre-wrap">
+    {selectedCharacter.history || "Sem história registrada."}
+  </p>
+)}
     </div>
 
     {/* ATRIBUTOS */}

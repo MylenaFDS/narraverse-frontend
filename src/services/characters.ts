@@ -108,3 +108,33 @@ export async function uploadCharacterImage(
 
   return res.json()
 }
+
+export async function updateCharacter(
+  characterId: number,
+  data: {
+    name: string
+    history: string
+    world_lore_id: number | ""
+    image?: File | null
+  }
+) {
+  const formData = new FormData()
+
+  formData.append("name", data.name)
+  formData.append("history", data.history)
+
+  if (data.world_lore_id !== "") {
+    formData.append("world_lore_id", String(data.world_lore_id))
+  }
+
+  if (data.image) {
+    formData.append("image", data.image)
+  }
+
+  const response = await api.put(
+    `/characters/${characterId}`,
+    formData
+  )
+
+  return response.data
+}
