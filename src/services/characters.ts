@@ -138,3 +138,9 @@ export async function updateCharacter(
 
   return response.data
 }
+
+export async function deleteCharacter(
+  characterId: number
+) {
+  await api.delete(`/characters/${characterId}`)
+}

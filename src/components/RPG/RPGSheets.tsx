@@ -8,6 +8,7 @@ import {
   saveCharacterSheet,
   uploadCharacterImage,
   updateCharacter,
+  deleteCharacter,
 } from "../../services/characters"
 
 import {
@@ -275,6 +276,28 @@ setNewCharacterImageFile(null)
   )
 
   setEditCharacterImageFile(null)
+}
+
+async function handleDeleteCharacter() {
+  if (!selectedCharacter) return
+
+  const confirmDelete = window.confirm(
+    `Tem certeza que deseja excluir "${selectedCharacter.name}"?\n\nEssa ação não poderá ser desfeita.`
+  )
+
+  if (!confirmDelete) return
+
+  await deleteCharacter(selectedCharacter.id)
+
+  setCharacters((prev) =>
+    prev.filter(
+      (char) =>
+        char.id !== selectedCharacter.id
+    )
+  )
+
+  setSelectedCharacter(null)
+  setSheetData({})
 }
   function getInitial(name: string) {
   return name.charAt(0).toUpperCase()
@@ -638,6 +661,24 @@ pattern={field.field_type === "number" ? "[0-9]*" : undefined}
     className="rpg-btn"
   >
     Salvar ficha
+  </button>
+
+  
+)} {isCharacterOwner && (
+  <button
+    type="button"
+    onClick={handleDeleteCharacter}
+    className="
+      px-4 py-2
+      rounded-lg
+      border
+      border-red-900/40
+      text-red-300
+      hover:bg-red-950/30
+      transition
+    "
+  >
+    Excluir personagem
   </button>
 )}
 
