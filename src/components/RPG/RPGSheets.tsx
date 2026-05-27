@@ -299,6 +299,8 @@ function handleSheetChange(
     [field.id]: finalValue,
   }))
 }
+const isCharacterOwner =
+  selectedCharacter?.user_id === loggedUserId
 
   if (!isValid) return <div>RPG inválido</div>
 
@@ -499,6 +501,7 @@ pattern={field.field_type === "number" ? "[0-9]*" : undefined}
               value={
                 sheetData[field.id] || ""
               }
+              disabled={!isCharacterOwner}
               onChange={(e) =>
   handleSheetChange(field, e.target.value)
 }
@@ -527,12 +530,14 @@ pattern={field.field_type === "number" ? "[0-9]*" : undefined}
 
     {/* BOTÕES */}
     <div className="flex gap-3 mt-8">
-      <button
-        onClick={handleSaveSheet}
-        className="rpg-btn"
-      >
-        Salvar ficha
-      </button>
+      {isCharacterOwner && (
+  <button
+    onClick={handleSaveSheet}
+    className="rpg-btn"
+  >
+    Salvar ficha
+  </button>
+)}
 
       <button
         onClick={() => {
