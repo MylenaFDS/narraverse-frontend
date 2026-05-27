@@ -164,9 +164,9 @@ const otherCharacters =
     setEditingFieldName("")
   }
 
-  async function handleDeleteField(fieldId: number) {
+  async function handleDeleteField(fieldId: number, fieldName: string) {
   const confirmDelete = window.confirm(
-    "Tem certeza que deseja excluir este campo?"
+    `Tem certeza que deseja excluir o campo "${fieldName}"?\n\nIsso também apagará os valores desse campo nas fichas dos personagens.`
   )
 
   if (!confirmDelete) return
@@ -739,7 +739,7 @@ pattern={field.field_type === "number" ? "[0-9]*" : undefined}
 </button>
 
 <button
-  onClick={() => handleDeleteField(f.id)}
+  onClick={() => handleDeleteField(f.id, f.name)}
   className="text-red-400 hover:text-red-300 transition"
 >
   Excluir
