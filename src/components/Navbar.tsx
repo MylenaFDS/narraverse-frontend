@@ -90,18 +90,14 @@ function handleClickNotification(n: Notification) {
     <div className="flex gap-4 items-center text-[#c9ada7] relative">
 
       {/* LINKS */}
-      <Link to="/search" className="hover:text-[#e0a96d] transition">
+      <Link to="/search" className="font-display text-[#e0a96d] transition">
         Buscar
       </Link>
       <Link
-  to="/home"
+  to="/search"
   className="
-    hover:text-[#e0a96d]
-    transition
-    relative
-    flex
-    items-center
-  "
+    font-display text-[#e0a96d] transition"
+  
 >
   Convites
 
@@ -123,7 +119,7 @@ function handleClickNotification(n: Notification) {
 </Link>
       {user && (
         <>
-          <Link to="/profile" className="hover:text-[#e0a96d] transition">
+          <Link to="/profile" className="font-display text-[#e0a96d] transition">
             Perfil
           </Link>
 
