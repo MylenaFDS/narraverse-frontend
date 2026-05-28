@@ -22,11 +22,19 @@ export default function Search() {
 
   
 
-const filteredRPGs = rpgs.filter((rpg) =>
-  normalize(rpg.name).includes(
-    normalize(search)
+const filteredRPGs = rpgs.filter((rpg) => {
+  const searchText = normalize(search)
+
+  const searchableContent = normalize(
+    [
+      rpg.name,
+      rpg.description || "",
+      ...(rpg.tags || []),
+    ].join(" ")
   )
-)
+
+  return searchableContent.includes(searchText)
+})
 function normalize(text: string) {
   return text
     .normalize("NFD")
