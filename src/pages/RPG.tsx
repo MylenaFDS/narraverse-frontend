@@ -8,7 +8,7 @@ import Turns from "../components/RPG/Turns"
 import Chat from "../components/RPG/Chat"
 import Lore from "../components/RPG/Lore/Lore"
 import RPGSheets from "../components/RPG/RPGSheets"
-import { getRPG } from "../services/api"
+import { getRPG, uploadRPGBanner } from "../services/api"
 
 type Tab =
   | "turns"
@@ -21,6 +21,7 @@ type RPGType = {
   name: string
   description?: string
   owner_id: number
+  banner_url?: string | null
 }
 export default function RPG() {
   const { id } = useParams()
@@ -50,10 +51,16 @@ const currentTab: Tab =
         
   const [rpg, setRpg] =
     useState<RPGType | null>(null)
+  const [bannerFile, setBannerFile] =
+  useState<File | null>(null)
 
   const isValid =
     id && !isNaN(rpgId)
+  const loggedUserId = Number(
+  localStorage.getItem("user_id")
+)
 
+const isOwner = rpg?.owner_id === loggedUserId
   useEffect(() => {
     if (!isValid) return
 
@@ -83,13 +90,83 @@ const currentTab: Tab =
     `
   }
 
+  async function handleUploadBanner() {
+  if (!bannerFile) return
+
+  const updated = await uploadRPGBanner(
+    rpgId,
+    bannerFile
+  )
+
+  setRpg(updated)
+  setBannerFile(null)
+}
+
   return (
     <div className="rpg-bg min-h-screen p-6">
 
       {/* HEADER */}
-      <div className="rpg-panel max-w-5xl mx-auto mb-6">
+      <div
+  className="
+    rpg-panel
+    max-w-5xl
+    mx-auto
+    mb-6
+    relative
+    overflow-hidden
+  "
+>{rpg.banner_url && (
+  <div className="absolute inset-0">
+    <img
+      src={`http://127.0.0.1:8001/${rpg.banner_url}`}
+      alt={rpg.name}
+      className="
+        w-full
+        h-full
+        object-cover
+        opacity-25
+        blur-sm
+        scale-105
+      "
+    />
+
+    <div
+      className="
+        absolute
+        inset-0
+        bg-gradient-to-b
+        from-black/30
+        via-[#12090b]/70
+        to-[#12090b]
+      "
+    />
+  </div>
+)}
+<div className="relative z-10">
         <div className="text-xl font-bold font-display text-[#e0a96d]">
           <h2>{rpg.name}</h2>
+          {isOwner && (
+  <div className="mt-4 flex gap-3 items-center">
+    <input
+      type="file"
+      accept="image/*"
+      onChange={(e) =>
+        setBannerFile(
+          e.target.files?.[0] ?? null
+        )
+      }
+      className="rpg-input"
+    />
+
+    <button
+      type="button"
+      onClick={handleUploadBanner}
+      className="rpg-btn"
+    >
+      Salvar banner
+    </button>
+  </div>
+)}
         </div>
 
         {/* ABAS */}
@@ -137,6 +214,7 @@ const currentTab: Tab =
             Chat
           </button>
         </div>
+</div>
       </div>
 
       {/* LAYOUT */}

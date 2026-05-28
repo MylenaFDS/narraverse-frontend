@@ -429,3 +429,19 @@ export async function approveLoreSuggestion(
 
   return res.data
 }
+
+export async function uploadRPGBanner(
+  rpgId: number,
+  file: File
+) {
+  const formData = new FormData()
+
+  formData.append("file", file)
+
+  const response = await api.post(
+    `/rpgs/${rpgId}/banner`,
+    formData
+  )
+
+  return response.data
+}
