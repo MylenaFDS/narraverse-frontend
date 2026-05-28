@@ -7,6 +7,7 @@ type RPG = {
   name: string
   description?: string
   banner_url?: string | null
+  tags?: string[]
 }
 
 export default function Search() {
@@ -130,13 +131,14 @@ function normalize(text: string) {
               </p>
 
               <div className="flex flex-wrap gap-2 mt-4">
-                <span className="rpg-tag">
-                  Fantasia Sombria
-                </span>
-
-                <span className="rpg-tag">
-                  Política
-                </span>
+                {rpg.tags?.map((tag) => (
+  <span
+    key={tag}
+    className="rpg-tag"
+  >
+    {tag}
+  </span>
+))}
               </div>
             </div>
           </Link>

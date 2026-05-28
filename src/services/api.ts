@@ -226,6 +226,19 @@ export async function getRPGs() {
   return res.data
 }
 
+export async function createRPG(data: {
+  name: string
+  description?: string
+  allow_join_requests?: boolean
+  tags?: string[]
+}) {
+  const res = await api.post(
+    "/rpgs/",
+    data
+  )
+
+  return res.data
+}
 // ===============================
 // 👥 PARTICIPANTES / CONVITES
 // ===============================

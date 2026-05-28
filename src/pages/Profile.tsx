@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { getMe, updateProfile } from "../services/api"
 import type { UserProfile, RPG } from "../types/user"
+import CreateRPGForm from "../components/Profile/CreateRPGForm"
 
 export default function Profile() {
   const [user, setUser] = useState<UserProfile | null>(null)
@@ -68,6 +69,13 @@ export default function Profile() {
       </button>
 
       <div className="rpg-divider" />
+
+<CreateRPGForm
+  onCreated={async () => {
+    const data = await getMe()
+    setUser(data)
+  }}
+/>
 
       {/* RPGs criados */}
       <h3 className="text-xl font-display text-accent mb-3">
