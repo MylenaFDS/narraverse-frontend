@@ -12,13 +12,19 @@ type RPG = {
 export default function Search() {
   const [rpgs, setRpgs] =
   useState<RPG[]>([])
+  const [search, setSearch] =
+  useState("")
 
   useEffect(() => {
   getRPGs()
     .then(setRpgs)
     .catch(console.error)
 }, [])
-
+const filteredRPGs = rpgs.filter((rpg) =>
+  rpg.name
+    .toLowerCase()
+    .includes(search.toLowerCase())
+)
   return (
     <div className="max-w-7xl mx-auto p-6">
 
@@ -30,11 +36,37 @@ export default function Search() {
         <p className="text-[#c9ada7]/70 mt-2">
           Descubra campanhas, universos e histórias criadas pela comunidade.
         </p>
+        <div className="mt-6">
+  <input
+    type="text"
+    placeholder="Buscar mundos..."
+    value={search}
+    onChange={(e) =>
+      setSearch(e.target.value)
+    }
+    className="
+      w-full
+      md:w-[420px]
+      rounded-2xl
+      border
+      border-[#e0a96d]/20
+      bg-black/20
+      px-5
+      py-3
+      text-[#f2e9e4]
+      placeholder:text-[#c9ada7]/40
+      outline-none
+      transition
+      focus:border-[#e0a96d]/60
+      focus:bg-black/30
+    "
+  />
+</div>
       </div>
 
       <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
 
-  {rpgs.map((rpg) => (
+  {filteredRPGs.map((rpg) => (
 
         <Link
   to={`/rpg/${rpg.id}`}
@@ -107,6 +139,29 @@ export default function Search() {
           </div>
         </Link>
   ))}
+
+  {filteredRPGs.length === 0 && (
+  <div
+    className="
+      col-span-full
+      rounded-2xl
+      border
+      border-[#e0a96d]/10
+      bg-black/20
+      p-10
+      text-center
+    "
+  >
+    <h3 className="text-2xl font-display text-[#e0a96d]">
+      Nenhum mundo encontrado
+    </h3>
+
+    <p className="text-[#c9ada7]/60 mt-3">
+      Tente buscar por outro nome,
+      tema ou universo.
+    </p>
+  </div>
+)}
       </div>
     </div>
   )
