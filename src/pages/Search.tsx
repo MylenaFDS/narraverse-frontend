@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { getRPGs } from "../services/api"
+import { Link } from "react-router-dom"
 
 type RPG = {
   id: number
@@ -35,7 +36,8 @@ export default function Search() {
 
   {rpgs.map((rpg) => (
 
-        <div
+        <Link
+  to={`/rpg/${rpg.id}`}
           key={rpg.id}
   className="
           group
@@ -103,7 +105,7 @@ export default function Search() {
 
             </div>
           </div>
-        </div>
+        </Link>
   ))}
       </div>
     </div>
