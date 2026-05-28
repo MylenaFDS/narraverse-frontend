@@ -114,7 +114,7 @@ export async function register(username: string, email: string, password: string
 
 export async function getMe() {
   try {
-    const res = await api.get("/auth/me")
+    const res = await api.get("/users/me")
     return res.data
   } catch (err: unknown) {
     const error = err as AxiosError
@@ -238,6 +238,12 @@ export async function createRPG(data: {
   )
 
   return res.data
+}
+
+export async function deleteRPG(
+  rpgId: number
+) {
+  await api.delete(`/rpgs/${rpgId}`)
 }
 // ===============================
 // 👥 PARTICIPANTES / CONVITES

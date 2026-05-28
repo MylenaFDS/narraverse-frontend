@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { getMe, updateProfile } from "../services/api"
+import { getMe, updateProfile, deleteRPG } from "../services/api"
 import type { UserProfile, RPG } from "../types/user"
 import CreateRPGForm from "../components/Profile/CreateRPGForm"
 
@@ -36,6 +36,23 @@ export default function Profile() {
       setSaving(false)
     }
   }
+
+  async function handleDeleteRPG(rpgId: number) {
+  const confirmed = window.confirm(
+    "Tem certeza que deseja excluir este RPG?\n\nEssa ação não poderá ser desfeita."
+  )
+
+  if (!confirmed) return
+
+  try {
+    await deleteRPG(rpgId)
+
+    const data = await getMe()
+    setUser(data)
+  } catch (err) {
+    console.error("Erro ao excluir RPG:", err)
+  }
+}
 
   if (loading) return <div>Carregando...</div>
   if (!user) return <div>Erro ao carregar perfil</div>
@@ -86,9 +103,17 @@ export default function Profile() {
         {user.owned_rpgs?.length ? (
           user.owned_rpgs.map((rpg: RPG) => (
             <div key={rpg.id} className="rpg-card">
-              <p className="font-bold text-accent">{rpg.name}</p>
-              <p className="text-sm text-textSoft">{rpg.description}</p>
-            </div>
+  <p className="font-bold text-accent">{rpg.name}</p>
+  <p className="text-sm text-textSoft">{rpg.description}</p>
+
+  <button
+    type="button"
+    onClick={() => handleDeleteRPG(rpg.id)}
+    className="mt-3 text-sm text-red-400 hover:text-red-300 transition"
+  >
+    Excluir RPG
+  </button>
+</div>
           ))
         ) : (
           <p className="text-textSoft">
