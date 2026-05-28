@@ -33,7 +33,7 @@ export default function Login() {
 
     console.log("USER LOGADO:", user.id)
 
-    navigate("/home")
+    navigate("/search")
   } catch (err) {
     console.error(err)
     alert("Erro ao fazer login")

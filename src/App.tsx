@@ -3,7 +3,7 @@ import { Routes, Route, Navigate } from "react-router-dom"
 import Layout from "./components/Layout"
 import PrivateRoute from "./components/PrivateRoute"
 
-import Home from "./pages/Home"
+
 import RPG from "./pages/RPG"
 import Search from "./pages/Search"
 import Login from "./pages/Login"
@@ -38,10 +38,7 @@ export default function App() {
             }
           />
 
-          <Route
-            path="/home"
-            element={<Home />}
-          />
+         
 
           <Route
             path="/search"
