@@ -221,6 +221,11 @@ export async function getRPG(id: number) {
   return res.data
 }
 
+export async function getRPGs() {
+  const res = await api.get("/rpgs")
+  return res.data
+}
+
 // ===============================
 // 👥 PARTICIPANTES / CONVITES
 // ===============================

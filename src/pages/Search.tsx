@@ -1,4 +1,23 @@
+import { useEffect, useState } from "react"
+import { getRPGs } from "../services/api"
+
+type RPG = {
+  id: number
+  name: string
+  description?: string
+  banner_url?: string | null
+}
+
 export default function Search() {
+  const [rpgs, setRpgs] =
+  useState<RPG[]>([])
+
+  useEffect(() => {
+  getRPGs()
+    .then(setRpgs)
+    .catch(console.error)
+}, [])
+
   return (
     <div className="max-w-7xl mx-auto p-6">
 
@@ -14,8 +33,11 @@ export default function Search() {
 
       <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
 
+  {rpgs.map((rpg) => (
+
         <div
-          className="
+          key={rpg.id}
+  className="
           group
             overflow-hidden
             rounded-2xl
@@ -30,18 +52,22 @@ export default function Search() {
 
           <div className="relative h-44 overflow-hidden">
 
-  <img
-    src="URL_DO_BANNER"
-    alt="Império das Sombras"
-    className="
-      w-full
-      h-full
-      object-cover
-      transition-transform
-      duration-500
-      group-hover:scale-105
-    "
-  />
+  {rpg.banner_url ? (
+    <img
+      src={`http://127.0.0.1:8001/${rpg.banner_url}`}
+      alt={rpg.name}
+      className="
+        w-full
+        h-full
+        object-cover
+        transition-transform
+        duration-500
+        group-hover:scale-105
+      "
+    />
+  ) : (
+    <div className="w-full h-full bg-black/30" />
+  )}
 
   <div
     className="
@@ -58,12 +84,11 @@ export default function Search() {
           <div className="p-5">
 
             <h3 className="text-2xl font-display text-[#e0a96d]">
-              Império das Sombras
+              {rpg.name}
             </h3>
 
             <p className="text-sm text-[#c9ada7]/70 mt-3 leading-relaxed">
-              Um reino mergulhado em conspirações,
-              magia proibida e guerras silenciosas.
+              {rpg.description || "Este mundo ainda não possui descrição."}
             </p>
 
             <div className="flex flex-wrap gap-2 mt-4">
@@ -79,7 +104,7 @@ export default function Search() {
             </div>
           </div>
         </div>
-
+  ))}
       </div>
     </div>
   )
