@@ -146,22 +146,51 @@ const isOwner = rpg?.owner_id === loggedUserId
         <div className="text-xl font-bold font-display text-[#e0a96d]">
           <h2>{rpg.name}</h2>
           {isOwner && (
-  <div className="mt-4 flex gap-3 items-center">
-    <input
-      type="file"
-      accept="image/*"
-      onChange={(e) =>
-        setBannerFile(
-          e.target.files?.[0] ?? null
-        )
-      }
-      className="rpg-input"
-    />
+  <div className="mt-4 flex flex-wrap gap-3 items-center">
+    <label
+      className="
+        cursor-pointer
+        rounded-xl
+        border
+        border-[#e0a96d]/30
+        bg-black/25
+        px-4
+        py-2
+        text-sm
+        text-[#e0a96d]
+        hover:bg-[#e0a96d]/10
+        transition
+      "
+    >
+      Escolher banner
+
+      <input
+        type="file"
+        accept="image/*"
+        onChange={(e) =>
+          setBannerFile(
+            e.target.files?.[0] ?? null
+          )
+        }
+        className="hidden"
+      />
+    </label>
+
+    {bannerFile && (
+      <span className="text-xs text-[#c9ada7]/70">
+        {bannerFile.name}
+      </span>
+    )}
 
     <button
       type="button"
       onClick={handleUploadBanner}
-      className="rpg-btn"
+      disabled={!bannerFile}
+      className="
+        rpg-btn
+        disabled:opacity-40
+        disabled:cursor-not-allowed
+      "
     >
       Salvar banner
     </button>
