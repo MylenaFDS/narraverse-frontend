@@ -240,6 +240,26 @@ export async function createRPG(data: {
   return res.data
 }
 
+export async function getRPGPlayers(
+  rpgId: number
+) {
+  const res = await api.get(
+    `/rpgs/${rpgId}/players`
+  )
+
+  return res.data
+}
+
+export async function getRPGStats(
+  rpgId: number
+) {
+  const res = await api.get(
+    `/rpgs/${rpgId}/stats`
+  )
+
+  return res.data
+}
+
 export async function deleteRPG(
   rpgId: number
 ) {
@@ -266,6 +286,16 @@ export async function updateParticipantStatus(
 ) {
   const res = await api.put(
     `/rpgs/${rpgId}/participants/${userId}?status=${status}`
+  )
+
+  return res.data
+}
+
+export async function requestToJoinRPG(
+  rpgId: number
+) {
+  const res = await api.post(
+    `/rpgs/${rpgId}/request`
   )
 
   return res.data

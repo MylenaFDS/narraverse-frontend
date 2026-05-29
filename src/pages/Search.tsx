@@ -364,6 +364,45 @@ const otherRPGs = filteredRPGs.filter(
           </div>
         )}
       </div>
+      <div
+  className="
+    relative
+    mt-24
+    rounded-[2rem]
+    overflow-hidden
+    border
+    border-[#e0a96d]/10
+    bg-gradient-to-br
+    from-[#1a0d10]
+    to-black/40
+    p-12
+    text-center
+  "
+>
+  <div
+    className="
+      absolute
+      inset-0
+      bg-[radial-gradient(circle_at_top,rgba(224,169,109,0.08),transparent_60%)]
+    "
+  />
+
+  <div className="relative z-10">
+    <p className="text-sm tracking-[0.35em] uppercase text-[#e0a96d]/60">
+      Narraverse
+    </p>
+
+    <h3 className="mt-4 text-4xl font-display text-[#e0a96d]">
+      Todo mundo carrega uma história.
+    </h3>
+
+    <p className="mt-5 max-w-2xl mx-auto text-[#c9ada7]/70 leading-relaxed">
+      Explore reinos esquecidos, romances impossíveis,
+      conspirações políticas, guerras antigas e mundos
+      criados pela imaginação da comunidade.
+    </p>
+  </div>
+</div>
     </div>
   )
 }
