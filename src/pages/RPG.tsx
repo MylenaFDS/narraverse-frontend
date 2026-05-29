@@ -194,6 +194,13 @@ async function handleRequestToJoin() {
   }
 }
 
+const isParticipant = players.some(
+  (player) => player.id === loggedUserId
+)
+
+const canRequestJoin =
+  !isOwner && !isParticipant
+
   return (
     <div className="rpg-bg min-h-screen p-6">
 
@@ -292,7 +299,7 @@ async function handleRequestToJoin() {
     ))}
   </div>
 )}
-{!isOwner && (
+{canRequestJoin && (
   <button
     type="button"
     onClick={handleRequestToJoin}
