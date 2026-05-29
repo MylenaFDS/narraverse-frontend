@@ -52,74 +52,113 @@ export default function PublicCharacterOverlay({
   }
 
   return (
+  <div
+    className="
+      fixed inset-0 z-50
+      bg-black/75
+      backdrop-blur-sm
+      flex items-start justify-center
+      overflow-y-auto
+      p-8
+    "
+    onClick={onClose}
+  >
     <div
+      onClick={(e) => e.stopPropagation()}
       className="
-        fixed
-        inset-0
-        z-50
-        bg-black/80
-        backdrop-blur-sm
-        flex
-        items-center
-        justify-center
-        p-6
+        relative
+        w-full
+        max-w-3xl
+        my-10
+        overflow-hidden
+        rounded-3xl
+        border
+        border-yellow-900/30
+        bg-gradient-to-br
+        from-[#241216]
+        to-[#12090b]
+        shadow-[0_0_35px_rgba(0,0,0,0.5)]
       "
     >
-      <div
-        className="
-          w-full
-          max-w-4xl
-          rounded-3xl
-          border
-          border-[#e0a96d]/20
-          bg-[#12090b]
-          overflow-hidden
-        "
-      >
-        <div className="p-6">
+      {getImageUrl(character.image_url) && (
+        <div className="absolute inset-x-0 top-0 h-48 overflow-hidden">
+          <img
+            src={getImageUrl(character.image_url)!}
+            alt={character.name}
+            className="
+              w-full h-full object-cover
+              opacity-30 blur-sm scale-110
+            "
+          />
 
-          <div className="flex justify-between mb-6">
-            <h2 className="text-3xl font-display text-[#e0a96d]">
+          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-[#241216]/70 to-[#12090b]" />
+        </div>
+      )}
+
+      <div className="relative z-10 p-6">
+        <div className="flex justify-end">
+          <button
+            onClick={onClose}
+            className="text-[#c9ada7] hover:text-[#e0a96d]"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div className="flex items-center gap-5 mb-8">
+          <div
+            className="
+              w-24 h-24 rounded-full
+              bg-gradient-to-br from-[#e0a96d] to-[#8b5e34]
+              flex items-center justify-center
+              text-3xl font-bold text-black
+              shadow-lg shrink-0 overflow-hidden
+            "
+          >
+            {getImageUrl(character.image_url) ? (
+              <img
+                src={getImageUrl(character.image_url)!}
+                alt={character.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              character.name.charAt(0).toUpperCase()
+            )}
+          </div>
+
+          <div>
+            <h2 className="text-4xl font-display text-[#e0a96d]">
               {character.name}
             </h2>
 
-            <button
-              onClick={onClose}
-              className="text-[#c9ada7]"
-            >
-              ✕
-            </button>
+            <p className="mt-2 text-sm text-[#c9ada7]/70">
+              Jogador: {character.owner_username}
+            </p>
+          </div>
+        </div>
+
+        <div
+          className="
+            rounded-2xl
+            border
+            border-[#3a1f24]
+            bg-black/20
+            p-5
+            mb-8
+          "
+        >
+          <div className="text-sm uppercase tracking-[0.2em] text-[#e0a96d]/70 mb-3">
+            História
           </div>
 
-          <p className="text-sm text-[#c9ada7]/70 mb-6">
-            Jogador: {character.owner_username}
+          <p className="text-[#c9ada7] leading-relaxed whitespace-pre-wrap">
+            {character.history || "Sem história registrada."}
           </p>
+        </div>
 
-          {getImageUrl(character.image_url) && (
-            <img
-              src={getImageUrl(
-                character.image_url
-              )!}
-              alt={character.name}
-              className="
-                w-full
-                h-64
-                object-cover
-                rounded-2xl
-                mb-6
-              "
-            />
-          )}
-
-          <div className="mb-6">
-            <h3 className="text-[#e0a96d] mb-2">
-              História
-            </h3>
-
-            <p className="text-[#c9ada7] whitespace-pre-wrap">
-              {character.history ||
-                "Sem história registrada."}
-            </p>
+        <div>
+          <div className="text-sm uppercase tracking-[0.2em] text-[#e0a96d]/70 mb-4">
+            Atributos
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">
@@ -127,26 +166,28 @@ export default function PublicCharacterOverlay({
               <div
                 key={field.field_name}
                 className="
-                  rounded-xl
+                  rounded-2xl
                   border
-                  border-[#3a1f24]
-                  bg-black/20
+                  border-[#4a2329]
+                  bg-gradient-to-br
+                  from-[#1b0c10]
+                  to-[#12080a]
                   p-4
                 "
               >
-                <div className="text-xs text-[#e0a96d]/70 uppercase">
+                <div className="text-[11px] uppercase tracking-[0.15em] text-[#e0a96d]/70 mb-3">
                   {field.field_name}
                 </div>
 
-                <div className="text-[#f5d7b2] mt-2">
-                  {field.value}
+                <div className="text-[#f5d7b2]">
+                  {field.value || "—"}
                 </div>
               </div>
             ))}
           </div>
-
         </div>
       </div>
     </div>
-  )
+  </div>
+)
 }

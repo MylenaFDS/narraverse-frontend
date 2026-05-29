@@ -270,6 +270,56 @@ export async function deleteRPG(
 ) {
   await api.delete(`/rpgs/${rpgId}`)
 }
+
+export async function getRPGNotes(
+  rpgId: number
+) {
+  const res = await api.get(
+    `/notes/rpg/${rpgId}`
+  )
+
+  return res.data
+}
+
+export async function createRPGNote(
+  rpgId: number,
+  data: {
+    title?: string
+    content?: string
+  }
+) {
+  const res = await api.post(
+    `/notes/rpg/${rpgId}`,
+    data
+  )
+
+  return res.data
+}
+
+export async function updateRPGNote(
+  noteId: number,
+  data: {
+    title?: string
+    content?: string
+  }
+) {
+  const res = await api.put(
+    `/notes/${noteId}`,
+    data
+  )
+
+  return res.data
+}
+
+export async function deleteRPGNote(
+  noteId: number
+) {
+  const res = await api.delete(
+    `/notes/${noteId}`
+  )
+
+  return res.data
+}
 // ===============================
 // 👥 PARTICIPANTES / CONVITES
 // ===============================

@@ -9,6 +9,8 @@ import Chat from "../components/RPG/Chat"
 import Lore from "../components/RPG/Lore/Lore"
 import RPGSheets from "../components/RPG/RPGSheets"
 import PublicCharacterOverlay from "../components/RPG/PublicCharacterOverlay"
+import RPGNotes
+from "../components/RPG/RPGNotes"
 import { getRPG, uploadRPGBanner, getRPGPlayers, getRPGStats, getPendingRequests, updateParticipantStatus, requestToJoinRPG} from "../services/api"
 import {getPublicRPGCharacters} from "../services/characters"
 
@@ -689,9 +691,10 @@ const canRequestJoin =
 <p>🧙 {stats?.characters ?? 0} personagens</p>
   </div>
 </div>
-          <div className="rpg-panel text-xl font-display text-[#e0a96d]">
-            Anotações
-          </div>
+          <RPGNotes
+  rpgId={rpgId}
+  isOwner={isOwner}
+/>
 
         </div>
 
