@@ -3,7 +3,7 @@ import {
   useLocation,
 } from "react-router-dom"
 import { useState, useEffect } from "react"
-
+import { Link } from "react-router-dom"
 import Turns from "../components/RPG/Turns"
 import Chat from "../components/RPG/Chat"
 import Lore from "../components/RPG/Lore/Lore"
@@ -62,7 +62,11 @@ const currentTab: Tab =
   const [bannerFile, setBannerFile] =
   useState<File | null>(null)
   const [players, setPlayers] = useState<
-  { id: number; username: string }[]
+  {
+    id: number
+    username: string
+    is_owner?: boolean
+  }[]
 >([])
 const [onlineUsers, setOnlineUsers] =
   useState<number[]>([])
@@ -490,18 +494,19 @@ const canRequestJoin =
         <div
   key={player.id}
   className="
-    rounded-xl
-    border
-    border-[#e0a96d]/10
-    bg-black/20
-    px-3
-    py-2
-    text-[#f2e9e4]
-    flex
-    items-center
-    gap-2
-  "
+  rounded-xl
+  border
+  border-[#e0a96d]/10
+  bg-black/20
+  px-3
+  py-2
+  text-[#f2e9e4]
+  flex
+  items-center
+  justify-between
+"
 >
+   <div className="flex items-center gap-2">
   <span
     className={`
       w-2
@@ -515,7 +520,22 @@ const canRequestJoin =
     `}
   />
 
+  {player.is_owner && (
+    <span className="text-yellow-400">
+      👑
+    </span>
+  )}
+
+  <Link
+  to={`/profile/${player.id}`}
+  className="
+    hover:text-[#e0a96d]
+    transition
+  "
+>
   {player.username}
+</Link>
+</div>
 </div>
       ))}
     </div>

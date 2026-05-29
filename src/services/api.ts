@@ -135,6 +135,11 @@ export async function getMe() {
 // ===============================
 // 👤 USER
 // ===============================
+export async function getPublicProfile(userId: number) {
+  const res = await api.get(`/users/${userId}/profile`)
+  return res.data
+}
+
 export async function updateProfile(data: {
   username?: string
   bio?: string

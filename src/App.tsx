@@ -9,6 +9,7 @@ import Search from "./pages/Search"
 import Login from "./pages/Login"
 import Register from "./pages/Register"
 import Profile from "./pages/Profile"
+import PublicProfile from "./pages/PublicProfile"
 
 export default function App() {
   return (
@@ -53,6 +54,10 @@ export default function App() {
           <Route
             path="/profile"
             element={<Profile />}
+          />
+          <Route
+            path="/profile/:id"
+            element={<PublicProfile />}
           />
         </Route>
       </Route>
