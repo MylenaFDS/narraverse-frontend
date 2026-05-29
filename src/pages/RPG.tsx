@@ -8,7 +8,9 @@ import Turns from "../components/RPG/Turns"
 import Chat from "../components/RPG/Chat"
 import Lore from "../components/RPG/Lore/Lore"
 import RPGSheets from "../components/RPG/RPGSheets"
+import PublicCharacterOverlay from "../components/RPG/PublicCharacterOverlay"
 import { getRPG, uploadRPGBanner, getRPGPlayers, getRPGStats, getPendingRequests, updateParticipantStatus, requestToJoinRPG} from "../services/api"
+import {getPublicRPGCharacters} from "../services/characters"
 
 type Tab =
   | "turns"
@@ -82,6 +84,18 @@ const [joinRequests, setJoinRequests] =
   useState<JoinRequest[]>([])
   const [joinRequested, setJoinRequested] =
   useState(false)
+  const [publicCharacters, setPublicCharacters] =
+  useState<
+    {
+      id: number
+      name: string
+      image_url?: string | null
+      user_id: number
+    }[]
+  >([])
+
+  const [publicCharacterId, setPublicCharacterId] =
+  useState<number | null>(null)
 
   const isValid =
     id && !isNaN(rpgId)
@@ -133,6 +147,13 @@ const isOwner = rpg?.owner_id === loggedUserId
   getPendingRequests(rpgId)
     .then(setJoinRequests)
     .catch(console.error)
+
+  getPublicRPGCharacters(rpgId)
+  .then((data) => {
+    console.log("PERSONAGENS:", data)
+    setPublicCharacters(data)
+  })
+  .catch(console.error)
 }, [rpgId, isValid, isOwner])
 
   if (!isValid) {
@@ -545,7 +566,47 @@ const canRequestJoin =
     </p>
   )}
 </div>
+<div className="rpg-panel">
+  <h3 className="text-xl font-display text-[#e0a96d] mb-4">
+    Personagens
+  </h3>
 
+  {publicCharacters.length > 0 ? (
+    <div className="space-y-2">
+      {publicCharacters.slice(0, 6).map((char) => (
+        <div
+          key={char.id}
+          className="
+            rounded-xl
+            border
+            border-[#e0a96d]/10
+            bg-black/20
+            px-3
+            py-2
+            text-[#f2e9e4]
+          "
+        >
+          <button
+  type="button"
+  onClick={() =>
+    setPublicCharacterId(char.id)
+  }
+  className="
+    hover:text-[#e0a96d]
+    transition
+  "
+>
+  {char.name}
+</button>
+        </div>
+      ))}
+    </div>
+  ) : (
+    <p className="text-[#c9ada7]/60">
+      Nenhum personagem criado ainda.
+    </p>
+  )}
+</div>
 {isOwner && (
   <div className="rpg-panel">
     <h3 className="text-xl font-display text-[#e0a96d] mb-4">
@@ -635,6 +696,14 @@ const canRequestJoin =
         </div>
 
       </div>
+      {publicCharacterId && (
+  <PublicCharacterOverlay
+    characterId={publicCharacterId}
+    onClose={() =>
+      setPublicCharacterId(null)
+    }
+  />
+)}
     </div>
   )
 }

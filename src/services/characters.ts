@@ -20,7 +20,15 @@ export async function getCharacters(rpgId: number): Promise<Character[]> {
   if (!res.ok) throw new Error("Erro ao buscar personagens")
   return res.json()
 }
+export async function getPublicRPGCharacters(
+  rpgId: number
+) {
+  const res = await api.get(
+    `/characters/rpg/${rpgId}/public`
+  )
 
+  return res.data
+}
 export async function createCharacter(
   rpgId: number,
   data: CharacterCreatePayload
@@ -37,7 +45,15 @@ export async function createCharacter(
   if (!res.ok) throw new Error("Erro ao criar personagem")
   return res.json()
 }
+export async function getPublicCharacter(
+  characterId: number
+) {
+  const res = await api.get(
+    `/characters/${characterId}/public`
+  )
 
+  return res.data
+}
 // ===============================
 // 🔥 FICHA
 // ===============================
