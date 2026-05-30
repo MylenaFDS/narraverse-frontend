@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react"
 import { useParams, Link } from "react-router-dom"
-import { getPublicProfile } from "../services/api"
+import {
+  getPublicProfile,
+  getMe,
+  inviteUserToRPG,
+} from "../services/api"
 
 type RPG = {
   id: number
@@ -23,12 +27,20 @@ export default function PublicProfile() {
   const [profile, setProfile] =
     useState<Profile | null>(null)
 
+    const [myRPGs, setMyRPGs] = useState<RPG[]>([])
+const [selectedRPGId, setSelectedRPGId] = useState("")
+const [inviteSent, setInviteSent] = useState(false)
+
   useEffect(() => {
     if (!id) return
 
     getPublicProfile(Number(id))
       .then(setProfile)
       .catch(console.error)
+
+    getMe().then((me) => {
+  setMyRPGs(me?.owned_rpgs || [])
+})
   }, [id])
 
   if (!profile) {
@@ -38,6 +50,25 @@ export default function PublicProfile() {
       </div>
     )
   }
+
+  async function handleInvite() {
+  if (!selectedRPGId || !profile) return
+
+  try {
+    await inviteUserToRPG(
+      Number(selectedRPGId),
+      profile.id
+    )
+
+    setInviteSent(true)
+  } catch (err) {
+    console.error(err)
+
+    alert(
+      "Esse usuário já possui convite, pedido ou participação nesse RPG."
+    )
+  }
+}
 
   return (
     <div className="rpg-bg min-h-screen p-6">
@@ -53,7 +84,37 @@ export default function PublicProfile() {
               "Este usuário ainda não possui biografia."}
           </p>
         </div>
+       {myRPGs.length > 0 && (
+  <div className="mt-6 flex gap-3">
+    <select
+      value={selectedRPGId}
+      onChange={(e) =>
+        setSelectedRPGId(e.target.value)
+      }
+      className="rpg-input"
+    >
+      <option value="">
+        Escolha um RPG
+      </option>
 
+      {myRPGs.map((rpg) => (
+        <option key={rpg.id} value={rpg.id}>
+          {rpg.name}
+        </option>
+      ))}
+    </select>
+
+    <button
+      onClick={handleInvite}
+      disabled={!selectedRPGId || inviteSent}
+      className="rpg-btn disabled:opacity-50"
+    >
+      {inviteSent
+        ? "Convite enviado"
+        : "Convidar"}
+    </button>
+  </div>
+)}
         <div className="rpg-panel mb-6">
           <h2 className="text-2xl font-display text-[#e0a96d] mb-4">
             🎮 RPGs criados

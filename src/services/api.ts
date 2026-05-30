@@ -357,6 +357,19 @@ export async function requestToJoinRPG(
 }
 
 // 🔥 ADICIONAR AQUI
+export async function inviteUserToRPG(
+  rpgId: number,
+  userId: number
+) {
+  const res = await api.post(
+    `/rpgs/${rpgId}/invite`,
+    {
+      user_id: userId,
+    }
+  )
+
+  return res.data
+}
 export async function getMyInvites() {
   const res = await api.get(
     "/rpgs/invites"

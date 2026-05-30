@@ -94,7 +94,7 @@ function handleClickNotification(n: Notification) {
         Explorar
       </Link>
       <Link
-  to="/search"
+  to="/convites"
   className="
     font-display text-[#e0a96d] transition"
   

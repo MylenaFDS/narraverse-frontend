@@ -10,6 +10,7 @@ import Login from "./pages/Login"
 import Register from "./pages/Register"
 import Profile from "./pages/Profile"
 import PublicProfile from "./pages/PublicProfile"
+import RPGInvites from "./components/RPG/RPGInvites"
 
 export default function App() {
   return (
@@ -60,6 +61,10 @@ export default function App() {
             element={<PublicProfile />}
           />
         </Route>
+        <Route
+  path="/convites"
+  element={<RPGInvites />}
+/>
       </Route>
     </Routes>
   )
