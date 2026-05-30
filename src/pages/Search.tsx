@@ -225,6 +225,7 @@ const otherRPGs = filteredRPGs.filter(
             transition
             hover:border-[#e0a96d]/50
             hover:-translate-y-1
+            line-clamp-5
           "
         >
           <h4 className="font-display text-xl text-[#e0a96d]">
@@ -234,6 +235,9 @@ const otherRPGs = filteredRPGs.filter(
           <p className="text-sm text-[#c9ada7]/60 mt-2">
             👥 {rpg.participant_count || 0} jogadores
           </p>
+          <p className="text-sm text-[#c9ada7]/70 mt-3 leading-relaxed">
+                {rpg.description || "Este mundo ainda não possui descrição."}
+              </p>
         </Link>
       ))}
     </div>
@@ -309,7 +313,7 @@ const otherRPGs = filteredRPGs.filter(
                 {rpg.name}
               </h3>
 
-              <p className="text-sm text-[#c9ada7]/70 mt-3 leading-relaxed">
+              <p className="text-sm text-[#c9ada7]/70 mt-3 leading-relaxed line-clamp-5">
                 {rpg.description || "Este mundo ainda não possui descrição."}
               </p>
               <div className="mt-4 flex items-center gap-2 text-sm text-[#c9ada7]/60">
