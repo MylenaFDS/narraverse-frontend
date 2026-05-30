@@ -19,6 +19,7 @@ type Note = {
   id: number
   title?: string
   content?: string
+  is_pinned: boolean
 }
 
 export default function RPGNotes({
@@ -41,6 +42,9 @@ const [editTitle, setEditTitle] =
 
 const [editContent, setEditContent] =
   useState("")
+
+  const [expandedId, setExpandedId] =
+  useState<number | null>(null)
 
   useEffect(() => {
     getRPGNotes(rpgId)
@@ -73,11 +77,21 @@ const [editContent, setEditContent] =
   setEditContent(note.content || "")
 }
 
-async function handleUpdate(noteId: number) {
-  const updated = await updateRPGNote(noteId, {
-    title: editTitle,
-    content: editContent,
-  })
+async function handleUpdate(
+  noteId: number,
+  customData?: {
+    title?: string
+    content?: string
+    is_pinned?: boolean
+  }
+) {
+  const updated = await updateRPGNote(
+    noteId,
+    customData ?? {
+      title: editTitle,
+      content: editContent,
+    }
+  )
 
   setNotes((prev) =>
     prev.map((note) =>
@@ -187,16 +201,58 @@ async function handleDelete(noteId: number) {
   </div>
 ) : (
   <>
-    <div className="font-semibold text-[#e0a96d]">
-      {note.title || "Sem título"}
-    </div>
+    <div className="font-semibold text-[#e0a96d] flex items-center gap-2">
+  {note.is_pinned && "📌"}
+  {note.title || "Sem título"}
+</div>
 
-    <div className="text-sm text-[#c9ada7]/80 mt-1 whitespace-pre-wrap">
-      {note.content}
-    </div>
+    <button
+  type="button"
+  onClick={() =>
+    setExpandedId(
+      expandedId === note.id
+        ? null
+        : note.id
+    )
+  }
+  className="
+    w-full
+    text-left
+  "
+>
+  <div className="flex justify-between items-center mt-1">
+    <span className="text-xs text-[#c9ada7]/60">
+      Ver anotação
+    </span>
+
+    <span>
+      {expandedId === note.id
+        ? "▲"
+        : "▼"}
+    </span>
+  </div>
+</button>
+
+{expandedId === note.id && (
+  <div className="text-sm text-[#c9ada7]/80 mt-3 whitespace-pre-wrap">
+    {note.content}
+  </div>
+)}
 
     {isOwner && (
       <div className="flex gap-3 mt-3 text-xs">
+        <button
+  onClick={() =>
+    handleUpdate(note.id, {
+      title: note.title,
+      content: note.content,
+      is_pinned: !note.is_pinned,
+    })
+  }
+  className="text-yellow-400"
+>
+  {note.is_pinned ? "📌 Desafixar" : "📍 Fixar"}
+</button>
         <button
           onClick={() => startEditing(note)}
           className="text-[#e0a96d]"
