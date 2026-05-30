@@ -6,6 +6,8 @@ import {
 import {
   getRPGNotes,
   createRPGNote,
+  updateRPGNote,
+deleteRPGNote
 } from "../../services/api"
 
 type Props = {
@@ -31,6 +33,14 @@ export default function RPGNotes({
 
   const [content, setContent] =
     useState("")
+    const [editingId, setEditingId] =
+  useState<number | null>(null)
+
+const [editTitle, setEditTitle] =
+  useState("")
+
+const [editContent, setEditContent] =
+  useState("")
 
   useEffect(() => {
     getRPGNotes(rpgId)
@@ -56,6 +66,43 @@ export default function RPGNotes({
     setTitle("")
     setContent("")
   }
+
+  function startEditing(note: Note) {
+  setEditingId(note.id)
+  setEditTitle(note.title || "")
+  setEditContent(note.content || "")
+}
+
+async function handleUpdate(noteId: number) {
+  const updated = await updateRPGNote(noteId, {
+    title: editTitle,
+    content: editContent,
+  })
+
+  setNotes((prev) =>
+    prev.map((note) =>
+      note.id === noteId ? updated : note
+    )
+  )
+
+  setEditingId(null)
+  setEditTitle("")
+  setEditContent("")
+}
+
+async function handleDelete(noteId: number) {
+  const confirmed = window.confirm(
+    "Tem certeza que deseja excluir esta anotação?"
+  )
+
+  if (!confirmed) return
+
+  await deleteRPGNote(noteId)
+
+  setNotes((prev) =>
+    prev.filter((note) => note.id !== noteId)
+  )
+}
 
   return (
     <div className="rpg-panel">
@@ -104,13 +151,69 @@ export default function RPGNotes({
               p-3
             "
           >
-            <div className="font-semibold text-[#e0a96d]">
-              {note.title}
-            </div>
+            {editingId === note.id ? (
+  <div className="space-y-2">
+    <input
+      value={editTitle}
+      onChange={(e) =>
+        setEditTitle(e.target.value)
+      }
+      className="rpg-input"
+    />
 
-            <div className="text-sm text-[#c9ada7]/80 mt-1">
-              {note.content}
-            </div>
+    <textarea
+      value={editContent}
+      onChange={(e) =>
+        setEditContent(e.target.value)
+      }
+      className="rpg-input"
+    />
+
+    <div className="flex gap-2">
+      <button
+        onClick={() => handleUpdate(note.id)}
+        className="rpg-btn text-sm px-3 py-1"
+      >
+        Salvar
+      </button>
+
+      <button
+        onClick={() => setEditingId(null)}
+        className="text-sm text-[#c9ada7]"
+      >
+        Cancelar
+      </button>
+    </div>
+  </div>
+) : (
+  <>
+    <div className="font-semibold text-[#e0a96d]">
+      {note.title || "Sem título"}
+    </div>
+
+    <div className="text-sm text-[#c9ada7]/80 mt-1 whitespace-pre-wrap">
+      {note.content}
+    </div>
+
+    {isOwner && (
+      <div className="flex gap-3 mt-3 text-xs">
+        <button
+          onClick={() => startEditing(note)}
+          className="text-[#e0a96d]"
+        >
+          Editar
+        </button>
+
+        <button
+          onClick={() => handleDelete(note.id)}
+          className="text-red-400"
+        >
+          Excluir
+        </button>
+      </div>
+    )}
+  </>
+)}
           </div>
         ))}
       </div>
