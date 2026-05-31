@@ -15,6 +15,7 @@ type Invite = {
     id: number
     name: string
     description?: string
+    banner_url?: string | null
   }
 }
 
@@ -126,9 +127,47 @@ export default function RPGInvites() {
               shadow-[0_0_25px_rgba(0,0,0,0.35)]
             "
           >
-            <p className="text-xs uppercase tracking-[0.3em] text-[#e0a96d]/50 mb-3">
-              Convite para RPG
-            </p>
+            {invite.rpg?.banner_url && (
+  <div className="
+  relative
+  h-52
+  -m-6
+  mb-5
+  overflow-hidden
+  rounded-t-3xl
+  border-b
+  border-[#e0a96d]/10
+">
+    <img
+      src={`http://127.0.0.1:8001/${invite.rpg.banner_url}`}
+      alt={invite.rpg.name}
+      className="
+  w-full
+  h-full
+  object-cover
+  opacity-80
+  transition
+"
+    />
+  </div>
+)}
+            <p
+  className="
+    inline-flex
+    rounded-full
+    border
+    border-[#e0a96d]/30
+    bg-black/30
+    px-3
+    py-1
+    text-xs
+    uppercase
+    tracking-[0.25em]
+    text-[#e0a96d]
+  "
+>
+  Convite recebido
+</p>
 
             <h2 className="text-2xl font-display text-[#e0a96d]">
               {invite.rpg?.name ?? "RPG"}
@@ -154,15 +193,15 @@ export default function RPGInvites() {
                   handleReject(invite.rpg_id)
                 }
                 className="
-                  rounded-xl
-                  border
-                  border-red-900/40
-                  px-4
-                  py-2
-                  text-red-300
-                  hover:bg-red-950/30
-                  transition
-                "
+  rounded-xl
+  border
+  border-red-900/50
+  px-4
+  py-2
+  text-red-300
+  hover:bg-red-950/40
+  transition
+"
               >
                 Recusar
               </button>

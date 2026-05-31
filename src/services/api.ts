@@ -406,6 +406,27 @@ export async function getInviteCount() {
 
   return res.data.length
 }
+
+export async function getSentInvites(
+  rpgId: number
+) {
+  const res = await api.get(
+    `/rpgs/${rpgId}/invites/sent`
+  )
+
+  return res.data
+}
+
+export async function cancelSentInvite(
+  rpgId: number,
+  userId: number
+) {
+  const res = await api.delete(
+    `/rpgs/${rpgId}/invites/${userId}`
+  )
+
+  return res.data
+}
 // ===============================
 // 📄 FICHA
 // ===============================

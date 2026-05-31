@@ -60,12 +60,13 @@ export default function App() {
             path="/profile/:id"
             element={<PublicProfile />}
           />
+          <Route
+              path="/convites"
+              element={<RPGInvites />}
+            />
         </Route>
-        <Route
-  path="/convites"
-  element={<RPGInvites />}
-/>
       </Route>
+        
     </Routes>
   )
 }

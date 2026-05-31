@@ -11,7 +11,8 @@ import RPGSheets from "../components/RPG/RPGSheets"
 import PublicCharacterOverlay from "../components/RPG/PublicCharacterOverlay"
 import RPGNotes
 from "../components/RPG/RPGNotes"
-import { getRPG, uploadRPGBanner, getRPGPlayers, getRPGStats, getPendingRequests, updateParticipantStatus, requestToJoinRPG} from "../services/api"
+import { getRPG, uploadRPGBanner, getRPGPlayers, getRPGStats, getPendingRequests, updateParticipantStatus, requestToJoinRPG,getSentInvites,
+cancelSentInvite,} from "../services/api"
 import {getPublicRPGCharacters} from "../services/characters"
 
 type Tab =
@@ -99,6 +100,19 @@ const [joinRequests, setJoinRequests] =
   const [publicCharacterId, setPublicCharacterId] =
   useState<number | null>(null)
 
+  type SentInvite = {
+  id: number
+  status: string
+
+  user: {
+    id: number
+    username: string
+  }
+}
+
+const [sentInvites, setSentInvites] =
+  useState<SentInvite[]>([])
+
   const isValid =
     id && !isNaN(rpgId)
   const loggedUserId = Number(
@@ -107,41 +121,50 @@ const [joinRequests, setJoinRequests] =
 
 const isOwner = rpg?.owner_id === loggedUserId
   useEffect(() => {
-    if (!isValid) return
+  if (!isValid) return
 
-    getRPG(rpgId)
-      .then(setRpg)
-      .catch(() => setRpg(null))
-  }, [rpgId, isValid])
+  getRPG(rpgId)
+    .then((data) => {
+      setRpg(data)
 
-  useEffect(() => {
-    if (!isValid) return
+      if (data.is_owner) {
+        getSentInvites(rpgId)
+          .then(setSentInvites)
+          .catch(console.error)
+      }
+    })
+    .catch(() => setRpg(null))
 
-    getRPGPlayers(rpgId)
-  .then((data) => {
-    setPlayers(data)
+}, [rpgId, isValid])
 
-    const loggedUserId = Number(
-      localStorage.getItem("user_id")
-    )
+useEffect(() => {
+  if (!isValid) return
 
-    setOnlineUsers([loggedUserId])
-  })
-  .catch(console.error)
+  getRPGPlayers(rpgId)
+    .then((data) => {
+      setPlayers(data)
+
+      const loggedUserId = Number(
+        localStorage.getItem("user_id")
+      )
+
+      setOnlineUsers([loggedUserId])
+    })
+    .catch(console.error)
 
   getRPGStats(rpgId)
-  .then((data) => {
-    setStats(
-      data ?? {
-        players: 0,
-        turns: 0,
-        lore: 0,
-        characters: 0,
-      }
-    )
-  })
-  .catch(console.error)
-  }, [rpgId, isValid])
+    .then((data) => {
+      setStats(
+        data ?? {
+          players: 0,
+          turns: 0,
+          lore: 0,
+          characters: 0,
+        }
+      )
+    })
+    .catch(console.error)
+}, [rpgId, isValid])
 
   useEffect(() => {
   if (!isValid || !isOwner) return
@@ -150,13 +173,16 @@ const isOwner = rpg?.owner_id === loggedUserId
     .then(setJoinRequests)
     .catch(console.error)
 
-  getPublicRPGCharacters(rpgId)
-  .then((data) => {
-    console.log("PERSONAGENS:", data)
-    setPublicCharacters(data)
-  })
-  .catch(console.error)
 }, [rpgId, isValid, isOwner])
+
+useEffect(() => {
+  if (!isValid) return
+
+  getPublicRPGCharacters(rpgId)
+    .then(setPublicCharacters)
+    .catch(console.error)
+
+}, [rpgId, isValid])
 
   if (!isValid) {
     return <div>RPG inválido</div>
@@ -227,6 +253,22 @@ const isParticipant = players.some(
 
 const canRequestJoin =
   !isOwner && !isParticipant
+
+  async function handleCancelInvite(
+  userId: number
+) {
+  await cancelSentInvite(
+    rpgId,
+    userId
+  )
+
+  setSentInvites((prev) =>
+    prev.filter(
+      (invite) =>
+        invite.user.id !== userId
+    )
+  )
+}
 
   return (
     <div className="rpg-bg min-h-screen p-6">
@@ -676,7 +718,65 @@ const canRequestJoin =
       <p className="text-[#c9ada7]/60">
         Nenhum pedido pendente.
       </p>
+      
     )}
+        <div className="mt-6 border-t border-[#e0a96d]/10 pt-4">
+      <h4 className="text-lg font-display text-[#e0a96d] mb-3">
+        Convites enviados
+      </h4>
+
+      {sentInvites.length > 0 ? (
+        <div className="space-y-3">
+          {sentInvites.map((invite) => (
+            <div
+              key={invite.id}
+              className="
+                rounded-xl
+                border
+                border-[#e0a96d]/10
+                bg-black/20
+                p-3
+              "
+            >
+              <p className="text-[#f2e9e4]">
+                👤 {invite.user.username}
+              </p>
+
+              <p className="text-xs text-[#c9ada7]/60 mt-1">
+                ⏳ Aguardando resposta
+              </p>
+
+              <button
+                type="button"
+                onClick={() =>
+                  handleCancelInvite(
+                    invite.user.id
+                  )
+                }
+                className="
+                  mt-3
+                  rounded-lg
+                  border
+                  border-red-900/40
+                  px-3
+                  py-1
+                  text-xs
+                  text-red-300
+                  hover:bg-red-950/30
+                  transition
+                "
+              >
+                Cancelar convite
+              </button>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-[#c9ada7]/60">
+          Nenhum convite enviado.
+        </p>
+      )}
+    </div>
   </div>
 )}
 <div className="rpg-panel">

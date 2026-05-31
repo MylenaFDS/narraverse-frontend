@@ -235,7 +235,7 @@ const otherRPGs = filteredRPGs.filter(
           <p className="text-sm text-[#c9ada7]/60 mt-2">
             👥 {rpg.participant_count || 0} jogadores
           </p>
-          <p className="text-sm text-[#c9ada7]/70 mt-3 leading-relaxed">
+          <p className="text-sm text-[#c9ada7]/70 mt-3 leading-relaxed line-clamp-5">
                 {rpg.description || "Este mundo ainda não possui descrição."}
               </p>
         </Link>
