@@ -1,0 +1,356 @@
+import { useEffect, useState } from "react"
+
+import {
+  getTimeline,
+  createTimelineEvent,
+  updateTimelineEvent,
+  deleteTimelineEvent,
+} from "../../services/api"
+
+type Props = {
+  rpgId: number
+  isOwner: boolean
+  lore: {
+    id: number
+    title: string
+    category?: string | null
+  }[]
+}
+
+type TimelineEvent = {
+  id: number
+  title: string
+  content?: string
+  date_label?: string
+
+  lore_id?: number | null
+
+  lore?: {
+    id: number
+    title: string
+  } | null
+}
+
+export default function RPGTimeline({
+  rpgId,
+  isOwner,
+  lore,
+}: Props) {
+  const [events, setEvents] =
+    useState<TimelineEvent[]>([])
+
+  const [title, setTitle] =
+    useState("")
+
+  const [content, setContent] =
+    useState("")
+
+  const [dateLabel, setDateLabel] =
+    useState("")
+
+  const [editingId, setEditingId] =
+    useState<number | null>(null)
+
+  const [editTitle, setEditTitle] =
+    useState("")
+
+  const [editContent, setEditContent] =
+    useState("")
+
+  const [editDate, setEditDate] =
+    useState("")
+  
+  const [loreId, setLoreId] =
+  useState<number | "">("")
+
+
+
+  const worldLore = lore.filter(
+  (item) => item.category === "Mundo"
+)
+
+
+
+useEffect(() => {
+  let mounted = true
+
+  async function init() {
+    try {
+      const data =
+        await getTimeline(rpgId)
+
+      if (mounted) {
+        setEvents(data || [])
+      }
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  void init()
+
+  return () => {
+    mounted = false
+  }
+}, [rpgId])
+
+
+  async function handleCreate() {
+    const created =
+  await createTimelineEvent(
+    rpgId,
+    {
+      title,
+      content,
+      date_label: dateLabel,
+      lore_id:
+        loreId === "" ? null : Number(loreId),
+    }
+  )
+
+    setEvents((prev) => [
+      ...prev,
+      created,
+    ])
+
+    setTitle("")
+    setContent("")
+    setDateLabel("")
+    setLoreId("")
+  }
+
+
+  function startEditing(
+    event: TimelineEvent
+  ) {
+    setEditingId(event.id)
+    setEditTitle(event.title)
+    setEditContent(
+      event.content ?? ""
+    )
+    setEditDate(
+      event.date_label ?? ""
+    )
+  }
+
+
+  async function handleUpdate(
+    id: number
+  ) {
+    const updated =
+      await updateTimelineEvent(
+        id,
+        {
+          title: editTitle,
+          content: editContent,
+          date_label: editDate,
+        }
+      )
+
+    setEvents((prev) =>
+      prev.map((event) =>
+        event.id === id
+          ? updated
+          : event
+      )
+    )
+
+    setEditingId(null)
+  }
+
+
+  async function handleDelete(
+    id: number
+  ) {
+    await deleteTimelineEvent(id)
+
+    setEvents((prev) =>
+      prev.filter(
+        (event) =>
+          event.id !== id
+      )
+    )
+  }
+
+
+  return (
+    <div className="rpg-panel">
+
+      <h3 className="text-xl font-display text-[#e0a96d] mb-5">
+        📜 Linha do Tempo
+      </h3>
+
+
+      {isOwner && (
+        <div className="mb-6 space-y-2">
+
+          <input
+            value={dateLabel}
+            onChange={(e) =>
+              setDateLabel(e.target.value)
+            }
+            placeholder="Ano / Era / Capítulo"
+            className="rpg-input"
+          />
+
+          <input
+            value={title}
+            onChange={(e) =>
+              setTitle(e.target.value)
+            }
+            placeholder="Título do evento"
+            className="rpg-input"
+          />
+         <select
+  value={loreId}
+  onChange={(e) =>
+    setLoreId(
+      e.target.value
+        ? Number(e.target.value)
+        : ""
+    )
+  }
+  className="rpg-input"
+>
+  <option value="">
+    Região relacionada
+  </option>
+
+  {worldLore.map((item) => (
+    <option
+      key={item.id}
+      value={item.id}
+    >
+      {item.title}
+    </option>
+  ))}
+</select>
+          <textarea
+            value={content}
+            onChange={(e) =>
+              setContent(e.target.value)
+            }
+            placeholder="Descrição..."
+            className="rpg-input"
+          />
+
+          <button
+            onClick={handleCreate}
+            className="rpg-btn"
+          >
+            Criar evento
+          </button>
+
+        </div>
+      )}
+
+
+      <div className="space-y-5 border-l border-[#e0a96d]/30 pl-5">
+
+        {events.map((event) => (
+          <div key={event.id}>
+
+            {editingId === event.id ? (
+              <div className="space-y-2">
+
+                <input
+                  value={editDate}
+                  onChange={(e) =>
+                    setEditDate(e.target.value)
+                  }
+                  className="rpg-input"
+                />
+
+                <input
+                  value={editTitle}
+                  onChange={(e) =>
+                    setEditTitle(e.target.value)
+                  }
+                  className="rpg-input"
+                />
+
+                <textarea
+                  value={editContent}
+                  onChange={(e) =>
+                    setEditContent(e.target.value)
+                  }
+                  className="rpg-input"
+                />
+
+                <button
+                  onClick={() =>
+                    handleUpdate(event.id)
+                  }
+                  className="rpg-btn"
+                >
+                  Salvar
+                </button>
+
+              </div>
+            ) : (
+              <>
+                <span className="text-sm text-[#e0a96d]">
+                  {event.date_label}
+                </span>
+
+                <h4 className="text-lg text-[#f2e9e4]">
+                  ● {event.title}
+                </h4>
+
+                <p className="text-sm text-[#c9ada7]/80 whitespace-pre-wrap">
+                  {event.content}
+                </p>
+              {event.lore && (
+  <div
+    className="
+      mt-2
+      text-sm
+      text-[#e0a96d]
+    "
+  >
+    <button
+  type="button"
+  className="
+    text-[#e0a96d]
+    hover:text-[#f2c078]
+    transition
+  "
+>
+  📍 {event.lore.title}
+</button>
+  </div>
+)}
+                {isOwner && (
+                  <div className="flex gap-3 mt-2 text-xs">
+
+                    <button
+                      onClick={() =>
+                        startEditing(event)
+                      }
+                      className="text-[#e0a96d]"
+                    >
+                      Editar
+                    </button>
+
+                    <button
+                      onClick={() =>
+                        handleDelete(event.id)
+                      }
+                      className="text-red-400"
+                    >
+                      Excluir
+                    </button>
+
+                  </div>
+                )}
+              </>
+            )}
+
+          </div>
+        ))}
+
+      </div>
+
+    </div>
+  )
+}

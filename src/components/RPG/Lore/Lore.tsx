@@ -17,6 +17,7 @@ import SelectedLoreModal from "./SelectedLoreModal"
 import { useLoreMap } from "./hooks/useLoreMap"
 import { useLore } from "./hooks/useLore"
 import { groupLore } from "./utils/groupLore"
+import RPGTimeline from "../RPGTimeline"
 
 type Props = {
   rpgId: number
@@ -246,6 +247,7 @@ const grouped =
           }
         />
       </div>
+
 
       {/* MAPA */}
       
@@ -508,6 +510,15 @@ const grouped =
   ))}
 </div>
 
+{/* LINHA DO TEMPO */}
+
+<div className="mt-16">
+  <RPGTimeline
+  rpgId={rpgId}
+  isOwner={!!isOwner}
+  lore={lore}
+/>
+</div>
       {/* SUGESTÕES */}
       {isOwner &&
         suggestions.length >
@@ -572,4 +583,6 @@ const grouped =
 />
     </div>
   )
+  
 }
+

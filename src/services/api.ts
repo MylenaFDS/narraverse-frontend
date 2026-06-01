@@ -588,3 +588,64 @@ export async function uploadRPGBanner(
 
   return response.data
 }
+
+// =====================
+// 📜 RPG TIMELINE
+// =====================
+
+export async function getTimeline(
+  rpgId: number
+) {
+  const res = await api.get(
+    `/timeline/rpg/${rpgId}`
+  )
+
+  return res.data
+}
+
+
+export async function createTimelineEvent(
+  rpgId: number,
+  data: {
+    title: string
+    content?: string
+    date_label?: string
+    lore_id?: number | null
+  }
+) {
+  const res = await api.post(
+    `/timeline/rpg/${rpgId}`,
+    data
+  )
+
+  return res.data
+}
+
+
+export async function updateTimelineEvent(
+  eventId: number,
+  data: {
+    title: string
+    content?: string
+    date_label?: string
+    lore_id?: number | null
+  }
+) {
+  const res = await api.put(
+    `/timeline/${eventId}`,
+    data
+  )
+
+  return res.data
+}
+
+
+export async function deleteTimelineEvent(
+  eventId: number
+) {
+  const res = await api.delete(
+    `/timeline/${eventId}`
+  )
+
+  return res.data
+}
