@@ -6,16 +6,17 @@ import {
   updateTimelineEvent,
   deleteTimelineEvent,
 } from "../../services/api"
+import type { Lore } from "../../types/lore"
 
 type Props = {
   rpgId: number
   isOwner: boolean
-  lore: {
-    id: number
-    title: string
-    category?: string | null
-  }[]
+  lore: Lore[]
+  setSelectedLore: React.Dispatch<
+    React.SetStateAction<Lore | null>
+  >
 }
+
 
 type TimelineEvent = {
   id: number
@@ -35,6 +36,7 @@ export default function RPGTimeline({
   rpgId,
   isOwner,
   lore,
+  setSelectedLore,
 }: Props) {
   const [events, setEvents] =
     useState<TimelineEvent[]>([])
@@ -62,7 +64,8 @@ export default function RPGTimeline({
   
   const [loreId, setLoreId] =
   useState<number | "">("")
-
+const [editLoreId, setEditLoreId] =
+  useState<number | "">("")
 
 
   const worldLore = lore.filter(
@@ -131,6 +134,9 @@ useEffect(() => {
     setEditDate(
       event.date_label ?? ""
     )
+    setEditLoreId(
+  event.lore_id ?? ""
+)
   }
 
 
@@ -141,10 +147,14 @@ useEffect(() => {
       await updateTimelineEvent(
         id,
         {
-          title: editTitle,
-          content: editContent,
-          date_label: editDate,
-        }
+  title: editTitle,
+  content: editContent,
+  date_label: editDate,
+  lore_id:
+    editLoreId === ""
+      ? null
+      : Number(editLoreId),
+}
       )
 
     setEvents((prev) =>
@@ -156,6 +166,7 @@ useEffect(() => {
     )
 
     setEditingId(null)
+    setEditLoreId("")
   }
 
 
@@ -172,7 +183,27 @@ useEffect(() => {
     )
   }
 
+const groupedEvents =
+  events.reduce(
+    (acc, event) => {
+      const key =
+        event.date_label ||
+        "Sem data"
 
+      if (!acc[key]) {
+        acc[key] = []
+      }
+
+      acc[key].push(event)
+
+      return acc
+    },
+    {} as Record<
+      string,
+      TimelineEvent[]
+    >
+  )
+  
   return (
     <div className="rpg-panel">
 
@@ -247,7 +278,15 @@ useEffect(() => {
 
       <div className="space-y-5 border-l border-[#e0a96d]/30 pl-5">
 
-        {events.map((event) => (
+        {Object.entries(groupedEvents).map(
+  ([dateLabel, group]) => (
+    <div key={dateLabel} className="space-y-4">
+      <h4 className="text-lg font-display text-[#e0a96d]">
+        📅 {dateLabel}
+      </h4>
+
+      <div className="space-y-5">
+        {group.map((event) => (
           <div key={event.id}>
 
             {editingId === event.id ? (
@@ -268,6 +307,30 @@ useEffect(() => {
                   }
                   className="rpg-input"
                 />
+                <select
+  value={editLoreId}
+  onChange={(e) =>
+    setEditLoreId(
+      e.target.value
+        ? Number(e.target.value)
+        : ""
+    )
+  }
+  className="rpg-input"
+>
+  <option value="">
+    Região relacionada
+  </option>
+
+  {worldLore.map((item) => (
+    <option
+      key={item.id}
+      value={item.id}
+    >
+      {item.title}
+    </option>
+  ))}
+</select>
 
                 <textarea
                   value={editContent}
@@ -310,6 +373,16 @@ useEffect(() => {
   >
     <button
   type="button"
+  onClick={() => {
+    const loreItem = lore.find(
+      (item) =>
+        item.id === event.lore?.id
+    )
+
+    if (loreItem) {
+      setSelectedLore(loreItem)
+    }
+  }}
   className="
     text-[#e0a96d]
     hover:text-[#f2c078]
@@ -348,6 +421,10 @@ useEffect(() => {
 
           </div>
         ))}
+      </div>
+    </div>
+  )
+)}
 
       </div>
 

@@ -517,6 +517,7 @@ const grouped =
   rpgId={rpgId}
   isOwner={!!isOwner}
   lore={lore}
+  setSelectedLore={setSelectedLore}
 />
 </div>
       {/* SUGESTÕES */}
