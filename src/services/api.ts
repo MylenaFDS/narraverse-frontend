@@ -649,3 +649,31 @@ export async function deleteTimelineEvent(
 
   return res.data
 }
+
+// =====================
+// 🔗 LORE RELATIONS
+// =====================
+
+export async function getLoreRelations(
+  loreId: number
+) {
+  const res = await api.get(
+    `/lore-relations/${loreId}`
+  )
+
+  return res.data
+}
+
+export async function createLoreRelation(
+  sourceLoreId: number,
+  targetLoreId: number
+) {
+  const res = await api.post(
+    `/lore-relations/${sourceLoreId}`,
+    {
+      target_lore_id: targetLoreId,
+    }
+  )
+
+  return res.data
+}

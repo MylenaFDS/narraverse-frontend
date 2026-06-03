@@ -207,6 +207,10 @@ export default function Lore({ rpgId }: Props) {
 const grouped =
   groupLore(lore)
 
+  console.log("LORE:", lore)
+console.log("MAP REGIONS:", mapRegions)
+console.log("WORLD MAP:", worldMap)
+
   // ===============================
   // UI
   // ===============================
@@ -580,6 +584,8 @@ const grouped =
         )}
         <SelectedLoreModal
   selectedLore={selectedLore}
+  lore={lore}
+  setSelectedLore={setSelectedLore}
   onClose={() => setSelectedLore(null)}
 />
     </div>

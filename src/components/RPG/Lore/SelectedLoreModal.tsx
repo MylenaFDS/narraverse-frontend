@@ -1,18 +1,86 @@
+import { useEffect, useState } from "react"
+
 import type { Lore } from "../../../types/lore"
+import type { LoreRelation } from "../../../types/loreRelation"
+
+import {
+  getLoreRelations,
+  createLoreRelation,
+} from "../../../services/api"
 
 type Props = {
   selectedLore: Lore | null
+  lore: Lore[]
+  setSelectedLore: React.Dispatch<
+    React.SetStateAction<Lore | null>
+  >
   onClose: () => void
 }
 
 export default function SelectedLoreModal({
   selectedLore,
+  lore,
+  setSelectedLore,
   onClose,
 }: Props) {
+  const [relations, setRelations] =
+    useState<LoreRelation[]>([])
+  const [targetLoreId, setTargetLoreId] =
+  useState<number | "">("")
+
+  useEffect(() => {
+    if (!selectedLore) return
+
+    getLoreRelations(selectedLore.id)
+      .then(setRelations)
+      .catch(console.error)
+  }, [selectedLore])
+
+  const availableLore = lore.filter(
+  (item) =>
+    item.id !== selectedLore?.id &&
+    !relations.some(
+      (relation) =>
+        relation.target_lore.id === item.id
+    )
+)
+
+async function handleAddRelation() {
+  if (!selectedLore || targetLoreId === "")
+    return
+
+  const created =
+    await createLoreRelation(
+      selectedLore.id,
+      Number(targetLoreId)
+    )
+
+  setRelations((prev) => [
+    ...prev,
+    created,
+  ])
+
+  setTargetLoreId("")
+}
   if (!selectedLore) return null
 
   return (
-    <div className="fixed right-4 top-4 w-[400px] bg-[#18181b] p-6 rounded-2xl border border-[#2b2b31] z-50">
+    <div
+      className="
+        fixed
+        right-4
+        top-4
+        w-[400px]
+        max-h-[90vh]
+        overflow-y-auto
+        bg-[#18181b]
+        p-6
+        rounded-2xl
+        border
+        border-[#2b2b31]
+        z-50
+      "
+    >
       <h2 className="text-2xl font-bold mb-4">
         {selectedLore.title}
       </h2>
@@ -20,6 +88,88 @@ export default function SelectedLoreModal({
       <p className="whitespace-pre-wrap text-gray-300">
         {selectedLore.content}
       </p>
+
+      <div className="mt-6 border-t border-[#e0a96d]/10 pt-4">
+  <h4 className="text-[#e0a96d] font-display mb-3">
+    Relacionados
+  </h4>
+
+  {relations.length > 0 ? (
+    <div className="space-y-2">
+      {relations.map((relation) => (
+        <button
+          key={relation.id}
+          type="button"
+          onClick={() => {
+            const loreItem = lore.find(
+              (item) =>
+                item.id === relation.target_lore.id
+            )
+
+            if (loreItem) {
+              setSelectedLore(loreItem)
+            }
+          }}
+          className="
+            block
+            text-left
+            text-[#f2e9e4]
+            text-sm
+            hover:text-[#e0a96d]
+            transition
+          "
+        >
+          🧩 {relation.target_lore.title}
+        </button>
+      ))}
+    </div>
+  ) : (
+    <p className="text-sm text-[#c9ada7]/60">
+      Nenhum relacionado ainda.
+    </p>
+  )}
+
+  <div className="mt-4 space-y-2">
+    <select
+      value={targetLoreId}
+      onChange={(e) =>
+        setTargetLoreId(
+          e.target.value
+            ? Number(e.target.value)
+            : ""
+        )
+      }
+      className="rpg-input"
+    >
+      <option value="">
+        Adicionar relacionado
+      </option>
+
+      {availableLore.map((item) => (
+        <option
+          key={item.id}
+          value={item.id}
+        >
+          {item.title}
+        </option>
+      ))}
+    </select>
+
+    <button
+      type="button"
+      onClick={handleAddRelation}
+      disabled={targetLoreId === ""}
+      className="
+        rpg-btn
+        text-sm
+        disabled:opacity-40
+        disabled:cursor-not-allowed
+      "
+    >
+      Adicionar
+    </button>
+  </div>
+</div>
 
       <button
         onClick={onClose}
