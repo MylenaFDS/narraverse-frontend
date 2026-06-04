@@ -53,6 +53,8 @@ export default function Lore({ rpgId }: Props) {
  
   const [draggedId, setDraggedId] = useState<number | null>(null)
   const [timelineEvents, setTimelineEvents] =useState<TimelineEvent[]>([])
+  const [selectedTimelineEvent, setSelectedTimelineEvent] =
+  useState<TimelineEvent | null>(null)
   const {
   lore,
   setLore,
@@ -380,16 +382,9 @@ console.log("WORLD MAP:", worldMap)
         <button
           key={event.id}
           type="button"
-          onClick={() => {
-            const loreItem = lore.find(
-              (item) =>
-                item.id === event.lore?.id
-            )
-
-            if (loreItem) {
-              setSelectedLore(loreItem)
-            }
-          }}
+          onClick={() =>
+  setSelectedTimelineEvent(event)
+}
           className="
             block
             w-full
@@ -774,6 +769,72 @@ console.log("WORLD MAP:", worldMap)
   setSelectedLore={setSelectedLore}
   onClose={() => setSelectedLore(null)}
 />
+{selectedTimelineEvent && (
+  <div
+    className="
+      fixed
+      right-4
+      top-4
+      w-[400px]
+      max-h-[90vh]
+      overflow-y-auto
+      bg-[#18181b]
+      p-6
+      rounded-2xl
+      border
+      border-[#2b2b31]
+      z-50
+    "
+  >
+    <h2 className="text-2xl font-bold mb-2 text-[#e0a96d]">
+      📜 {selectedTimelineEvent.title}
+    </h2>
+
+    <p className="text-sm text-[#c9ada7]/70 mb-4">
+      {selectedTimelineEvent.date_label || "Sem data"}
+    </p>
+
+    <p className="whitespace-pre-wrap text-gray-300">
+      {selectedTimelineEvent.content}
+    </p>
+
+    {selectedTimelineEvent.lore && (
+      <button
+        type="button"
+        onClick={() => {
+          const loreItem = lore.find(
+            (item) =>
+              item.id === selectedTimelineEvent.lore?.id
+          )
+
+          if (loreItem) {
+            setSelectedLore(loreItem)
+            setSelectedTimelineEvent(null)
+          }
+        }}
+        className="
+          mt-4
+          block
+          text-[#e0a96d]
+          hover:text-[#f2c078]
+          transition
+        "
+      >
+        📍 {selectedTimelineEvent.lore.title}
+      </button>
+    )}
+
+    <button
+      type="button"
+      onClick={() =>
+        setSelectedTimelineEvent(null)
+      }
+      className="mt-4 bg-red-600 px-4 py-2 rounded-xl"
+    >
+      Fechar
+    </button>
+  </div>
+)}
     </div>
   )
   
