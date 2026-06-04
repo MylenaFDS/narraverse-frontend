@@ -5,6 +5,8 @@ import {
   createTurn,
   deleteTurn,
   getSheetFields,
+  createTimelineEvent,
+  getLore,
 } from "../../services/api"
 
 import {
@@ -19,7 +21,7 @@ import type {
   CharacterSheetValue,
   RPGSheetField,
 } from "../../types/character"
-
+import type { Lore } from "../../types/lore"
 
 import { useLocation, useNavigate } from "react-router-dom"
 
@@ -77,27 +79,54 @@ const [filteredReply, setFilteredReply] = useState<Character[]>([])
   const [sheetData, setSheetData] = useState<Record<number, string>>({})
   const [collapsed, setCollapsed] =useState<Record<number, boolean>>({})
   const [newTurnIds, setNewTurnIds] =useState<number[]>([])
+  const [timelineLoading, setTimelineLoading] =
+  useState<number | null>(null)
+  const [timelineDraft, setTimelineDraft] =
+  useState<RPGTurn | null>(null)
+
+const [timelineTitle, setTimelineTitle] =
+  useState("")
+
+const [timelineContent, setTimelineContent] =
+  useState("")
+
+const [timelineLoreId, setTimelineLoreId] =
+  useState<number | "">("")
+  const [lore, setLore] =
+  useState<Lore[]>([])
   
   const wsRef = useRef<WebSocket | null>(null)
   const location = useLocation()
   const navigate = useNavigate()
+  const worldLore = lore.filter(
+  (item) =>
+    item.category === "Mundo"
+)
   // ===============================
   // FETCH
   // ===============================
   useEffect(() => {
     async function fetchAll() {
       try {
-        const [turnsData, allChars, myChars, fields] = await Promise.all([
+        const [
+  turnsData,
+  allChars,
+  myChars,
+  fields,
+  loreData,
+] = await Promise.all([
   getTurns(rpgId),
-  getCharacters(rpgId),  // TODOS (menções)
-  getMyCharacters(),     // SÓ SEUS (turno)
+  getCharacters(rpgId),
+  getMyCharacters(),
   getSheetFields(rpgId),
+  getLore(rpgId),
 ])
 
 setTurns(turnsData)
 setAllCharacters(allChars)
 setMyCharacters(myChars)
 setSheetFields(fields)
+setLore(loreData)
 
 if (myChars.length > 0) {
   setSelectedCharacterId(myChars[0].id)
@@ -350,7 +379,39 @@ useEffect(() => {
     await deleteTurn(turnId)
     setTurns((prev) => prev.filter((t) => t.id !== turnId))
   }
+  
+  async function handleAddToTimeline() {
+  if (!timelineDraft) return
 
+  try {
+    setTimelineLoading(timelineDraft.id)
+
+    await createTimelineEvent(
+      rpgId,
+      {
+  title: timelineTitle,
+  content: timelineContent,
+  date_label: "Narrativa",
+  turn_id: timelineDraft.id,
+  lore_id:
+    timelineLoreId === ""
+      ? null
+      : Number(timelineLoreId),
+}
+    )
+
+    alert("Evento adicionado à Timeline!")
+
+    setTimelineDraft(null)
+    setTimelineTitle("")
+    setTimelineContent("")
+  } catch (err) {
+    console.error(err)
+    alert("Erro ao adicionar à Timeline.")
+  } finally {
+    setTimelineLoading(null)
+  }
+}
   // ===============================
   // FICHA
   // ===============================
@@ -588,6 +649,37 @@ ${isHighlighted
     className="text-red-400 text-xs opacity-70 hover:opacity-100"
   >
     Deletar
+  </button>
+)}
+{turn.user_id === rpgOwnerId && (
+  <button
+    onClick={(e) => {
+      e.stopPropagation()
+
+      setTimelineDraft(turn)
+
+setTimelineTitle(
+  turn.content.length > 40
+    ? turn.content.slice(0, 40) + "..."
+    : turn.content
+)
+
+setTimelineContent(turn.content)
+setTimelineLoreId("")
+    }}
+    disabled={
+      timelineLoading === turn.id
+    }
+    className="
+      text-xs
+      text-[#e0a96d]
+      opacity-70
+      hover:opacity-100
+    "
+  >
+    {timelineLoading === turn.id
+      ? "..."
+      : "📜 Timeline"}
   </button>
 )}
             </div>
@@ -829,6 +921,76 @@ ${isHighlighted
       >
         Fechar
       </button>
+    </div>
+  </div>
+)}
+{timelineDraft && (
+  <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+    <div className="bg-[#18181b] border border-[#2b2b31] rounded-2xl p-6 w-[460px]">
+      <h2 className="text-2xl font-display text-[#e0a96d] mb-4">
+        📜 Adicionar à Timeline
+      </h2>
+
+      <input
+        value={timelineTitle}
+        onChange={(e) =>
+          setTimelineTitle(e.target.value)
+        }
+        className="rpg-input mb-3"
+        placeholder="Título do evento"
+      />
+
+      <textarea
+        value={timelineContent}
+        onChange={(e) =>
+          setTimelineContent(e.target.value)
+        }
+        className="rpg-input min-h-[140px]"
+        placeholder="Resumo do evento"
+      />
+    <select
+  value={timelineLoreId}
+  onChange={(e) =>
+    setTimelineLoreId(
+      e.target.value
+        ? Number(e.target.value)
+        : ""
+    )
+  }
+  className="rpg-input mt-3"
+>
+  <option value="">
+    Região relacionada
+  </option>
+
+  {worldLore.map((item) => (
+    <option
+      key={item.id}
+      value={item.id}
+    >
+      {item.title}
+    </option>
+  ))}
+</select>
+      <div className="flex gap-3 mt-4">
+        <button
+          type="button"
+          onClick={handleAddToTimeline}
+          className="rpg-btn"
+        >
+          Salvar na Timeline
+        </button>
+
+        <button
+          type="button"
+          onClick={() =>
+            setTimelineDraft(null)
+          }
+          className="text-red-400"
+        >
+          Cancelar
+        </button>
+      </div>
     </div>
   </div>
 )}

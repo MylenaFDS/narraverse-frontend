@@ -611,6 +611,7 @@ export async function createTimelineEvent(
     content?: string
     date_label?: string
     lore_id?: number | null
+    turn_id?: number | null
   }
 ) {
   const res = await api.post(
@@ -629,6 +630,7 @@ export async function updateTimelineEvent(
     content?: string
     date_label?: string
     lore_id?: number | null
+    turn_id?: number | null
   }
 ) {
   const res = await api.put(

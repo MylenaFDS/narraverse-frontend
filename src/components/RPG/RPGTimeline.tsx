@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-
+import { useNavigate } from "react-router-dom"
 import {
   getTimeline,
   createTimelineEvent,
@@ -25,6 +25,7 @@ type TimelineEvent = {
   date_label?: string
 
   lore_id?: number | null
+  turn_id?: number | null
 
   lore?: {
     id: number
@@ -72,7 +73,7 @@ const [editLoreId, setEditLoreId] =
   (item) => item.category === "Mundo"
 )
 
-
+const navigate = useNavigate()
 
 useEffect(() => {
   let mounted = true
@@ -392,6 +393,26 @@ const groupedEvents =
   📍 {event.lore.title}
 </button>
   </div>
+)}
+{event.turn_id && (
+  <button
+    type="button"
+    onClick={() =>
+      navigate(
+        `/rpg/${rpgId}#turn-${event.turn_id}`
+      )
+    }
+    className="
+      mt-2
+      block
+      text-xs
+      text-[#c9ada7]/70
+      hover:text-[#e0a96d]
+      transition
+    "
+  >
+    ↩ Ver turno original
+  </button>
 )}
                 {isOwner && (
                   <div className="flex gap-3 mt-2 text-xs">
