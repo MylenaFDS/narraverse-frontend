@@ -677,3 +677,11 @@ export async function createLoreRelation(
 
   return res.data
 }
+
+export async function deleteLoreRelation(
+  relationId: number
+) {
+  await api.delete(
+    `/lore-relations/${relationId}`
+  )
+}

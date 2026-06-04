@@ -6,6 +6,7 @@ import type { LoreRelation } from "../../../types/loreRelation"
 import {
   getLoreRelations,
   createLoreRelation,
+  deleteLoreRelation,
 } from "../../../services/api"
 
 type Props = {
@@ -62,6 +63,21 @@ async function handleAddRelation() {
 
   setTargetLoreId("")
 }
+
+async function handleDeleteRelation(
+  relationId: number
+) {
+  await deleteLoreRelation(
+    relationId
+  )
+
+  setRelations((prev) =>
+    prev.filter(
+      (relation) =>
+        relation.id !== relationId
+    )
+  )
+}
   if (!selectedLore) return null
 
   return (
@@ -97,30 +113,63 @@ async function handleAddRelation() {
   {relations.length > 0 ? (
     <div className="space-y-2">
       {relations.map((relation) => (
-        <button
-          key={relation.id}
-          type="button"
-          onClick={() => {
-            const loreItem = lore.find(
-              (item) =>
-                item.id === relation.target_lore.id
-            )
+        <div
+  key={relation.id}
+  className="
+    flex
+    items-center
+    gap-2
+    text-sm
+  "
+>
+  <button
+    type="button"
+    onClick={() => {
+      const loreItem = lore.find(
+        (item) =>
+          item.id === relation.target_lore.id
+      )
 
-            if (loreItem) {
-              setSelectedLore(loreItem)
-            }
-          }}
-          className="
-            block
-            text-left
-            text-[#f2e9e4]
-            text-sm
-            hover:text-[#e0a96d]
-            transition
-          "
-        >
-          🧩 {relation.target_lore.title}
-        </button>
+      if (loreItem) {
+        setSelectedLore(loreItem)
+      }
+    }}
+    className="
+      text-left
+      text-[#f2e9e4]
+      hover:text-[#e0a96d]
+      transition
+    "
+  >
+    🧩 {relation.target_lore.title}
+  </button>
+
+  <button
+    type="button"
+    onClick={() => {
+  const confirmDelete = window.confirm(
+    `Remover relação com "${relation.target_lore.title}"?`
+  )
+
+  if (!confirmDelete) return
+
+  void handleDeleteRelation(
+    relation.id
+  )
+}}
+    title="Remover relacionado"
+    className="
+      text-red-400
+      hover:text-red-300
+      text-xs
+      opacity-70
+      hover:opacity-100
+      transition
+    "
+  >
+    🗑
+  </button>
+</div>
       ))}
     </div>
   ) : (

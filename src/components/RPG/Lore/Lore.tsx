@@ -1,10 +1,11 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 import {
   updateMapRegionPosition,
   uploadMapImage,
   updateLore,
   approveLoreSuggestion,
+  getTimeline
 } from "../../../services/api"
 
 
@@ -36,9 +37,22 @@ type MapRegion =
   MapRegion
 }
 
+type TimelineEvent = {
+  id: number
+  title: string
+  content?: string
+  date_label?: string
+  lore_id?: number | null
+  lore?: {
+    id: number
+    title: string
+  } | null
+}
+
 export default function Lore({ rpgId }: Props) {
  
   const [draggedId, setDraggedId] = useState<number | null>(null)
+  const [timelineEvents, setTimelineEvents] =useState<TimelineEvent[]>([])
   const {
   lore,
   setLore,
@@ -121,7 +135,28 @@ export default function Lore({ rpgId }: Props) {
   updateMapRegionPosition,
 })
 
+useEffect(() => {
+  let mounted = true
 
+  async function loadTimeline() {
+    try {
+      const data =
+        await getTimeline(rpgId)
+
+      if (mounted) {
+        setTimelineEvents(data || [])
+      }
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  void loadTimeline()
+
+  return () => {
+    mounted = false
+  }
+}, [rpgId])
  
 
   // ===============================
@@ -175,6 +210,8 @@ export default function Lore({ rpgId }: Props) {
         (l) => l.id === draggedId
       )
 
+      
+
     const toIndex =
       newLore.findIndex(
         (l) => l.id === targetId
@@ -206,6 +243,42 @@ export default function Lore({ rpgId }: Props) {
 // ===============================
 const grouped =
   groupLore(lore)
+
+const normalizedSearch =
+  search.trim().toLowerCase()
+
+const searchResults =
+  normalizedSearch.length > 0
+    ? lore.filter((item) =>
+        item.title
+          .toLowerCase()
+          .includes(normalizedSearch) ||
+        item.content
+          .toLowerCase()
+          .includes(normalizedSearch) ||
+        (item.category ?? "")
+  .toLowerCase()
+  .includes(normalizedSearch)
+      )
+    : []
+
+  const timelineSearchResults =
+  normalizedSearch.length > 0
+    ? timelineEvents.filter((event) =>
+        event.title
+          .toLowerCase()
+          .includes(normalizedSearch) ||
+        (event.content ?? "")
+          .toLowerCase()
+          .includes(normalizedSearch) ||
+        (event.date_label ?? "")
+          .toLowerCase()
+          .includes(normalizedSearch) ||
+        (event.lore?.title ?? "")
+          .toLowerCase()
+          .includes(normalizedSearch)
+      )
+    : []
 
   console.log("LORE:", lore)
 console.log("MAP REGIONS:", mapRegions)
@@ -251,7 +324,104 @@ console.log("WORLD MAP:", worldMap)
           }
         />
       </div>
+{normalizedSearch.length > 0 && (
+  <div className="mb-8 rpg-panel">
+    <h2 className="text-xl font-display text-[#e0a96d] mb-4">
+      🔍 Resultados
+    </h2>
 
+    {searchResults.length > 0 ? (
+      <div className="space-y-2">
+        {searchResults.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() =>
+              setSelectedLore(item)
+            }
+            className="
+              block
+              w-full
+              text-left
+              rounded-xl
+              border
+              border-[#e0a96d]/10
+              bg-black/20
+              px-4
+              py-3
+              hover:border-[#e0a96d]/40
+              hover:bg-[#e0a96d]/10
+              transition
+            "
+          >
+            <p className="text-[#f2e9e4] font-semibold">
+              {item.title}
+            </p>
+
+            <p className="text-xs text-[#c9ada7]/60">
+              {item.category}
+            </p>
+          </button>
+        ))}
+      </div>
+    ) : (
+      <p className="text-[#c9ada7]/60">
+        Nenhum resultado encontrado.
+      </p>
+    )}
+    {timelineSearchResults.length > 0 && (
+  <div className="mt-5">
+    <h3 className="text-[#e0a96d] font-display mb-3">
+      📜 Timeline
+    </h3>
+
+    <div className="space-y-2">
+      {timelineSearchResults.map((event) => (
+        <button
+          key={event.id}
+          type="button"
+          onClick={() => {
+            const loreItem = lore.find(
+              (item) =>
+                item.id === event.lore?.id
+            )
+
+            if (loreItem) {
+              setSelectedLore(loreItem)
+            }
+          }}
+          className="
+            block
+            w-full
+            text-left
+            rounded-xl
+            border
+            border-[#e0a96d]/10
+            bg-black/20
+            px-4
+            py-3
+            hover:border-[#e0a96d]/40
+            hover:bg-[#e0a96d]/10
+            transition
+          "
+        >
+          <p className="text-[#f2e9e4] font-semibold">
+            {event.title}
+          </p>
+
+          <p className="text-xs text-[#c9ada7]/60">
+            {event.date_label || "Sem data"}
+            {event.lore?.title
+              ? ` • ${event.lore.title}`
+              : ""}
+          </p>
+        </button>
+      ))}
+    </div>
+  </div>
+)}
+  </div>
+)}
 
       {/* MAPA */}
       
@@ -461,7 +631,23 @@ console.log("WORLD MAP:", worldMap)
 
       {/* WIKI */}
       <div className="space-y-10">
-  {Object.keys(grouped).map((cat) => (
+  {Object.keys(grouped)
+  .filter((cat) => {
+    return grouped[cat].some(
+      (item) =>
+        item.title
+          .toLowerCase()
+          .includes(
+            search.toLowerCase()
+          ) ||
+        item.content
+          .toLowerCase()
+          .includes(
+            search.toLowerCase()
+          )
+    )
+  })
+  .map((cat) => (
     <div key={cat}>
       <div
         className="
