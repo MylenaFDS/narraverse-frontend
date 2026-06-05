@@ -612,6 +612,7 @@ export async function createTimelineEvent(
     date_label?: string
     lore_id?: number | null
     turn_id?: number | null
+    category_id?: number | null
   }
 ) {
   const res = await api.post(
@@ -631,6 +632,7 @@ export async function updateTimelineEvent(
     date_label?: string
     lore_id?: number | null
     turn_id?: number | null
+    category_id?: number | null
   }
 ) {
   const res = await api.put(
@@ -651,7 +653,49 @@ export async function deleteTimelineEvent(
 
   return res.data
 }
+// =====================
+// 📜 TIMELINE CATEGORIES
+// =====================
 
+export type TimelineCategory = {
+  id: number
+  name: string
+  rpg_id: number
+}
+
+export async function getTimelineCategories(
+  rpgId: number
+) {
+  const res = await api.get(
+    `/timeline-categories/rpg/${rpgId}`
+  )
+
+  return res.data
+}
+
+export async function createTimelineCategory(
+  rpgId: number,
+  name: string
+) {
+  const res = await api.post(
+    `/timeline-categories/rpg/${rpgId}`,
+    {
+      name,
+    }
+  )
+
+  return res.data
+}
+
+export async function deleteTimelineCategory(
+  categoryId: number
+) {
+  const res = await api.delete(
+    `/timeline-categories/${categoryId}`
+  )
+
+  return res.data
+}
 // =====================
 // 🔗 LORE RELATIONS
 // =====================

@@ -31,6 +31,42 @@ type TimelineEvent = {
     id: number
     title: string
   } | null
+  category_id?: number | null
+
+category?: {
+  id: number
+  name: string
+} | null
+}
+
+function getCategoryIcon(
+  name?: string
+) {
+  switch (name) {
+    case "Profecia":
+      return "🔮"
+
+    case "Guerra":
+      return "⚔️"
+
+    case "Política":
+      return "🏛️"
+
+    case "Catástrofe":
+      return "🌋"
+
+    case "Descoberta":
+      return "🧭"
+
+    case "Religião":
+      return "⛪"
+
+    case "Economia":
+      return "💰"
+
+    default:
+      return "📜"
+  }
 }
 
 export default function RPGTimeline({
@@ -356,7 +392,20 @@ const groupedEvents =
                 <span className="text-sm text-[#e0a96d]">
                   {event.date_label}
                 </span>
-
+              {event.category && (
+  <div
+    className="
+      text-sm
+      text-[#e0a96d]
+      mb-1
+    "
+  >
+    {getCategoryIcon(
+      event.category.name
+    )}{" "}
+    {event.category.name}
+  </div>
+)}
                 <h4 className="text-lg text-[#f2e9e4]">
                   ● {event.title}
                 </h4>

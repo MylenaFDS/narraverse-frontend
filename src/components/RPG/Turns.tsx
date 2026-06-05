@@ -7,6 +7,8 @@ import {
   getSheetFields,
   createTimelineEvent,
   getLore,
+  getTimelineCategories,
+type TimelineCategory,
 } from "../../services/api"
 
 import {
@@ -94,6 +96,11 @@ const [timelineLoreId, setTimelineLoreId] =
   useState<number | "">("")
   const [lore, setLore] =
   useState<Lore[]>([])
+  const [timelineCategories, setTimelineCategories] =
+  useState<TimelineCategory[]>([])
+
+const [timelineCategoryId, setTimelineCategoryId] =
+  useState<number | "">("")
   
   const wsRef = useRef<WebSocket | null>(null)
   const location = useLocation()
@@ -114,12 +121,14 @@ const [timelineLoreId, setTimelineLoreId] =
   myChars,
   fields,
   loreData,
+  timelineCategoriesData,
 ] = await Promise.all([
   getTurns(rpgId),
   getCharacters(rpgId),
   getMyCharacters(),
   getSheetFields(rpgId),
   getLore(rpgId),
+  getTimelineCategories(rpgId),
 ])
 
 setTurns(turnsData)
@@ -127,6 +136,9 @@ setAllCharacters(allChars)
 setMyCharacters(myChars)
 setSheetFields(fields)
 setLore(loreData)
+setTimelineCategories(
+  timelineCategoriesData
+)
 
 if (myChars.length > 0) {
   setSelectedCharacterId(myChars[0].id)
@@ -397,6 +409,10 @@ useEffect(() => {
     timelineLoreId === ""
       ? null
       : Number(timelineLoreId),
+  category_id:
+  timelineCategoryId === ""
+    ? null
+    : Number(timelineCategoryId),
 }
     )
 
@@ -666,6 +682,7 @@ setTimelineTitle(
 
 setTimelineContent(turn.content)
 setTimelineLoreId("")
+setTimelineCategoryId("")
     }}
     disabled={
       timelineLoading === turn.id
@@ -948,6 +965,30 @@ setTimelineLoreId("")
         className="rpg-input min-h-[140px]"
         placeholder="Resumo do evento"
       />
+      <select
+  value={timelineCategoryId}
+  onChange={(e) =>
+    setTimelineCategoryId(
+      e.target.value
+        ? Number(e.target.value)
+        : ""
+    )
+  }
+  className="rpg-input mt-3"
+>
+  <option value="">
+    Categoria do evento
+  </option>
+
+  {timelineCategories.map((cat) => (
+    <option
+      key={cat.id}
+      value={cat.id}
+    >
+      {cat.name}
+    </option>
+  ))}
+</select>
     <select
   value={timelineLoreId}
   onChange={(e) =>
