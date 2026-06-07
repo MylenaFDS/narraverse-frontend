@@ -21,6 +21,12 @@ type Props = {
   setSelectedLore: React.Dispatch<
     React.SetStateAction<Lore | null>
   >
+  setHighlightedLoreId: React.Dispatch<
+  React.SetStateAction<number | null>
+>
+setFocusLoreId: React.Dispatch<
+  React.SetStateAction<number | null>
+>
 }
 
 type TimelineEvent = {
@@ -70,6 +76,8 @@ export default function RPGTimeline({
   isOwner,
   lore,
   setSelectedLore,
+  setHighlightedLoreId,
+  setFocusLoreId,
 }: Props) {
   const navigate = useNavigate()
 
@@ -116,14 +124,13 @@ export default function RPGTimeline({
     useState<number | "">("")
   const [selectedCategoryFilter, setSelectedCategoryFilter] =
   useState<number | "">("")
-  const [highlightedLoreId, setHighlightedLoreId] =
-  useState<number | null>(null)
 
   const worldLore = lore.filter(
     (item) => item.category === "Mundo"
   )
 
   useEffect(() => {
+    
     let mounted = true
 
     async function init() {
@@ -646,10 +653,20 @@ export default function RPGTimeline({
                                   )
 
                                 if (loreItem) {
-                                  setSelectedLore(
-                                    loreItem
-                                  )
-                                }
+  setSelectedLore(loreItem)
+
+  setHighlightedLoreId(
+    loreItem.id
+  )
+
+  setFocusLoreId(
+    loreItem.id
+  )
+
+  setTimeout(() => {
+    setHighlightedLoreId(null)
+  }, 2500)
+}
                               }}
                               className="
                                 text-[#e0a96d]

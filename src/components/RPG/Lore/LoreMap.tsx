@@ -1,10 +1,12 @@
 import type { Lore } from "../../../types/lore"
 import type { MapRegion } from "./Lore"
+import { useEffect, useRef } from "react"
 
 type Props = {
   worldMap: string
   mapRegions: MapRegion[]
   lore: Lore[]
+  highlightedLoreId: number | null
 
   zoom: number
   offset: {
@@ -58,12 +60,18 @@ type Props = {
   handleWheel: (
     e: React.WheelEvent<HTMLDivElement>
   ) => void
+
+  focusLoreId: number | null
+setFocusLoreId: React.Dispatch<
+  React.SetStateAction<number | null>
+>
 }
 
 export default function LoreMap({
   worldMap,
   mapRegions,
   lore,
+  highlightedLoreId,
   zoom,
   offset,
   isPanning,
@@ -71,6 +79,7 @@ export default function LoreMap({
   hasMoved,
   mapRef,
   setZoom,
+  setOffset,
   setSelectedLore,
   setDraggingRegion,
   setHasMoved,
@@ -80,11 +89,49 @@ export default function LoreMap({
   handleMouseMove,
   handleMouseUp,
   handleWheel,
+  focusLoreId,
+setFocusLoreId,
 }: Props) {
+  const containerRef =
+  useRef<HTMLDivElement | null>(null)
+  useEffect(() => {
+  if (!focusLoreId) return
+
+  const region = mapRegions.find(
+    (item) =>
+      item.lore_id === focusLoreId
+  )
+
+  if (!region) return
+
+  containerRef.current?.scrollIntoView({
+  behavior: "smooth",
+  block: "center",
+})
+
+  setZoom(2)
+
+  setOffset({
+    x: 50 - region.pos_x * 4,
+    y: 50 - region.pos_y * 4,
+  })
+
+  setTimeout(() => {
+    setFocusLoreId(null)
+  }, 300)
+}, [
+  focusLoreId,
+  mapRegions,
+  mapRef,
+  setFocusLoreId,
+  setOffset,
+  setZoom,
+])
   return (
     <div
-      className="
-        mb-10
+  ref={containerRef}
+  className="
+    mb-10
         bg-[#18181b]
         border
         border-[#2b2b31]
@@ -174,59 +221,69 @@ export default function LoreMap({
               "
             />
           )}
+        
+          {mapRegions.map((region) => {
+  const isHighlighted =
+    region.lore_id === highlightedLoreId
+    
 
-          {mapRegions.map((region) => (
-            <button
-              key={region.id}
-              title={region.name}
-              draggable={false}
-              onMouseDown={() => {
-                if (isOwner) {
-                  setDraggingRegion(region.id)
-                  setHasMoved(false)
-                }
-              }}
-              onClick={() => {
-                if (hasMoved) return
+  return (
+    <button
+      key={region.id}
+      title={region.name}
+      draggable={false}
+      onMouseDown={() => {
+        if (isOwner) {
+          setDraggingRegion(region.id)
+          setHasMoved(false)
+        }
+      }}
+      onClick={() => {
+        if (hasMoved) return
 
-                if (!region.lore_id)
-                  return
+        if (!region.lore_id)
+          return
 
-                const loreItem =
-                  lore.find(
-                    (l) =>
-                      l.id ===
-                      region.lore_id
-                  )
+        const loreItem =
+          lore.find(
+            (l) =>
+              l.id ===
+              region.lore_id
+          )
 
-                if (loreItem) {
-                  setSelectedLore(
-                    loreItem
-                  )
-                }
-              }}
-              className="
-                absolute
-                rounded-full
-                border-2
-                border-white
-                shadow-2xl
-                hover:scale-125
-                transition
-                z-30
-              "
-              style={{
-                top: `${region.pos_y}%`,
-                left: `${region.pos_x}%`,
-                width: `${18 * zoom}px`,
-                height: `${18 * zoom}px`,
-                backgroundColor:
-                  region.color,
-                transform:
-                  "translate(-50%, -50%)",
-              }}
-            />
-          ))}
+        if (loreItem) {
+          setSelectedLore(
+            loreItem
+          )
+        }
+      }}
+      className={`
+        absolute
+        rounded-full
+        border-2
+        border-white
+        hover:scale-125
+        transition
+        z-30
+        ${
+          isHighlighted
+            ? "animate-pulse ring-4 ring-yellow-300 shadow-[0_0_25px_#facc15]"
+            : "shadow-2xl"
+        }
+      `}
+      style={{
+        top: `${region.pos_y}%`,
+        left: `${region.pos_x}%`,
+        width: `${18 * zoom}px`,
+        height: `${18 * zoom}px`,
+        backgroundColor:
+          region.color,
+        transform:
+          "translate(-50%, -50%)",
+      }}
+    />
+  )
+})}
         </div>
       </div>
     </div>

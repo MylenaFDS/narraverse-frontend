@@ -55,6 +55,10 @@ export default function Lore({ rpgId }: Props) {
   const [timelineEvents, setTimelineEvents] =useState<TimelineEvent[]>([])
   const [selectedTimelineEvent, setSelectedTimelineEvent] =
   useState<TimelineEvent | null>(null)
+  const [highlightedLoreId, setHighlightedLoreId] =
+  useState<number | null>(null)
+  const [focusLoreId, setFocusLoreId] =
+  useState<number | null>(null)
   const {
   lore,
   setLore,
@@ -441,6 +445,9 @@ console.log("WORLD MAP:", worldMap)
   handleMouseMove={handleMouseMove}
   handleMouseUp={handleMouseUp}
   handleWheel={handleWheel}
+  highlightedLoreId={highlightedLoreId}
+  focusLoreId={focusLoreId}
+  setFocusLoreId={setFocusLoreId}
 />
 
       {/* ADMIN */}
@@ -688,6 +695,7 @@ console.log("WORLD MAP:", worldMap)
               handleDelete={handleDelete}
               handleDragStart={handleDragStart}
               handleDrop={handleDrop}
+              
             />
           ))}
       </div>
@@ -703,6 +711,9 @@ console.log("WORLD MAP:", worldMap)
   isOwner={!!isOwner}
   lore={lore}
   setSelectedLore={setSelectedLore}
+  setHighlightedLoreId={setHighlightedLoreId}
+  setFocusLoreId={setFocusLoreId}
+
 />
 </div>
       {/* SUGESTÕES */}
@@ -808,9 +819,14 @@ console.log("WORLD MAP:", worldMap)
           )
 
           if (loreItem) {
-            setSelectedLore(loreItem)
-            setSelectedTimelineEvent(null)
-          }
+  setSelectedLore(loreItem)
+  setHighlightedLoreId(loreItem.id)
+  setFocusLoreId(loreItem.id)
+
+  setTimeout(() => {
+    setHighlightedLoreId(null)
+  }, 2500)
+}
         }}
         className="
           mt-4
