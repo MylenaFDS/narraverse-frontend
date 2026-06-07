@@ -27,6 +27,7 @@ type Props = {
 setFocusLoreId: React.Dispatch<
   React.SetStateAction<number | null>
 >
+highlightedTimelineEventId: number | null
 }
 
 type TimelineEvent = {
@@ -78,6 +79,7 @@ export default function RPGTimeline({
   setSelectedLore,
   setHighlightedLoreId,
   setFocusLoreId,
+  highlightedTimelineEventId,
 }: Props) {
   const navigate = useNavigate()
 
@@ -517,7 +519,15 @@ export default function RPGTimeline({
 
               <div className="space-y-5">
                 {group.map((event) => (
-                  <div key={event.id}>
+                  <div
+  key={event.id}
+  id={`timeline-event-${event.id}`}
+  className={
+    highlightedTimelineEventId === event.id
+      ? "rounded-xl ring-2 ring-yellow-300 bg-yellow-300/10 p-2 transition"
+      : "transition"
+  }
+>
                     {editingId === event.id ? (
                       <div className="space-y-2">
                         <input

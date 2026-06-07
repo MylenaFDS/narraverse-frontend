@@ -59,6 +59,8 @@ export default function Lore({ rpgId }: Props) {
   useState<number | null>(null)
   const [focusLoreId, setFocusLoreId] =
   useState<number | null>(null)
+  const [highlightedTimelineEventId, setHighlightedTimelineEventId] =
+  useState<number | null>(null)
   const {
   lore,
   setLore,
@@ -713,7 +715,7 @@ console.log("WORLD MAP:", worldMap)
   setSelectedLore={setSelectedLore}
   setHighlightedLoreId={setHighlightedLoreId}
   setFocusLoreId={setFocusLoreId}
-
+  highlightedTimelineEventId={highlightedTimelineEventId}
 />
 </div>
       {/* SUGESTÕES */}
@@ -778,6 +780,7 @@ console.log("WORLD MAP:", worldMap)
   selectedLore={selectedLore}
   lore={lore}
   setSelectedLore={setSelectedLore}
+  setHighlightedTimelineEventId={setHighlightedTimelineEventId}
   onClose={() => setSelectedLore(null)}
 />
 {selectedTimelineEvent && (

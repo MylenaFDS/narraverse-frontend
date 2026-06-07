@@ -16,6 +16,9 @@ type Props = {
   setSelectedLore: React.Dispatch<
     React.SetStateAction<Lore | null>
   >
+  setHighlightedTimelineEventId: React.Dispatch<
+    React.SetStateAction<number | null>
+  >
   onClose: () => void
 }
 
@@ -34,6 +37,7 @@ export default function SelectedLoreModal({
   selectedLore,
   lore,
   setSelectedLore,
+  setHighlightedTimelineEventId,
   onClose,
 }: Props) {
   const [relations, setRelations] =
@@ -251,17 +255,41 @@ async function handleDeleteRelation(
   {timelineEvents.length > 0 ? (
     <div className="space-y-2">
       {timelineEvents.map((event) => (
-        <div
-          key={event.id}
-          className="
-            rounded-xl
-            border
-            border-[#e0a96d]/10
-            bg-black/20
-            p-3
-            text-sm
-          "
-        >
+  <button
+    key={event.id}
+    type="button"
+    onClick={() => {
+      setHighlightedTimelineEventId(
+        event.id
+      )
+
+      onClose()
+
+      setTimeout(() => {
+        document
+          .getElementById(
+            `timeline-event-${event.id}`
+          )
+          ?.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          })
+      }, 100)
+    }}
+    className="
+      w-full
+      text-left
+      rounded-xl
+      border
+      border-[#e0a96d]/10
+      bg-black/20
+      p-3
+      text-sm
+      hover:border-[#e0a96d]/40
+      hover:bg-[#e0a96d]/10
+      transition
+    "
+  >
           <p className="text-[#f2e9e4] font-semibold">
             📜 {event.title}
           </p>
@@ -272,7 +300,7 @@ async function handleDeleteRelation(
               ? ` • ${event.category.name}`
               : ""}
           </p>
-        </div>
+        </button>
       ))}
     </div>
   ) : (
