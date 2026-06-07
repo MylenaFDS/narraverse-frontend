@@ -218,6 +218,15 @@ export async function deleteLore(
     `/rpg-lore/${loreId}`
   )
 }
+export async function getTimelineByLore(
+  loreId: number
+) {
+  const res = await api.get(
+    `/timeline/lore/${loreId}`
+  )
+
+  return res.data
+}
 // ===============================
 // 🎮 RPG
 // ===============================

@@ -7,6 +7,7 @@ import {
   getLoreRelations,
   createLoreRelation,
   deleteLoreRelation,
+  getTimelineByLore,
 } from "../../../services/api"
 
 type Props = {
@@ -18,6 +19,17 @@ type Props = {
   onClose: () => void
 }
 
+type RelatedTimelineEvent = {
+  id: number
+  title: string
+  content?: string
+  date_label?: string
+  category?: {
+    id: number
+    name: string
+  } | null
+}
+
 export default function SelectedLoreModal({
   selectedLore,
   lore,
@@ -26,16 +38,26 @@ export default function SelectedLoreModal({
 }: Props) {
   const [relations, setRelations] =
     useState<LoreRelation[]>([])
+  const [timelineEvents, setTimelineEvents] =
+  useState<RelatedTimelineEvent[]>([])
   const [targetLoreId, setTargetLoreId] =
   useState<number | "">("")
 
   useEffect(() => {
-    if (!selectedLore) return
+  if (!selectedLore) return
 
-    getLoreRelations(selectedLore.id)
-      .then(setRelations)
-      .catch(console.error)
-  }, [selectedLore])
+  Promise.all([
+    getLoreRelations(selectedLore.id),
+    getTimelineByLore(selectedLore.id),
+  ])
+    .then(
+      ([relationsData, eventsData]) => {
+        setRelations(relationsData)
+        setTimelineEvents(eventsData)
+      }
+    )
+    .catch(console.error)
+}, [selectedLore])
 
   const availableLore = lore.filter(
   (item) =>
@@ -170,8 +192,10 @@ async function handleDeleteRelation(
     🗑
   </button>
 </div>
+
       ))}
     </div>
+    
   ) : (
     <p className="text-sm text-[#c9ada7]/60">
       Nenhum relacionado ainda.
@@ -219,7 +243,44 @@ async function handleDeleteRelation(
     </button>
   </div>
 </div>
+<div className="mt-6 border-t border-[#e0a96d]/10 pt-4">
+  <h4 className="text-[#e0a96d] font-display mb-3">
+    Eventos da Timeline
+  </h4>
 
+  {timelineEvents.length > 0 ? (
+    <div className="space-y-2">
+      {timelineEvents.map((event) => (
+        <div
+          key={event.id}
+          className="
+            rounded-xl
+            border
+            border-[#e0a96d]/10
+            bg-black/20
+            p-3
+            text-sm
+          "
+        >
+          <p className="text-[#f2e9e4] font-semibold">
+            📜 {event.title}
+          </p>
+
+          <p className="text-xs text-[#c9ada7]/60">
+            {event.date_label || "Sem data"}
+            {event.category?.name
+              ? ` • ${event.category.name}`
+              : ""}
+          </p>
+        </div>
+      ))}
+    </div>
+  ) : (
+    <p className="text-sm text-[#c9ada7]/60">
+      Nenhum evento ligado a esta Lore.
+    </p>
+  )}
+</div>
       <button
         onClick={onClose}
         className="mt-4 bg-red-600 px-4 py-2 rounded-xl"
