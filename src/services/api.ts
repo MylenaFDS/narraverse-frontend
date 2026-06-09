@@ -740,3 +740,13 @@ export async function deleteLoreRelation(
     `/lore-relations/${relationId}`
   )
 }
+
+export async function getCharactersByLore(
+  loreId: number
+) {
+  const res = await api.get(
+    `/characters/lore/${loreId}`
+  )
+
+  return res.data
+}

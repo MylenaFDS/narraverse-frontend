@@ -22,6 +22,9 @@ import RPGTimeline from "../RPGTimeline"
 
 type Props = {
   rpgId: number
+  setPublicCharacterId: React.Dispatch<
+    React.SetStateAction<number | null>
+  >
 }
 
 type MapRegion = 
@@ -49,7 +52,10 @@ type TimelineEvent = {
   } | null
 }
 
-export default function Lore({ rpgId }: Props) {
+export default function Lore({
+  rpgId,
+  setPublicCharacterId,
+}: Props) {
  
   const [draggedId, setDraggedId] = useState<number | null>(null)
   const [timelineEvents, setTimelineEvents] =useState<TimelineEvent[]>([])
@@ -697,7 +703,7 @@ console.log("WORLD MAP:", worldMap)
               handleDelete={handleDelete}
               handleDragStart={handleDragStart}
               handleDrop={handleDrop}
-              
+            
             />
           ))}
       </div>
@@ -781,6 +787,7 @@ console.log("WORLD MAP:", worldMap)
   lore={lore}
   setSelectedLore={setSelectedLore}
   setHighlightedTimelineEventId={setHighlightedTimelineEventId}
+  setPublicCharacterId={setPublicCharacterId}
   onClose={() => setSelectedLore(null)}
 />
 {selectedTimelineEvent && (

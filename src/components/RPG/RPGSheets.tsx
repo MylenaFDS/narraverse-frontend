@@ -36,7 +36,10 @@ type LoreItem = {
   category?: string | null
 }
 
-export default function RPGSheets({ rpgId }: Props) {
+export default function RPGSheets({
+  rpgId,
+  
+}: Props) {
   const { id } = useParams()
   const navigate = useNavigate()
 

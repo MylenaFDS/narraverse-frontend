@@ -2,12 +2,12 @@ import { useEffect, useState } from "react"
 
 import type { Lore } from "../../../types/lore"
 import type { LoreRelation } from "../../../types/loreRelation"
-
 import {
   getLoreRelations,
   createLoreRelation,
   deleteLoreRelation,
   getTimelineByLore,
+  getCharactersByLore,
 } from "../../../services/api"
 
 type Props = {
@@ -19,6 +19,9 @@ type Props = {
   setHighlightedTimelineEventId: React.Dispatch<
     React.SetStateAction<number | null>
   >
+  setPublicCharacterId: React.Dispatch<
+  React.SetStateAction<number | null>
+>
   onClose: () => void
 }
 
@@ -33,17 +36,27 @@ type RelatedTimelineEvent = {
   } | null
 }
 
+type RelatedCharacter = {
+  id: number
+  name: string
+  history?: string | null
+  image_url?: string | null
+  world_lore_id?: number | null
+}
 export default function SelectedLoreModal({
   selectedLore,
   lore,
   setSelectedLore,
   setHighlightedTimelineEventId,
+  setPublicCharacterId,
   onClose,
 }: Props) {
   const [relations, setRelations] =
     useState<LoreRelation[]>([])
   const [timelineEvents, setTimelineEvents] =
   useState<RelatedTimelineEvent[]>([])
+  const [characters, setCharacters] =
+  useState<RelatedCharacter[]>([])
   const [targetLoreId, setTargetLoreId] =
   useState<number | "">("")
 
@@ -51,15 +64,21 @@ export default function SelectedLoreModal({
   if (!selectedLore) return
 
   Promise.all([
-    getLoreRelations(selectedLore.id),
-    getTimelineByLore(selectedLore.id),
-  ])
-    .then(
-      ([relationsData, eventsData]) => {
-        setRelations(relationsData)
-        setTimelineEvents(eventsData)
-      }
-    )
+  getLoreRelations(selectedLore.id),
+  getTimelineByLore(selectedLore.id),
+  getCharactersByLore(selectedLore.id),
+])
+  .then(
+    ([
+      relationsData,
+      eventsData,
+      charactersData,
+    ]) => {
+      setRelations(relationsData)
+      setTimelineEvents(eventsData)
+      setCharacters(charactersData)
+    }
+  )
     .catch(console.error)
 }, [selectedLore])
 
@@ -306,6 +325,98 @@ async function handleDeleteRelation(
   ) : (
     <p className="text-sm text-[#c9ada7]/60">
       Nenhum evento ligado a esta Lore.
+    </p>
+  )}
+</div>
+<div className="mt-6 border-t border-[#e0a96d]/10 pt-4">
+  <h4 className="text-[#e0a96d] font-display mb-3">
+    Personagens
+  </h4>
+
+  {characters.length > 0 ? (
+    <div className="space-y-2">
+      {characters.map((character) => (
+        <button
+  type="button"
+  key={character.id}
+  onClick={() => {
+    setPublicCharacterId(
+  character.id
+)
+
+onClose()
+    onClose()
+  }}
+  className="
+    w-full
+    flex
+    items-center
+    gap-3
+    text-left
+    hover:border-[#e0a96d]/40
+    transition
+            rounded-xl
+            border
+            border-[#e0a96d]/10
+            bg-black/20
+            p-3
+          "
+        >
+          {character.image_url ? (
+            <img
+              src={`http://127.0.0.1:8001/${character.image_url}`}
+              alt={character.name}
+              className="
+                w-10
+                h-10
+                rounded-full
+                object-cover
+                border
+                border-[#e0a96d]/30
+              "
+            />
+          ) : (
+            <div
+              className="
+                w-10
+                h-10
+                rounded-full
+                bg-[#e0a96d]/20
+                flex
+                items-center
+                justify-center
+                text-[#e0a96d]
+                font-bold
+              "
+            >
+              {character.name[0]}
+            </div>
+          )}
+
+          <div className="flex-1">
+  <div className="text-[#f2e9e4] font-medium">
+    {character.name}
+  </div>
+
+  {character.history && (
+    <div
+      className="
+        text-xs
+        text-[#c9ada7]/70
+        mt-1
+        line-clamp-3
+      "
+    >
+      {character.history}
+    </div>
+  )}
+</div>
+        </button>
+      ))}
+    </div>
+  ) : (
+    <p className="text-sm text-[#c9ada7]/60">
+      Nenhum personagem ligado a esta Lore.
     </p>
   )}
 </div>

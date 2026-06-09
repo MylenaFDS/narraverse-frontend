@@ -496,7 +496,10 @@ const canRequestJoin =
                   : "none",
             }}
           >
-            <Lore rpgId={rpgId} />
+            <Lore
+  rpgId={rpgId}
+  setPublicCharacterId={setPublicCharacterId}
+/>
           </div>
 
           {/* FICHAS */}
