@@ -804,11 +804,10 @@ const canRequestJoin =
       </div>
       {publicCharacterId && (
   <PublicCharacterOverlay
-    characterId={publicCharacterId}
-    onClose={() =>
-      setPublicCharacterId(null)
-    }
-  />
+  characterId={publicCharacterId}
+  onClose={() => setPublicCharacterId(null)}
+  
+/>
 )}
     </div>
   )
