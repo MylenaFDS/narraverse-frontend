@@ -716,6 +716,9 @@ console.log("WORLD MAP:", worldMap)
 <div className="mt-16">
   <RPGTimeline
   rpgId={rpgId}
+  setPublicCharacterId={
+    setPublicCharacterId
+  }
   isOwner={!!isOwner}
   lore={lore}
   setSelectedLore={setSelectedLore}
