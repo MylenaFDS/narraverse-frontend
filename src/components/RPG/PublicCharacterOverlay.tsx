@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { getPublicCharacter } from "../../services/characters"
+import { getTimelineByCharacter } from "../../services/api"
 
 type Props = {
   characterId: number
@@ -18,18 +19,41 @@ type CharacterData = {
   }[]
 }
 
+type TimelineEvent = {
+  id: number
+  title: string
+  content?: string | null
+  date_label?: string | null
+  category?: {
+    id: number
+    name: string
+  } | null
+  lore?: {
+    id: number
+    title: string
+  } | null
+}
+
 export default function PublicCharacterOverlay({
   characterId,
   onClose,
 }: Props) {
   const [character, setCharacter] =
     useState<CharacterData | null>(null)
+  const [timelineEvents, setTimelineEvents] =
+  useState<TimelineEvent[]>([])
 
   useEffect(() => {
-    getPublicCharacter(characterId)
-      .then(setCharacter)
-      .catch(console.error)
-  }, [characterId])
+  Promise.all([
+    getPublicCharacter(characterId),
+    getTimelineByCharacter(characterId),
+  ])
+    .then(([characterData, eventsData]) => {
+      setCharacter(characterData)
+      setTimelineEvents(eventsData || [])
+    })
+    .catch(console.error)
+}, [characterId])
 
   if (!character) {
     return (
@@ -157,7 +181,63 @@ export default function PublicCharacterOverlay({
             {character.history || "Sem história registrada."}
           </p>
         </div>
+<div
+  className="
+    rounded-2xl
+    border
+    border-[#3a1f24]
+    bg-black/20
+    p-5
+    mb-8
+  "
+>
+  <div className="text-sm uppercase tracking-[0.2em] text-[#e0a96d]/70 mb-3">
+    Eventos importantes
+  </div>
 
+  {timelineEvents.length > 0 ? (
+    <div className="space-y-3">
+      {timelineEvents.map((event) => (
+        <div
+          key={event.id}
+          className="
+            rounded-xl
+            border
+            border-[#4a2329]
+            bg-gradient-to-br
+            from-[#1b0c10]
+            to-[#12080a]
+            p-4
+          "
+        >
+          <div className="text-[#f5d7b2] font-semibold">
+            📜 {event.title}
+          </div>
+
+          <div className="text-xs text-[#c9ada7]/60 mt-1">
+            {event.date_label || "Sem data"}
+            {event.category?.name
+              ? ` • ${event.category.name}`
+              : ""}
+            {event.lore?.title
+              ? ` • ${event.lore.title}`
+              : ""}
+          </div>
+
+          {event.content && (
+            <p className="text-sm text-[#c9ada7]/80 mt-2 line-clamp-2">
+              {event.content}
+            </p>
+          )}
+        </div>
+      ))}
+    </div>
+  ) : (
+    <p className="text-[#c9ada7]/70">
+      Nenhum evento importante registrado.
+    </p>
+  )}
+</div>
         <div>
           <div className="text-sm uppercase tracking-[0.2em] text-[#e0a96d]/70 mb-4">
             Atributos

@@ -664,6 +664,16 @@ export async function deleteTimelineEvent(
 
   return res.data
 }
+
+export async function getTimelineByCharacter(
+  characterId: number
+) {
+  const res = await api.get(
+    `/timeline/character/${characterId}`
+  )
+
+  return res.data
+}
 // =====================
 // 📜 TIMELINE CATEGORIES
 // =====================
