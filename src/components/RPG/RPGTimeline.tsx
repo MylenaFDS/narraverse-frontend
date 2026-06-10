@@ -11,7 +11,9 @@ import {
   deleteTimelineCategory,
   type TimelineCategory,
 } from "../../services/api"
-
+import {
+  getCharacters,
+} from "../../services/characters"
 import type { Lore } from "../../types/lore"
 
 type Props = {
@@ -28,6 +30,9 @@ setFocusLoreId: React.Dispatch<
   React.SetStateAction<number | null>
 >
 highlightedTimelineEventId: number | null
+setPublicCharacterId: React.Dispatch<
+  React.SetStateAction<number | null>
+>
 }
 
 type TimelineEvent = {
@@ -40,6 +45,11 @@ type TimelineEvent = {
   turn_id?: number | null
   category_id?: number | null
 
+  characters?: {
+  id: number
+  name: string
+}[]
+
   lore?: {
     id: number
     title: string
@@ -49,6 +59,7 @@ type TimelineEvent = {
     id: number
     name: string
   } | null
+  
 }
 
 function getCategoryIcon(name?: string) {
@@ -80,6 +91,7 @@ export default function RPGTimeline({
   setHighlightedLoreId,
   setFocusLoreId,
   highlightedTimelineEventId,
+  setPublicCharacterId,
 }: Props) {
   const navigate = useNavigate()
 
@@ -126,6 +138,18 @@ export default function RPGTimeline({
     useState<number | "">("")
   const [selectedCategoryFilter, setSelectedCategoryFilter] =
   useState<number | "">("")
+  const [characters, setCharacters] =
+  useState<
+    {
+      id: number
+      name: string
+    }[]
+  >([])
+
+const [characterIds, setCharacterIds] =
+  useState<number[]>([])
+  const [editCharacterIds, setEditCharacterIds] =
+  useState<number[]>([])
 
   const worldLore = lore.filter(
     (item) => item.category === "Mundo"
@@ -138,26 +162,33 @@ export default function RPGTimeline({
     async function init() {
       try {
         const [
-          timelineData,
-          categoriesData,
-        ] = await Promise.all([
-          getTimeline(rpgId),
-          getTimelineCategories(rpgId),
-        ])
+  timelineData,
+  categoriesData,
+  charactersData,
+] = await Promise.all([
+  getTimeline(rpgId),
+  getTimelineCategories(rpgId),
+  getCharacters(rpgId),
+])
 
         if (mounted) {
-          setEvents(timelineData || [])
-          setTimelineCategories(
-  [...(categoriesData || [])]
-    .sort(
-      (a, b) =>
-        a.name.localeCompare(
-          b.name,
-          "pt-BR"
-        )
-    )
-)
-        }
+  setEvents(timelineData || [])
+
+  setTimelineCategories(
+    [...(categoriesData || [])]
+      .sort(
+        (a, b) =>
+          a.name.localeCompare(
+            b.name,
+            "pt-BR"
+          )
+      )
+  )
+
+  setCharacters(
+    charactersData || []
+  )
+}
       } catch (err) {
         console.error(err)
       }
@@ -220,6 +251,7 @@ export default function RPGTimeline({
             categoryId === ""
               ? null
               : Number(categoryId),
+              character_ids: characterIds,
         }
       )
 
@@ -233,6 +265,7 @@ export default function RPGTimeline({
     setDateLabel("")
     setLoreId("")
     setCategoryId("")
+    setCharacterIds([])
   }
 
   function startEditing(
@@ -246,28 +279,34 @@ export default function RPGTimeline({
     setEditCategoryId(
       event.category_id ?? ""
     )
+    setEditCharacterIds(
+  event.characters?.map(
+    (character) => character.id
+  ) ?? []
+)
   }
 
   async function handleUpdate(
     id: number
   ) {
     const updated =
-      await updateTimelineEvent(
-        id,
-        {
-          title: editTitle,
-          content: editContent,
-          date_label: editDate,
-          lore_id:
-            editLoreId === ""
-              ? null
-              : Number(editLoreId),
-          category_id:
-            editCategoryId === ""
-              ? null
-              : Number(editCategoryId),
-        }
-      )
+  await updateTimelineEvent(
+    id,
+    {
+      title: editTitle,
+      content: editContent,
+      date_label: editDate,
+      lore_id:
+        editLoreId === ""
+          ? null
+          : Number(editLoreId),
+      category_id:
+        editCategoryId === ""
+          ? null
+          : Number(editCategoryId),
+      character_ids: editCharacterIds,
+    }
+  )
 
     setEvents((prev) =>
       prev.map((event) =>
@@ -280,6 +319,7 @@ export default function RPGTimeline({
     setEditingId(null)
     setEditLoreId("")
     setEditCategoryId("")
+    setEditCharacterIds([])
   }
 
   async function handleDelete(
@@ -460,7 +500,29 @@ export default function RPGTimeline({
               </option>
             ))}
           </select>
-
+            <select
+  multiple
+  value={characterIds.map(String)}
+  onChange={(e) =>
+    setCharacterIds(
+      Array.from(
+        e.target.selectedOptions
+      ).map((option) =>
+        Number(option.value)
+      )
+    )
+  }
+  className="rpg-input h-40"
+>
+  {characters.map((character) => (
+    <option
+      key={character.id}
+      value={character.id}
+    >
+      {character.name}
+    </option>
+  ))}
+</select>
           <textarea
             value={content}
             onChange={(e) =>
@@ -605,7 +667,29 @@ export default function RPGTimeline({
                             </option>
                           ))}
                         </select>
-
+<select
+  multiple
+  value={editCharacterIds.map(String)}
+  onChange={(e) =>
+    setEditCharacterIds(
+      Array.from(
+        e.target.selectedOptions
+      ).map((option) =>
+        Number(option.value)
+      )
+    )
+  }
+  className="rpg-input h-40"
+>
+  {characters.map((character) => (
+    <option
+      key={character.id}
+      value={character.id}
+    >
+      {character.name}
+    </option>
+  ))}
+</select>
                         <textarea
                           value={editContent}
                           onChange={(e) =>
@@ -649,6 +733,44 @@ export default function RPGTimeline({
                         <p className="text-sm text-[#c9ada7]/80 whitespace-pre-wrap">
                           {event.content}
                         </p>
+                        {event.characters &&
+  event.characters.length > 0 && (
+    <div className="mt-3">
+      <p className="text-xs text-[#c9ada7]/60 mb-2">
+        Personagens envolvidos
+      </p>
+
+      <div className="flex flex-wrap gap-2">
+        {event.characters.map(
+          (character) => (
+            <button
+              key={character.id}
+              type="button"
+              onClick={() =>
+                setPublicCharacterId(
+                  character.id
+                )
+              }
+              className="
+                px-3
+                py-1
+                rounded-full
+                bg-[#e0a96d]/10
+                border
+                border-[#e0a96d]/20
+                text-[#e0a96d]
+                text-xs
+                hover:bg-[#e0a96d]/20
+                transition
+              "
+            >
+              👤 {character.name}
+            </button>
+          )
+        )}
+      </div>
+    </div>
+)}
 
                         {event.lore && (
                           <div className="mt-2 text-sm text-[#e0a96d]">

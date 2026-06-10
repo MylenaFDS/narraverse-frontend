@@ -66,11 +66,13 @@ export default function PublicCharacterOverlay({
     <div
       onClick={(e) => e.stopPropagation()}
       className="
-        relative
-        w-full
-        max-w-3xl
-        my-10
-        overflow-hidden
+  relative
+  w-full
+  max-w-3xl
+  my-10
+  max-h-[85vh]
+  overflow-y-auto
+  overflow-x-hidden
         rounded-3xl
         border
         border-yellow-900/30
@@ -96,7 +98,7 @@ export default function PublicCharacterOverlay({
       )}
 
       <div className="relative z-10 p-6">
-        <div className="flex justify-end">
+        <div className="sticky top-0 z-20 flex justify-end">
           <button
             onClick={onClose}
             className="text-[#c9ada7] hover:text-[#e0a96d]"
