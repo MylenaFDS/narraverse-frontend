@@ -99,6 +99,29 @@ const [joinRequests, setJoinRequests] =
 
   const [publicCharacterId, setPublicCharacterId] =
   useState<number | null>(null)
+  const [
+  highlightedTimelineEventId,
+  setHighlightedTimelineEventId,
+] = useState<number | null>(null)
+
+function handleFocusTimelineEvent(
+  eventId: number
+) {
+  setActiveTab("lore")
+  setHighlightedTimelineEventId(eventId)
+  setPublicCharacterId(null)
+
+  setTimeout(() => {
+    document
+      .getElementById(
+        `timeline-event-${eventId}`
+      )
+      ?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      })
+  }, 150)
+}
 
   type SentInvite = {
   id: number
@@ -499,6 +522,8 @@ const canRequestJoin =
             <Lore
   rpgId={rpgId}
   setPublicCharacterId={setPublicCharacterId}
+  highlightedTimelineEventId={highlightedTimelineEventId}
+  setHighlightedTimelineEventId={setHighlightedTimelineEventId}
 />
           </div>
 
@@ -806,7 +831,7 @@ const canRequestJoin =
   <PublicCharacterOverlay
   characterId={publicCharacterId}
   onClose={() => setPublicCharacterId(null)}
-  
+  onTimelineEventClick={handleFocusTimelineEvent}
 />
 )}
     </div>

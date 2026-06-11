@@ -5,9 +5,9 @@ import { getTimelineByCharacter } from "../../services/api"
 type Props = {
   characterId: number
   onClose: () => void
-  setHighlightedTimelineEventId?: React.Dispatch<
-  React.SetStateAction<number | null>
->
+  onTimelineEventClick?: (
+  eventId: number
+) => void
 }
 
 type CharacterData = {
@@ -40,7 +40,7 @@ type TimelineEvent = {
 export default function PublicCharacterOverlay({
   characterId,
   onClose,
-  setHighlightedTimelineEventId,
+  onTimelineEventClick,
 }: Props) {
   const [character, setCharacter] =
     useState<CharacterData | null>(null)
@@ -206,23 +206,8 @@ export default function PublicCharacterOverlay({
   key={event.id}
   type="button"
   onClick={() => {
-    setHighlightedTimelineEventId?.(
-      event.id
-    )
-
-    onClose()
-
-    setTimeout(() => {
-      document
-        .getElementById(
-          `timeline-event-${event.id}`
-        )
-        ?.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        })
-    }, 100)
-  }}
+  onTimelineEventClick?.(event.id)
+}}
   className="
     w-full
     text-left

@@ -25,6 +25,10 @@ type Props = {
   setPublicCharacterId: React.Dispatch<
     React.SetStateAction<number | null>
   >
+  highlightedTimelineEventId: number | null
+  setHighlightedTimelineEventId: React.Dispatch<
+    React.SetStateAction<number | null>
+  >
 }
 
 type MapRegion = 
@@ -55,6 +59,8 @@ type TimelineEvent = {
 export default function Lore({
   rpgId,
   setPublicCharacterId,
+  highlightedTimelineEventId,
+  setHighlightedTimelineEventId,
 }: Props) {
  
   const [draggedId, setDraggedId] = useState<number | null>(null)
@@ -65,8 +71,7 @@ export default function Lore({
   useState<number | null>(null)
   const [focusLoreId, setFocusLoreId] =
   useState<number | null>(null)
-  const [highlightedTimelineEventId, setHighlightedTimelineEventId] =
-  useState<number | null>(null)
+  
   const {
   lore,
   setLore,

@@ -752,17 +752,19 @@ const [characterIds, setCharacterIds] =
                 )
               }
               className="
-                px-3
-                py-1
-                rounded-full
-                bg-[#e0a96d]/10
-                border
-                border-[#e0a96d]/20
-                text-[#e0a96d]
-                text-xs
-                hover:bg-[#e0a96d]/20
-                transition
-              "
+  px-3
+  py-1
+  rounded-full
+  bg-[#e0a96d]/10
+  border
+  border-[#e0a96d]/20
+  text-[#e0a96d]
+  text-xs
+  cursor-pointer
+  hover:bg-[#e0a96d]/20
+  hover:border-[#e0a96d]/60
+  transition
+"
             >
               👤 {character.name}
             </button>
