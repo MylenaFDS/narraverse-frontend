@@ -30,6 +30,7 @@ import { useLocation, useNavigate } from "react-router-dom"
 type Props = {
   rpgId: number
   rpgOwnerId: number
+  highlightedTurnId: number | null
 }
 
 type TurnWithReplies = RPGTurn & {
@@ -55,6 +56,7 @@ function getAvatarColor(name: string) {
 export default function Turns({
   rpgId,
   rpgOwnerId,
+  highlightedTurnId,
 }: Props) {
   const [turns, setTurns] = useState<RPGTurn[]>([])
   const [loading, setLoading] = useState(true)
@@ -530,7 +532,9 @@ useEffect(() => {
   function renderTurn(turn: TurnWithReplies, depth = 0): ReactNode {
   const name =
     getCharacterName(turn.character_id) || `Usuário ${turn.user_id}`
-  const isHighlighted = location.hash === `#turn-${turn.id}`
+  const isHighlighted =
+  location.hash === `#turn-${turn.id}` ||
+  highlightedTurnId === turn.id
   const loggedUserId = Number(localStorage.getItem("user_id"))
 
 const isMe = turn.user_id === loggedUserId

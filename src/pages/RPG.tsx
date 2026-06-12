@@ -104,6 +104,31 @@ const [joinRequests, setJoinRequests] =
   setHighlightedTimelineEventId,
 ] = useState<number | null>(null)
 
+const [
+  highlightedTurnId,
+  setHighlightedTurnId,
+] = useState<number | null>(null)
+
+function handleFocusTurn(
+  turnId: number
+) {
+  setActiveTab("turns")
+  setHighlightedTurnId(turnId)
+
+  setTimeout(() => {
+    document
+      .getElementById(`turn-${turnId}`)
+      ?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      })
+  }, 150)
+
+  setTimeout(() => {
+    setHighlightedTurnId(null)
+  }, 3000)
+}
+
 function handleFocusTimelineEvent(
   eventId: number
 ) {
@@ -524,6 +549,7 @@ const canRequestJoin =
   setPublicCharacterId={setPublicCharacterId}
   highlightedTimelineEventId={highlightedTimelineEventId}
   setHighlightedTimelineEventId={setHighlightedTimelineEventId}
+  onFocusTurn={handleFocusTurn}
 />
           </div>
 
@@ -555,6 +581,7 @@ const canRequestJoin =
             <Turns
   rpgId={rpgId}
   rpgOwnerId={rpg.owner_id}
+  highlightedTurnId={highlightedTurnId}
 />
           </div>
 

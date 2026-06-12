@@ -29,6 +29,7 @@ type Props = {
   setHighlightedTimelineEventId: React.Dispatch<
     React.SetStateAction<number | null>
   >
+  onFocusTurn: (turnId: number) => void
 }
 
 type MapRegion = 
@@ -61,6 +62,7 @@ export default function Lore({
   setPublicCharacterId,
   highlightedTimelineEventId,
   setHighlightedTimelineEventId,
+  onFocusTurn,
 }: Props) {
  
   const [draggedId, setDraggedId] = useState<number | null>(null)
@@ -730,6 +732,7 @@ console.log("WORLD MAP:", worldMap)
   setHighlightedLoreId={setHighlightedLoreId}
   setFocusLoreId={setFocusLoreId}
   highlightedTimelineEventId={highlightedTimelineEventId}
+  onFocusTurn={onFocusTurn}
 />
 </div>
       {/* SUGESTÕES */}

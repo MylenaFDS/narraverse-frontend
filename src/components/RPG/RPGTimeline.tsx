@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { useNavigate } from "react-router-dom"
+
 
 import {
   getTimeline,
@@ -33,6 +33,7 @@ highlightedTimelineEventId: number | null
 setPublicCharacterId: React.Dispatch<
   React.SetStateAction<number | null>
 >
+onFocusTurn: (turnId: number) => void
 }
 
 type TimelineEvent = {
@@ -92,8 +93,9 @@ export default function RPGTimeline({
   setFocusLoreId,
   highlightedTimelineEventId,
   setPublicCharacterId,
+  onFocusTurn,
 }: Props) {
-  const navigate = useNavigate()
+  
 
   const [events, setEvents] =
     useState<TimelineEvent[]>([])
@@ -816,11 +818,11 @@ const [characterIds, setCharacterIds] =
                         {event.turn_id && (
                           <button
                             type="button"
-                            onClick={() =>
-                              navigate(
-                                `/rpg/${rpgId}#turn-${event.turn_id}`
-                              )
-                            }
+                            onClick={() => {
+      if (event.turn_id) {
+        onFocusTurn(event.turn_id)
+      }
+    }}
                             className="
                               mt-2
                               block
