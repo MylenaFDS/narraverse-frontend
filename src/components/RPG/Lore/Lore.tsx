@@ -30,6 +30,14 @@ type Props = {
     React.SetStateAction<number | null>
   >
   onFocusTurn: (turnId: number) => void
+  highlightedLoreId: number | null
+setHighlightedLoreId: React.Dispatch<
+  React.SetStateAction<number | null>
+>
+focusLoreId: number | null
+setFocusLoreId: React.Dispatch<
+  React.SetStateAction<number | null>
+>
 }
 
 type MapRegion = 
@@ -63,16 +71,17 @@ export default function Lore({
   highlightedTimelineEventId,
   setHighlightedTimelineEventId,
   onFocusTurn,
+  highlightedLoreId,
+setHighlightedLoreId,
+focusLoreId,
+setFocusLoreId,
 }: Props) {
  
   const [draggedId, setDraggedId] = useState<number | null>(null)
   const [timelineEvents, setTimelineEvents] =useState<TimelineEvent[]>([])
   const [selectedTimelineEvent, setSelectedTimelineEvent] =
   useState<TimelineEvent | null>(null)
-  const [highlightedLoreId, setHighlightedLoreId] =
-  useState<number | null>(null)
-  const [focusLoreId, setFocusLoreId] =
-  useState<number | null>(null)
+  
   
   const {
   lore,
@@ -696,23 +705,25 @@ console.log("WORLD MAP:", worldMap)
             )
           })
           .map((item) => (
-            <LoreCard
-              key={item.id}
-              item={item}
-              isOwner={!!isOwner}
-              editingId={editingId}
-              editTitle={editTitle}
-              editContent={editContent}
-              setEditTitle={setEditTitle}
-              setEditContent={setEditContent}
-              setEditingId={setEditingId}
-              handleSaveEdit={handleSaveEdit}
-              handleDelete={handleDelete}
-              handleDragStart={handleDragStart}
-              handleDrop={handleDrop}
-            
-            />
-          ))}
+  <LoreCard
+    key={item.id}
+    item={item}
+    isOwner={!!isOwner}
+    editingId={editingId}
+    editTitle={editTitle}
+    editContent={editContent}
+    setEditTitle={setEditTitle}
+    setEditContent={setEditContent}
+    setEditingId={setEditingId}
+    handleSaveEdit={handleSaveEdit}
+    handleDelete={handleDelete}
+    handleDragStart={handleDragStart}
+    handleDrop={handleDrop}
+    isHighlighted={
+      highlightedLoreId === item.id
+    }
+  />
+))}
       </div>
     </div>
   ))}

@@ -29,6 +29,8 @@ type Props = {
   handleDragStart: (id: number) => void
 
   handleDrop: (id: number) => void
+
+  isHighlighted?: boolean
 }
 
 export default function LoreCard({
@@ -44,6 +46,7 @@ export default function LoreCard({
   handleDelete,
   handleDragStart,
   handleDrop,
+  isHighlighted,
 }: Props) {
   return (
     <div
@@ -58,16 +61,27 @@ export default function LoreCard({
       onDrop={() =>
         handleDrop(item.id)
       }
-      className="
-        group
-        bg-[#18181b]
-        border
+      className={`
+  group
+  bg-[#18181b]
+  border
+  rounded-2xl
+  p-5
+  transition
+  ${
+    isHighlighted
+      ? `
+        border-[#e0a96d]
+        ring-2
+        ring-[#e0a96d]/50
+        shadow-[0_0_30px_rgba(224,169,109,.18)]
+      `
+      : `
         border-[#26262c]
         hover:border-[#3a3a45]
-        rounded-2xl
-        p-5
-        transition
-      "
+      `
+  }
+`}
     >
       {editingId === item.id ? (
         <>

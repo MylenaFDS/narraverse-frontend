@@ -161,6 +161,35 @@ function handleFocusTimelineEvent(
 const [sentInvites, setSentInvites] =
   useState<SentInvite[]>([])
 
+  const [highlightedLoreId, setHighlightedLoreId] =
+  useState<number | null>(null)
+
+const [focusLoreId, setFocusLoreId] =
+  useState<number | null>(null)
+
+function handleFocusLore(
+  loreId: number
+) {
+  setActiveTab("lore")
+  setPublicCharacterId(null)
+
+  setHighlightedLoreId(loreId)
+  setFocusLoreId(loreId)
+
+  setTimeout(() => {
+    document
+      .getElementById(`lore-${loreId}`)
+      ?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      })
+  }, 150)
+
+  setTimeout(() => {
+    setHighlightedLoreId(null)
+  }, 3000)
+}
+
   const isValid =
     id && !isNaN(rpgId)
   const loggedUserId = Number(
@@ -544,11 +573,15 @@ const canRequestJoin =
                   : "none",
             }}
           >
-            <Lore
+           <Lore
   rpgId={rpgId}
   setPublicCharacterId={setPublicCharacterId}
   highlightedTimelineEventId={highlightedTimelineEventId}
   setHighlightedTimelineEventId={setHighlightedTimelineEventId}
+  highlightedLoreId={highlightedLoreId}
+  setHighlightedLoreId={setHighlightedLoreId}
+  focusLoreId={focusLoreId}
+  setFocusLoreId={setFocusLoreId}
   onFocusTurn={handleFocusTurn}
 />
           </div>
@@ -859,6 +892,7 @@ const canRequestJoin =
   characterId={publicCharacterId}
   onClose={() => setPublicCharacterId(null)}
   onTimelineEventClick={handleFocusTimelineEvent}
+  onLoreClick={handleFocusLore}
 />
 )}
     </div>

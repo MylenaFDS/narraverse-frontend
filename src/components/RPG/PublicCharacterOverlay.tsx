@@ -8,6 +8,7 @@ type Props = {
   onTimelineEventClick?: (
   eventId: number
 ) => void
+  onLoreClick?: (loreId: number) => void
 }
 
 type CharacterData = {
@@ -20,6 +21,16 @@ type CharacterData = {
     field_name: string
     value: string
   }[]
+  world_lore_id?: number | null
+  world_lore?: {
+  id: number
+  title: string
+} | null
+faction_id?: number | null
+faction?: {
+  id: number
+  name: string
+} | null
 }
 
 type TimelineEvent = {
@@ -41,6 +52,7 @@ export default function PublicCharacterOverlay({
   characterId,
   onClose,
   onTimelineEventClick,
+  onLoreClick,
 }: Props) {
   const [character, setCharacter] =
     useState<CharacterData | null>(null)
@@ -164,6 +176,34 @@ export default function PublicCharacterOverlay({
             <p className="mt-2 text-sm text-[#c9ada7]/70">
               Jogador: {character.owner_username}
             </p>
+            {character.world_lore && (
+  <button
+    type="button"
+    onClick={() => {
+  if (!character.world_lore) return
+
+  onLoreClick?.(
+    character.world_lore.id
+  )
+
+  onClose()
+}}
+    className="
+      mt-2
+      text-sm
+      text-[#e0a96d]
+      hover:text-[#f2c078]
+      transition
+    "
+  >
+    📍 {character.world_lore.title}
+  </button>
+)}
+{character.faction && (
+  <div className="mt-1 text-sm text-[#c9ada7]/80">
+    🛡️ {character.faction.name}
+  </div>
+)}
           </div>
         </div>
 
