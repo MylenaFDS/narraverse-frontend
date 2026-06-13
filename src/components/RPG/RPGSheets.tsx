@@ -17,7 +17,9 @@ import {
   updateSheetField,
   getRPG,
   getLore,
-  deleteSheetField
+  deleteSheetField,
+  getFactions,
+  type RPGFaction,
 } from "../../services/api"
 
 import type {
@@ -73,6 +75,13 @@ const [worldOptions, setWorldOptions] =
 const [editCharacterHistory, setEditCharacterHistory] = useState("")
 const [editCharacterWorldId, setEditCharacterWorldId] = useState<number | "">("")
 const [editCharacterImageFile, setEditCharacterImageFile] = useState<File | null>(null)
+const [factions, setFactions] =
+  useState<RPGFaction[]>([])
+
+const [
+  newCharacterFactionId,
+  setNewCharacterFactionId,
+] = useState<number | "">("")
 
   const isValid = id && !isNaN(rpgId)
   const loggedUserId =
@@ -96,11 +105,18 @@ const otherCharacters =
 
     async function fetchAll() {
       try {
-        const [chars, fields, rpg, lore] = await Promise.all([
+        const [
+  chars,
+  fields,
+  rpg,
+  lore,
+  factionsData,
+] = await Promise.all([
   getCharacters(rpgId),
   getSheetFields(rpgId),
   getRPG(rpgId),
   getLore(rpgId),
+  getFactions(rpgId),
 ])
 
         setCharacters(chars)
@@ -111,6 +127,7 @@ const otherCharacters =
       item.category === "Mundo"
   )
 )
+setFactions(factionsData || [])
 
         const userId = Number(localStorage.getItem("user_id"))
         setIsOwner(userId === rpg.owner_id)
@@ -217,11 +234,15 @@ const otherCharacters =
   return
 }
 
-    const payload: CharacterCreatePayload = {
+   const payload: CharacterCreatePayload = {
   name: newCharacterName,
   history: newCharacterHistory,
   world_lore_id: Number(newCharacterWorldId),
-  
+  faction_id:
+    newCharacterFactionId === ""
+      ? null
+      : Number(newCharacterFactionId),
+
   sheet: sheetFields.map((f) => ({
     field_id: f.id,
     value: sheetData[f.id] || "",
@@ -241,7 +262,6 @@ if (newCharacterImageFile) {
     setCharacters((prev) => [...prev, finalChar])
     setNewCharacterName("")
     setNewCharacterHistory("")
-setNewCharacterWorldId("")
 setNewCharacterWorldId("")
 setNewCharacterImageFile(null)
     setSheetData({})
@@ -530,7 +550,32 @@ const isCharacterOwner =
         </option>
       ))}
     </select>
+      {factions.length > 0 && (
+  <select
+    value={newCharacterFactionId}
+    onChange={(e) =>
+      setNewCharacterFactionId(
+        e.target.value
+          ? Number(e.target.value)
+          : ""
+      )
+    }
+    className="rpg-input"
+  >
+    <option value="">
+      Sem facção
+    </option>
 
+    {factions.map((faction) => (
+      <option
+        key={faction.id}
+        value={faction.id}
+      >
+        {faction.name}
+      </option>
+    ))}
+  </select>
+)}
     <input
       type="file"
       accept="image/*"
@@ -762,7 +807,32 @@ pattern={field.field_type === "number" ? "[0-9]*" : undefined}
     </option>
   ))}
 </select>
+{factions.length > 0 && (
+  <select
+    value={newCharacterFactionId}
+    onChange={(e) =>
+      setNewCharacterFactionId(
+        e.target.value
+          ? Number(e.target.value)
+          : ""
+      )
+    }
+    className="rpg-input"
+  >
+    <option value="">
+      Sem facção
+    </option>
 
+    {factions.map((faction) => (
+      <option
+        key={faction.id}
+        value={faction.id}
+      >
+        {faction.name}
+      </option>
+    ))}
+  </select>
+)}
 <label className="text-sm text-[#c9ada7]">
   História
 </label>

@@ -329,6 +329,23 @@ export async function deleteRPGNote(
 
   return res.data
 }
+
+export type RPGFaction = {
+  id: number
+  name: string
+  description?: string | null
+  rpg_id: number
+}
+
+export async function getFactions(
+  rpgId: number
+) {
+  const res = await api.get(
+    `/factions/rpg/${rpgId}`
+  )
+
+  return res.data
+}
 // ===============================
 // 👥 PARTICIPANTES / CONVITES
 // ===============================
