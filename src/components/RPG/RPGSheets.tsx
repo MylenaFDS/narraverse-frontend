@@ -82,6 +82,10 @@ const [
   newCharacterFactionId,
   setNewCharacterFactionId,
 ] = useState<number | "">("")
+const [
+  editCharacterFactionId,
+  setEditCharacterFactionId,
+] = useState<number | "">("")
 
   const isValid = id && !isNaN(rpgId)
   const loggedUserId =
@@ -143,6 +147,7 @@ setFactions(factionsData || [])
   // 🎯 SELECIONAR PERSONAGEM
   // ===============================
   async function handleSelectCharacter(char: Character) {
+    console.log("PERSONAGEM", char)
   setSelectedCharacter(char)
 
   setEditCharacterName(char.name)
@@ -170,6 +175,9 @@ setFactions(factionsData || [])
   } catch {
     setSheetData({})
   }
+  setEditCharacterFactionId(
+  char.faction_id ?? ""
+)
 }
 
   // ===============================
@@ -287,6 +295,10 @@ setNewCharacterImageFile(null)
     name: editCharacterName,
     history: editCharacterHistory,
     world_lore_id: editCharacterWorldId,
+    faction_id:
+  editCharacterFactionId === ""
+    ? null
+    : Number(editCharacterFactionId),
     image: editCharacterImageFile,
   })
 
@@ -552,29 +564,29 @@ const isCharacterOwner =
     </select>
       {factions.length > 0 && (
   <select
-    value={newCharacterFactionId}
-    onChange={(e) =>
-      setNewCharacterFactionId(
-        e.target.value
-          ? Number(e.target.value)
-          : ""
-      )
-    }
-    className="rpg-input"
-  >
-    <option value="">
-      Sem facção
-    </option>
+  value={editCharacterFactionId}
+  onChange={(e) =>
+    setEditCharacterFactionId(
+      e.target.value
+        ? Number(e.target.value)
+        : ""
+    )
+  }
+  className="rpg-input"
+>
+  <option value="">
+    Sem facção
+  </option>
 
-    {factions.map((faction) => (
-      <option
-        key={faction.id}
-        value={faction.id}
-      >
-        {faction.name}
-      </option>
-    ))}
-  </select>
+  {factions.map((faction) => (
+    <option
+      key={faction.id}
+      value={faction.id}
+    >
+      {faction.name}
+    </option>
+  ))}
+</select>
 )}
     <input
       type="file"

@@ -131,6 +131,7 @@ export async function updateCharacter(
     name: string
     history: string
     world_lore_id: number | ""
+    faction_id?: number | "" | null
     image?: File | null
   }
 ) {
@@ -140,8 +141,20 @@ export async function updateCharacter(
   formData.append("history", data.history)
 
   if (data.world_lore_id !== "") {
-    formData.append("world_lore_id", String(data.world_lore_id))
+    formData.append(
+      "world_lore_id",
+      String(data.world_lore_id)
+    )
   }
+
+  formData.append(
+    "faction_id",
+    data.faction_id === "" ||
+      data.faction_id === null ||
+      data.faction_id === undefined
+      ? ""
+      : String(data.faction_id)
+  )
 
   if (data.image) {
     formData.append("image", data.image)

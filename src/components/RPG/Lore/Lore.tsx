@@ -5,7 +5,9 @@ import {
   uploadMapImage,
   updateLore,
   approveLoreSuggestion,
-  getTimeline
+  getTimeline,
+  getFactions,
+  type RPGFaction,
 } from "../../../services/api"
 
 
@@ -19,6 +21,7 @@ import { useLoreMap } from "./hooks/useLoreMap"
 import { useLore } from "./hooks/useLore"
 import { groupLore } from "./utils/groupLore"
 import RPGTimeline from "../RPGTimeline"
+import FactionCard from "./FactionCard"
 
 type Props = {
   rpgId: number
@@ -79,6 +82,8 @@ setFocusLoreId,
  
   const [draggedId, setDraggedId] = useState<number | null>(null)
   const [timelineEvents, setTimelineEvents] =useState<TimelineEvent[]>([])
+  const [factions, setFactions] =
+  useState<RPGFaction[]>([])
   const [selectedTimelineEvent, setSelectedTimelineEvent] =
   useState<TimelineEvent | null>(null)
   
@@ -170,12 +175,23 @@ useEffect(() => {
 
   async function loadTimeline() {
     try {
-      const data =
-        await getTimeline(rpgId)
+      const [
+  timelineData,
+  factionsData,
+] = await Promise.all([
+  getTimeline(rpgId),
+  getFactions(rpgId),
+])
 
-      if (mounted) {
-        setTimelineEvents(data || [])
-      }
+if (mounted) {
+  setTimelineEvents(
+    timelineData || []
+  )
+
+  setFactions(
+    factionsData || []
+  )
+  }
     } catch (err) {
       console.error(err)
     }
@@ -729,22 +745,48 @@ console.log("WORLD MAP:", worldMap)
   ))}
 </div>
 
+{/* FACÇÕES */}
+
+{factions.length > 0 && (
+  <div className="mt-16">
+    <h2
+      className="
+        text-3xl
+        font-black
+        mb-6
+        text-[#e0a96d]
+      "
+    >
+      🛡️ Facções
+    </h2>
+
+    <div className="space-y-3">
+      {factions.map((faction) => (
+        <FactionCard
+          key={faction.id}
+          faction={faction}
+        />
+      ))}
+    </div>
+  </div>
+)}
+
 {/* LINHA DO TEMPO */}
 
 <div className="mt-16">
   <RPGTimeline
-  rpgId={rpgId}
-  setPublicCharacterId={
-    setPublicCharacterId
-  }
-  isOwner={!!isOwner}
-  lore={lore}
-  setSelectedLore={setSelectedLore}
-  setHighlightedLoreId={setHighlightedLoreId}
-  setFocusLoreId={setFocusLoreId}
-  highlightedTimelineEventId={highlightedTimelineEventId}
-  onFocusTurn={onFocusTurn}
-/>
+    rpgId={rpgId}
+    setPublicCharacterId={
+      setPublicCharacterId
+    }
+    isOwner={!!isOwner}
+    lore={lore}
+    setSelectedLore={setSelectedLore}
+    setHighlightedLoreId={setHighlightedLoreId}
+    setFocusLoreId={setFocusLoreId}
+    highlightedTimelineEventId={highlightedTimelineEventId}
+    onFocusTurn={onFocusTurn}
+  />
 </div>
       {/* SUGESTÕES */}
       {isOwner &&
