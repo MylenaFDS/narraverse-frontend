@@ -37,6 +37,10 @@ setPublicCharacterId: React.Dispatch<
   React.SetStateAction<number | null>
 >
 onFocusTurn: (turnId: number) => void
+
+setSelectedFactionId: React.Dispatch<
+  React.SetStateAction<number | null>
+>
 }
 
 type TimelineEvent = {
@@ -102,6 +106,7 @@ export default function RPGTimeline({
   highlightedTimelineEventId,
   setPublicCharacterId,
   onFocusTurn,
+  setSelectedFactionId,
 }: Props) {
   
 
@@ -833,21 +838,28 @@ const [factionIds, setFactionIds] =
       <div className="flex flex-wrap gap-2">
         {event.factions.map(
           (faction) => (
-            <span
-              key={faction.id}
-              className="
-                px-3
-                py-1
-                rounded-full
-                bg-[#4a6fa5]/10
-                border
-                border-[#4a6fa5]/20
-                text-[#8bb8ff]
-                text-xs
-              "
-            >
-              🛡️ {faction.name}
-            </span>
+            <button
+  key={faction.id}
+  type="button"
+  onClick={() =>
+    setSelectedFactionId(faction.id)
+  }
+  className="
+    px-3
+    py-1
+    rounded-full
+    bg-[#4a6fa5]/10
+    border
+    border-[#4a6fa5]/20
+    text-[#8bb8ff]
+    text-xs
+    hover:bg-[#4a6fa5]/20
+    hover:border-[#8bb8ff]/50
+    transition
+  "
+>
+  🛡️ {faction.name}
+</button>
           )
         )}
       </div>

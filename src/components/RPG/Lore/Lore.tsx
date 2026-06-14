@@ -794,6 +794,7 @@ console.log("WORLD MAP:", worldMap)
     setFocusLoreId={setFocusLoreId}
     highlightedTimelineEventId={highlightedTimelineEventId}
     onFocusTurn={onFocusTurn}
+    setSelectedFactionId={setSelectedFactionId}
   />
 </div>
       {/* SUGESTÕES */}
