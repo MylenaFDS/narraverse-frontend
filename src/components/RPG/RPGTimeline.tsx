@@ -9,8 +9,11 @@ import {
   getTimelineCategories,
   createTimelineCategory,
   deleteTimelineCategory,
+  getFactions,
   type TimelineCategory,
+  type RPGFaction,
 } from "../../services/api"
+
 import {
   getCharacters,
 } from "../../services/characters"
@@ -47,6 +50,11 @@ type TimelineEvent = {
   category_id?: number | null
 
   characters?: {
+  id: number
+  name: string
+}[]
+
+  factions?: {
   id: number
   name: string
 }[]
@@ -153,6 +161,14 @@ const [characterIds, setCharacterIds] =
   const [editCharacterIds, setEditCharacterIds] =
   useState<number[]>([])
 
+  const [factions, setFactions] =
+  useState<RPGFaction[]>([])
+
+const [factionIds, setFactionIds] =
+  useState<number[]>([])
+
+
+
   const worldLore = lore.filter(
     (item) => item.category === "Mundo"
   )
@@ -167,10 +183,12 @@ const [characterIds, setCharacterIds] =
   timelineData,
   categoriesData,
   charactersData,
+  factionsData,
 ] = await Promise.all([
   getTimeline(rpgId),
   getTimelineCategories(rpgId),
   getCharacters(rpgId),
+  getFactions(rpgId),
 ])
 
         if (mounted) {
@@ -190,6 +208,9 @@ const [characterIds, setCharacterIds] =
   setCharacters(
     charactersData || []
   )
+  setFactions(
+  factionsData || []
+)
 }
       } catch (err) {
         console.error(err)
@@ -254,6 +275,7 @@ const [characterIds, setCharacterIds] =
               ? null
               : Number(categoryId),
               character_ids: characterIds,
+              faction_ids: factionIds,
         }
       )
 
@@ -268,6 +290,7 @@ const [characterIds, setCharacterIds] =
     setLoreId("")
     setCategoryId("")
     setCharacterIds([])
+    setFactionIds([])
   }
 
   function startEditing(
@@ -525,6 +548,31 @@ const [characterIds, setCharacterIds] =
     </option>
   ))}
 </select>
+{factions.length > 0 && (
+  <select
+    multiple
+    value={factionIds.map(String)}
+    onChange={(e) =>
+      setFactionIds(
+        Array.from(
+          e.target.selectedOptions
+        ).map((option) =>
+          Number(option.value)
+        )
+      )
+    }
+    className="rpg-input h-32"
+  >
+    {factions.map((faction) => (
+      <option
+        key={faction.id}
+        value={faction.id}
+      >
+        🛡️ {faction.name}
+      </option>
+    ))}
+  </select>
+)}
           <textarea
             value={content}
             onChange={(e) =>
@@ -770,6 +818,36 @@ const [characterIds, setCharacterIds] =
             >
               👤 {character.name}
             </button>
+          )
+        )}
+      </div>
+    </div>
+)}
+{event.factions &&
+  event.factions.length > 0 && (
+    <div className="mt-3">
+      <p className="text-xs text-[#c9ada7]/60 mb-2">
+        Facções envolvidas
+      </p>
+
+      <div className="flex flex-wrap gap-2">
+        {event.factions.map(
+          (faction) => (
+            <span
+              key={faction.id}
+              className="
+                px-3
+                py-1
+                rounded-full
+                bg-[#4a6fa5]/10
+                border
+                border-[#4a6fa5]/20
+                text-[#8bb8ff]
+                text-xs
+              "
+            >
+              🛡️ {faction.name}
+            </span>
           )
         )}
       </div>
