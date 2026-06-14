@@ -779,3 +779,29 @@ export async function getCharactersByLore(
 
   return res.data
 }
+
+export type FactionMember = {
+  id: number
+  name: string
+  history?: string | null
+  image_url?: string | null
+  world_lore_id?: number | null
+  world_lore?: {
+    id: number
+    title: string
+  } | null
+}
+
+export type RPGFactionDetail = RPGFaction & {
+  members: FactionMember[]
+}
+
+export async function getFactionDetail(
+  factionId: number
+) {
+  const res = await api.get(
+    `/factions/${factionId}`
+  )
+
+  return res.data
+}

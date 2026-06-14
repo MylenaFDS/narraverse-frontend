@@ -22,6 +22,7 @@ import { useLore } from "./hooks/useLore"
 import { groupLore } from "./utils/groupLore"
 import RPGTimeline from "../RPGTimeline"
 import FactionCard from "./FactionCard"
+import FactionModal from "./FactionModal"
 
 type Props = {
   rpgId: number
@@ -86,6 +87,10 @@ setFocusLoreId,
   useState<RPGFaction[]>([])
   const [selectedTimelineEvent, setSelectedTimelineEvent] =
   useState<TimelineEvent | null>(null)
+  const [
+  selectedFactionId,
+  setSelectedFactionId,
+] = useState<number | null>(null)
   
   
   const {
@@ -763,9 +768,12 @@ console.log("WORLD MAP:", worldMap)
     <div className="space-y-3">
       {factions.map((faction) => (
         <FactionCard
-          key={faction.id}
-          faction={faction}
-        />
+  key={faction.id}
+  faction={faction}
+  onClick={() =>
+    setSelectedFactionId(faction.id)
+  }
+/>
       ))}
     </div>
   </div>
@@ -925,6 +933,12 @@ console.log("WORLD MAP:", worldMap)
     </button>
   </div>
 )}
+
+<FactionModal
+  factionId={selectedFactionId}
+  setPublicCharacterId={setPublicCharacterId}
+  onClose={() => setSelectedFactionId(null)}
+/>
     </div>
   )
   
