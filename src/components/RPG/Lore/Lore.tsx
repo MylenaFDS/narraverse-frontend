@@ -938,6 +938,9 @@ console.log("WORLD MAP:", worldMap)
 <FactionModal
   factionId={selectedFactionId}
   setPublicCharacterId={setPublicCharacterId}
+  setHighlightedTimelineEventId={
+    setHighlightedTimelineEventId
+  }
   onClose={() => setSelectedFactionId(null)}
 />
     </div>

@@ -794,8 +794,24 @@ export type FactionMember = {
   } | null
 }
 
+export type FactionTimelineEvent = {
+  id: number
+  title: string
+  content?: string | null
+  date_label?: string | null
+  lore?: {
+    id: number
+    title: string
+  } | null
+  category?: {
+    id: number
+    name: string
+  } | null
+}
+
 export type RPGFactionDetail = RPGFaction & {
   members: FactionMember[]
+  timeline_events: FactionTimelineEvent[]
 }
 
 export async function getFactionDetail(

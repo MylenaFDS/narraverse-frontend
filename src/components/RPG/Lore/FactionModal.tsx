@@ -11,12 +11,16 @@ type Props = {
     React.SetStateAction<number | null>
   >
   onClose: () => void
+  setHighlightedTimelineEventId: React.Dispatch<
+  React.SetStateAction<number | null>
+>
 }
 
 export default function FactionModal({
   factionId,
   setPublicCharacterId,
   onClose,
+  setHighlightedTimelineEventId,
 }: Props) {
   const [faction, setFaction] =
     useState<RPGFactionDetail | null>(null)
@@ -173,7 +177,76 @@ export default function FactionModal({
           </p>
         )}
       </div>
+      <div className="mt-6 border-t border-[#e0a96d]/10 pt-4">
+  <h4 className="text-[#e0a96d] font-display mb-3">
+    Eventos importantes
+  </h4>
 
+  {faction.timeline_events.length > 0 ? (
+    <div className="space-y-2">
+      {faction.timeline_events.map((event) => (
+        <button
+          key={event.id}
+          type="button"
+          onClick={() => {
+            setHighlightedTimelineEventId(
+              event.id
+            )
+
+            onClose()
+
+            setTimeout(() => {
+              document
+                .getElementById(
+                  `timeline-event-${event.id}`
+                )
+                ?.scrollIntoView({
+                  behavior: "smooth",
+                  block: "center",
+                })
+            }, 100)
+          }}
+          className="
+            w-full
+            text-left
+            rounded-xl
+            border
+            border-[#e0a96d]/10
+            bg-black/20
+            p-3
+            hover:border-[#e0a96d]/40
+            hover:bg-[#e0a96d]/10
+            transition
+          "
+        >
+          <p className="text-[#f2e9e4] font-semibold">
+            📜 {event.title}
+          </p>
+
+          <p className="text-xs text-[#c9ada7]/60 mt-1">
+            {event.date_label || "Sem data"}
+            {event.category?.name
+              ? ` • ${event.category.name}`
+              : ""}
+            {event.lore?.title
+              ? ` • ${event.lore.title}`
+              : ""}
+          </p>
+
+          {event.content && (
+            <p className="text-sm text-[#c9ada7]/70 mt-2 line-clamp-2">
+              {event.content}
+            </p>
+          )}
+        </button>
+      ))}
+    </div>
+  ) : (
+    <p className="text-sm text-[#c9ada7]/60">
+      Nenhum evento importante ligado a esta facção.
+    </p>
+  )}
+</div>
       <button
         onClick={onClose}
         className="mt-4 bg-red-600 px-4 py-2 rounded-xl"
