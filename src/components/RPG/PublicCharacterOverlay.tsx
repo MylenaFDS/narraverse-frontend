@@ -9,6 +9,9 @@ type Props = {
   eventId: number
 ) => void
   onLoreClick?: (loreId: number) => void
+  setSelectedFactionId?: React.Dispatch<
+  React.SetStateAction<number | null>
+>
 }
 
 type CharacterData = {
@@ -53,6 +56,7 @@ export default function PublicCharacterOverlay({
   onClose,
   onTimelineEventClick,
   onLoreClick,
+  setSelectedFactionId,
 }: Props) {
   const [character, setCharacter] =
     useState<CharacterData | null>(null)
@@ -200,10 +204,28 @@ export default function PublicCharacterOverlay({
   </button>
 )}
 {character.faction && (
-  <div className="mt-1 text-sm text-[#c9ada7]/80">
+  <button
+    type="button"
+    onClick={() => {
+  setSelectedFactionId?.(
+    character.faction!.id
+  )
+
+  onClose()
+}}
+    className="
+      mt-1
+      block
+      text-sm
+      text-[#c9ada7]/80
+      hover:text-[#8bb8ff]
+      transition
+    "
+  >
     🛡️ {character.faction.name}
-  </div>
+  </button>
 )}
+
           </div>
         </div>
 

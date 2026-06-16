@@ -1,6 +1,7 @@
 import {
   useParams,
   useLocation,
+  useNavigate,
 } from "react-router-dom"
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
@@ -14,6 +15,7 @@ from "../components/RPG/RPGNotes"
 import { getRPG, uploadRPGBanner, getRPGPlayers, getRPGStats, getPendingRequests, updateParticipantStatus, requestToJoinRPG,getSentInvites,
 cancelSentInvite,} from "../services/api"
 import {getPublicRPGCharacters} from "../services/characters"
+import FactionModal from "../components/RPG/Lore/FactionModal"
 
 type Tab =
   | "turns"
@@ -39,7 +41,7 @@ type JoinRequest = {
 export default function RPG() {
   const { id } = useParams()
   const location = useLocation()
-
+  const navigate = useNavigate()
   const rpgId = Number(id)
 
   const [activeTab, setActiveTab] =
@@ -132,20 +134,24 @@ function handleFocusTurn(
 function handleFocusTimelineEvent(
   eventId: number
 ) {
-  setActiveTab("lore")
+  console.log("1 - clique", eventId)
+
+  navigate(`/rpg/${rpgId}?tab=lore`)
+
   setHighlightedTimelineEventId(eventId)
-  setPublicCharacterId(null)
 
   setTimeout(() => {
-    document
-      .getElementById(
-        `timeline-event-${eventId}`
-      )
-      ?.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      })
-  }, 150)
+    const el = document.getElementById(
+      `timeline-event-${eventId}`
+    )
+
+    console.log("2 - elemento", el)
+
+    el?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    })
+  }, 1000)
 }
 
   type SentInvite = {
@@ -166,6 +172,11 @@ const [sentInvites, setSentInvites] =
 
 const [focusLoreId, setFocusLoreId] =
   useState<number | null>(null)
+
+const [
+  selectedFactionId,
+  setSelectedFactionId,
+] = useState<number | null>(null)
 
 function handleFocusLore(
   loreId: number
@@ -346,6 +357,7 @@ const canRequestJoin =
     )
   )
 }
+
 
   return (
     <div className="rpg-bg min-h-screen p-6">
@@ -583,6 +595,7 @@ const canRequestJoin =
   focusLoreId={focusLoreId}
   setFocusLoreId={setFocusLoreId}
   onFocusTurn={handleFocusTurn}
+  setSelectedFactionId={setSelectedFactionId}
 />
           </div>
 
@@ -893,8 +906,23 @@ const canRequestJoin =
   onClose={() => setPublicCharacterId(null)}
   onTimelineEventClick={handleFocusTimelineEvent}
   onLoreClick={handleFocusLore}
+  setSelectedFactionId={
+    setSelectedFactionId
+  }
 />
 )}
+
+<FactionModal
+  factionId={selectedFactionId}
+  setPublicCharacterId={setPublicCharacterId}
+  setHighlightedTimelineEventId={
+    setHighlightedTimelineEventId
+  }
+  onTimelineEventClick={
+  handleFocusTimelineEvent
+}
+  onClose={() => setSelectedFactionId(null)}
+/>
     </div>
   )
 }

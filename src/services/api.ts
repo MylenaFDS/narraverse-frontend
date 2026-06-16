@@ -335,6 +335,7 @@ export type RPGFaction = {
   name: string
   description?: string | null
   rpg_id: number
+  member_count?: number
 }
 
 export async function getFactions(
@@ -799,14 +800,21 @@ export type FactionTimelineEvent = {
   title: string
   content?: string | null
   date_label?: string | null
+
   lore?: {
     id: number
     title: string
   } | null
+
   category?: {
     id: number
     name: string
   } | null
+
+  characters?: {
+    id: number
+    name: string
+  }[]
 }
 
 export type RPGFactionDetail = RPGFaction & {

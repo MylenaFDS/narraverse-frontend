@@ -22,7 +22,7 @@ import { useLore } from "./hooks/useLore"
 import { groupLore } from "./utils/groupLore"
 import RPGTimeline from "../RPGTimeline"
 import FactionCard from "./FactionCard"
-import FactionModal from "./FactionModal"
+
 
 type Props = {
   rpgId: number
@@ -40,6 +40,10 @@ setHighlightedLoreId: React.Dispatch<
 >
 focusLoreId: number | null
 setFocusLoreId: React.Dispatch<
+  React.SetStateAction<number | null>
+>
+
+setSelectedFactionId: React.Dispatch<
   React.SetStateAction<number | null>
 >
 }
@@ -76,9 +80,10 @@ export default function Lore({
   setHighlightedTimelineEventId,
   onFocusTurn,
   highlightedLoreId,
-setHighlightedLoreId,
-focusLoreId,
-setFocusLoreId,
+  setHighlightedLoreId,
+  focusLoreId,
+  setFocusLoreId,
+  setSelectedFactionId,
 }: Props) {
  
   const [draggedId, setDraggedId] = useState<number | null>(null)
@@ -87,10 +92,7 @@ setFocusLoreId,
   useState<RPGFaction[]>([])
   const [selectedTimelineEvent, setSelectedTimelineEvent] =
   useState<TimelineEvent | null>(null)
-  const [
-  selectedFactionId,
-  setSelectedFactionId,
-] = useState<number | null>(null)
+  
   
   
   const {
@@ -770,6 +772,7 @@ console.log("WORLD MAP:", worldMap)
         <FactionCard
   key={faction.id}
   faction={faction}
+  
   onClick={() =>
     setSelectedFactionId(faction.id)
   }
@@ -935,14 +938,7 @@ console.log("WORLD MAP:", worldMap)
   </div>
 )}
 
-<FactionModal
-  factionId={selectedFactionId}
-  setPublicCharacterId={setPublicCharacterId}
-  setHighlightedTimelineEventId={
-    setHighlightedTimelineEventId
-  }
-  onClose={() => setSelectedFactionId(null)}
-/>
+
     </div>
   )
   

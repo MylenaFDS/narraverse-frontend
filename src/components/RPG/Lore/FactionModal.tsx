@@ -14,13 +14,16 @@ type Props = {
   setHighlightedTimelineEventId: React.Dispatch<
   React.SetStateAction<number | null>
 >
+onTimelineEventClick?: (
+  eventId: number
+) => void
 }
 
 export default function FactionModal({
   factionId,
   setPublicCharacterId,
   onClose,
-  setHighlightedTimelineEventId,
+  onTimelineEventClick,
 }: Props) {
   const [faction, setFaction] =
     useState<RPGFactionDetail | null>(null)
@@ -81,7 +84,9 @@ export default function FactionModal({
         {faction.description ||
           "Sem descrição registrada."}
       </p>
-
+<p className="mt-2 text-sm text-[#c9ada7]/60">
+  👥 {faction.members.length} membros
+</p>
       <div className="mt-6 border-t border-[#e0a96d]/10 pt-4">
         <h4 className="text-[#e0a96d] font-display mb-3">
           Membros
@@ -189,22 +194,9 @@ export default function FactionModal({
           key={event.id}
           type="button"
           onClick={() => {
-            setHighlightedTimelineEventId(
-              event.id
-            )
+            onTimelineEventClick?.(event.id)
 
-            onClose()
-
-            setTimeout(() => {
-              document
-                .getElementById(
-                  `timeline-event-${event.id}`
-                )
-                ?.scrollIntoView({
-                  behavior: "smooth",
-                  block: "center",
-                })
-            }, 100)
+onClose()
           }}
           className="
             w-full
@@ -232,6 +224,37 @@ export default function FactionModal({
               ? ` • ${event.lore.title}`
               : ""}
           </p>
+          {event.characters &&
+  event.characters.length > 0 && (
+    <div className="mt-2 flex flex-wrap gap-2">
+      {event.characters.map((character) => (
+        <button
+  key={character.id}
+  type="button"
+  onClick={(e) => {
+    e.stopPropagation()
+    setPublicCharacterId(character.id)
+    onClose()
+  }}
+  className="
+    px-2
+    py-1
+    rounded-full
+    bg-[#8b5cf6]/10
+    border
+    border-[#8b5cf6]/20
+    text-[#c4b5fd]
+    text-xs
+    hover:bg-[#8b5cf6]/20
+    hover:border-[#c4b5fd]/40
+    transition
+  "
+>
+  👤 {character.name}
+</button>
+      ))}
+    </div>
+)}
 
           {event.content && (
             <p className="text-sm text-[#c9ada7]/70 mt-2 line-clamp-2">

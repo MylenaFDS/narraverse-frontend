@@ -34,6 +34,13 @@ export default function FactionCard({
         {faction.description ||
           "Sem descrição registrada."}
       </p>
+      {faction.member_count !== undefined && (
+  <p className="mt-3 text-xs text-[#c9ada7]/60">
+    👥 {faction.member_count} membro
+    {faction.member_count === 1 ? "" : "s"}
+  </p>
+)}
+
     </button>
   )
 }
