@@ -831,3 +831,13 @@ export async function getFactionDetail(
 
   return res.data
 }
+
+export async function getFactionsByLore(
+  loreId: number
+) {
+  const res = await api.get(
+    `/factions/lore/${loreId}`
+  )
+
+  return res.data
+}

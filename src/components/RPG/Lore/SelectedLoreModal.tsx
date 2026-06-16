@@ -8,6 +8,8 @@ import {
   deleteLoreRelation,
   getTimelineByLore,
   getCharactersByLore,
+  getFactionsByLore,
+type RPGFaction,
 } from "../../../services/api"
 
 type Props = {
@@ -23,6 +25,9 @@ type Props = {
   React.SetStateAction<number | null>
 >
   onClose: () => void
+  setSelectedFactionId: React.Dispatch<
+  React.SetStateAction<number | null>
+>
 }
 
 type RelatedTimelineEvent = {
@@ -49,6 +54,7 @@ export default function SelectedLoreModal({
   setSelectedLore,
   setHighlightedTimelineEventId,
   setPublicCharacterId,
+  setSelectedFactionId,
   onClose,
 }: Props) {
   const [relations, setRelations] =
@@ -59,6 +65,8 @@ export default function SelectedLoreModal({
   useState<RelatedCharacter[]>([])
   const [targetLoreId, setTargetLoreId] =
   useState<number | "">("")
+  const [factions, setFactions] =
+  useState<RPGFaction[]>([])
 
   useEffect(() => {
   if (!selectedLore) return
@@ -67,17 +75,20 @@ export default function SelectedLoreModal({
   getLoreRelations(selectedLore.id),
   getTimelineByLore(selectedLore.id),
   getCharactersByLore(selectedLore.id),
+  getFactionsByLore(selectedLore.id),
 ])
   .then(
     ([
-      relationsData,
-      eventsData,
-      charactersData,
-    ]) => {
-      setRelations(relationsData)
-      setTimelineEvents(eventsData)
-      setCharacters(charactersData)
-    }
+  relationsData,
+  eventsData,
+  charactersData,
+  factionsData,
+]) => {
+  setRelations(relationsData)
+  setTimelineEvents(eventsData)
+  setCharacters(charactersData)
+  setFactions(factionsData || [])
+}
   )
     .catch(console.error)
 }, [selectedLore])
@@ -325,6 +336,61 @@ async function handleDeleteRelation(
   ) : (
     <p className="text-sm text-[#c9ada7]/60">
       Nenhum evento ligado a esta Lore.
+    </p>
+  )}
+</div>
+<div className="mt-6 border-t border-[#e0a96d]/10 pt-4">
+  <h4 className="text-[#e0a96d] font-display mb-3">
+    Facções relacionadas
+  </h4>
+
+  {factions.length > 0 ? (
+    <div className="space-y-2">
+      {factions.map((faction) => (
+        <button
+          key={faction.id}
+          type="button"
+          onClick={() => {
+            setSelectedFactionId(
+              faction.id
+            )
+
+            onClose()
+          }}
+          className="
+            w-full
+            text-left
+            rounded-xl
+            border
+            border-[#e0a96d]/10
+            bg-black/20
+            p-3
+            text-sm
+            hover:border-[#e0a96d]/40
+            hover:bg-[#e0a96d]/10
+            transition
+          "
+        >
+          <p className="text-[#f2e9e4] font-semibold">
+            🛡️ {faction.name}
+          </p>
+
+          <p className="text-xs text-[#c9ada7]/60 mt-1">
+            👥 {faction.member_count ?? 0} membro
+            {faction.member_count === 1 ? "" : "s"}
+          </p>
+
+          {faction.description && (
+            <p className="text-xs text-[#c9ada7]/70 mt-2 line-clamp-2">
+              {faction.description}
+            </p>
+          )}
+        </button>
+      ))}
+    </div>
+  ) : (
+    <p className="text-sm text-[#c9ada7]/60">
+      Nenhuma facção relacionada a esta Lore.
     </p>
   )}
 </div>
