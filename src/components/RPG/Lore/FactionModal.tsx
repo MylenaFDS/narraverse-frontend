@@ -17,6 +17,9 @@ type Props = {
 onTimelineEventClick?: (
   eventId: number
 ) => void
+onLoreClick?: (
+  loreId: number
+) => void
 }
 
 export default function FactionModal({
@@ -24,6 +27,7 @@ export default function FactionModal({
   setPublicCharacterId,
   onClose,
   onTimelineEventClick,
+  onLoreClick,
 }: Props) {
   const [faction, setFaction] =
     useState<RPGFactionDetail | null>(null)
@@ -58,7 +62,20 @@ export default function FactionModal({
       </div>
     )
   }
+const relatedLore = [
+  ...faction.members
+    .map((member) => member.world_lore)
+    .filter(Boolean),
 
+  ...faction.timeline_events
+    .map((event) => event.lore)
+    .filter(Boolean),
+].filter(
+  (loreItem, index, array) =>
+    array.findIndex(
+      (item) => item?.id === loreItem?.id
+    ) === index
+)
   return (
     <div
       className="
@@ -86,6 +103,15 @@ export default function FactionModal({
       </p>
 <p className="mt-2 text-sm text-[#c9ada7]/60">
   👥 {faction.members.length} membros
+</p>
+<p className="mt-1 text-sm text-[#c9ada7]/60">
+  📜 {faction.timeline_events.length} evento
+  {faction.timeline_events.length === 1
+    ? ""
+    : "s"} importante
+  {faction.timeline_events.length === 1
+    ? ""
+    : "s"}
 </p>
       <div className="mt-6 border-t border-[#e0a96d]/10 pt-4">
         <h4 className="text-[#e0a96d] font-display mb-3">
@@ -182,6 +208,43 @@ export default function FactionModal({
           </p>
         )}
       </div>
+      {relatedLore.length > 0 && (
+  <div className="mt-4">
+    <h4 className="text-[#e0a96d] font-display mb-2">
+      Regiões relacionadas
+    </h4>
+
+    <div className="flex flex-wrap gap-2">
+      {relatedLore.map((loreItem) => (
+        <button
+  key={loreItem!.id}
+  type="button"
+  onClick={() => {
+    onLoreClick?.(
+      loreItem!.id
+    )
+
+    onClose()
+  }}
+  className="
+    px-2
+    py-1
+    rounded-full
+    bg-[#e0a96d]/10
+    border
+    border-[#e0a96d]/20
+    text-[#e0a96d]
+    text-xs
+    hover:bg-[#e0a96d]/20
+    transition
+  "
+>
+  📍 {loreItem!.title}
+</button>
+      ))}
+    </div>
+  </div>
+)}
       <div className="mt-6 border-t border-[#e0a96d]/10 pt-4">
   <h4 className="text-[#e0a96d] font-display mb-3">
     Eventos importantes

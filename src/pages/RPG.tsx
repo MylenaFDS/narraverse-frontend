@@ -921,6 +921,7 @@ const canRequestJoin =
   onTimelineEventClick={
   handleFocusTimelineEvent
 }
+onLoreClick={handleFocusLore}
   onClose={() => setSelectedFactionId(null)}
 />
     </div>
