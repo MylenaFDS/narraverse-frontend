@@ -9,7 +9,9 @@ import {
   getTimelineByLore,
   getCharactersByLore,
   getFactionsByLore,
-type RPGFaction,
+  getRegionPlaces,
+  type RPGFaction,
+  type RegionPlace,
 } from "../../../services/api"
 
 type Props = {
@@ -39,6 +41,14 @@ type RelatedTimelineEvent = {
     id: number
     name: string
   } | null
+  characters?: {
+    id: number
+    name: string
+  }[]
+  factions?: {
+    id: number
+    name: string
+  }[]
 }
 
 type RelatedCharacter = {
@@ -67,6 +77,8 @@ export default function SelectedLoreModal({
   useState<number | "">("")
   const [factions, setFactions] =
   useState<RPGFaction[]>([])
+  const [places, setPlaces] =
+  useState<RegionPlace[]>([])
 
   useEffect(() => {
   if (!selectedLore) return
@@ -76,6 +88,7 @@ export default function SelectedLoreModal({
   getTimelineByLore(selectedLore.id),
   getCharactersByLore(selectedLore.id),
   getFactionsByLore(selectedLore.id),
+  getRegionPlaces(selectedLore.id),
 ])
   .then(
     ([
@@ -83,11 +96,13 @@ export default function SelectedLoreModal({
   eventsData,
   charactersData,
   factionsData,
+  placesData,
 ]) => {
   setRelations(relationsData)
   setTimelineEvents(eventsData)
   setCharacters(charactersData)
   setFactions(factionsData || [])
+  setPlaces(placesData || [])
 }
   )
     .catch(console.error)
@@ -330,12 +345,110 @@ async function handleDeleteRelation(
               ? ` • ${event.category.name}`
               : ""}
           </p>
+          {event.characters &&
+  event.characters.length > 0 && (
+    <div className="mt-2 flex flex-wrap gap-2">
+      {event.characters.map((character) => (
+        <button
+          key={character.id}
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation()
+            setPublicCharacterId(character.id)
+            onClose()
+          }}
+          className="
+            px-2
+            py-1
+            rounded-full
+            bg-[#8b5cf6]/10
+            border
+            border-[#8b5cf6]/20
+            text-[#c4b5fd]
+            text-xs
+            hover:bg-[#8b5cf6]/20
+            transition
+          "
+        >
+          👤 {character.name}
+        </button>
+      ))}
+    </div>
+)}
+
+{event.factions &&
+  event.factions.length > 0 && (
+    <div className="mt-2 flex flex-wrap gap-2">
+      {event.factions.map((faction) => (
+        <button
+          key={faction.id}
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation()
+            setSelectedFactionId(faction.id)
+            onClose()
+          }}
+          className="
+            px-2
+            py-1
+            rounded-full
+            bg-[#4a6fa5]/10
+            border
+            border-[#4a6fa5]/20
+            text-[#8bb8ff]
+            text-xs
+            hover:bg-[#4a6fa5]/20
+            transition
+          "
+        >
+          🛡️ {faction.name}
+        </button>
+      ))}
+    </div>
+)}
         </button>
       ))}
     </div>
   ) : (
     <p className="text-sm text-[#c9ada7]/60">
       Nenhum evento ligado a esta Lore.
+    </p>
+  )}
+</div>
+<div className="mt-6 border-t border-[#e0a96d]/10 pt-4">
+  <h4 className="text-[#e0a96d] font-display mb-3">
+    Locais exploráveis
+  </h4>
+
+  {places.length > 0 ? (
+    <div className="space-y-2">
+      {places.map((place) => (
+        <div
+          key={place.id}
+          className="
+            rounded-xl
+            border
+            border-[#e0a96d]/10
+            bg-black/20
+            p-3
+            text-sm
+          "
+        >
+          <p className="text-[#f2e9e4] font-semibold">
+            🏰 {place.name}
+          </p>
+
+          {place.description && (
+            <p className="text-xs text-[#c9ada7]/70 mt-2 line-clamp-2">
+              {place.description}
+            </p>
+          )}
+        </div>
+      ))}
+    </div>
+  ) : (
+    <p className="text-sm text-[#c9ada7]/60">
+      Nenhum local explorável criado para esta região.
     </p>
   )}
 </div>

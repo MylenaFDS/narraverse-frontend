@@ -841,3 +841,20 @@ export async function getFactionsByLore(
 
   return res.data
 }
+
+export type RegionPlace = {
+  id: number
+  name: string
+  description?: string | null
+  lore_id: number
+}
+
+export async function getRegionPlaces(
+  loreId: number
+) {
+  const res = await api.get(
+    `/region-places/lore/${loreId}`
+  )
+
+  return res.data
+}
