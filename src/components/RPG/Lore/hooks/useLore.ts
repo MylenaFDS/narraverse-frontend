@@ -38,7 +38,10 @@ export function useLore(rpgId: number) {
   const [title, setTitle] = useState("")
   const [content, setContent] = useState("")
   const [category, setCategory] = useState("Mundo")
-
+  const [
+  visualDescription,
+  setVisualDescription,
+] = useState("")
   const [search, setSearch] = useState("")
   const [newCategory, setNewCategory] = useState("")
 
@@ -133,11 +136,15 @@ useEffect(() => {
     category || "Mundo"
 
   const createdLore =
-    await createLore(rpgId, {
-      title,
-      content,
-      category: finalCategory,
-    })
+  await createLore(rpgId, {
+    title,
+    content,
+    category: finalCategory,
+    visual_description:
+      finalCategory === "Mundo"
+        ? visualDescription
+        : null,
+  })
 
 
 
@@ -195,6 +202,7 @@ useEffect(() => {
 
   setTitle("")
   setContent("")
+  setVisualDescription("")
 
   await load()
 }
@@ -250,6 +258,9 @@ setCategories(catRes || [])
 
     content,
     setContent,
+
+    visualDescription,
+    setVisualDescription,
 
     category,
     setCategory,

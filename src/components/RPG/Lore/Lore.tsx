@@ -114,6 +114,9 @@ export default function Lore({
   content,
   setContent,
 
+  visualDescription,
+setVisualDescription,
+
   category,
   setCategory,
 
@@ -658,6 +661,52 @@ console.log("WORLD MAP:", worldMap)
               )
             }
           />
+          {category === "Mundo" && (
+  <div>
+    <label
+      className="
+        block
+        text-sm
+        text-[#e0a96d]
+        mb-2
+      "
+    >
+      🎨 Descrição Visual
+    </label>
+
+    <textarea
+      placeholder="
+Ex: Cidade branca monumental
+cercada por montanhas,
+bandeiras ao vento e luz
+dourada do entardecer.
+      "
+      className="
+        w-full
+        bg-[#232329]
+        border
+        border-[#32323a]
+        rounded-xl
+        p-4
+        min-h-[120px]
+      "
+      value={visualDescription}
+      onChange={(e) =>
+        setVisualDescription(
+          e.target.value
+        )
+      }
+    />
+
+    <p className="text-xs text-[#c9ada7]/60 mt-2">
+      Esta descrição será usada
+      futuramente para gerar
+      cenários automaticamente.
+      Ela não ficará visível para
+      outros usuários.
+    </p>
+  </div>
+)}
 
           <button
             onClick={handleCreate}
@@ -864,6 +913,7 @@ console.log("WORLD MAP:", worldMap)
   setSelectedLore={setSelectedLore}
   setHighlightedTimelineEventId={setHighlightedTimelineEventId}
   setPublicCharacterId={setPublicCharacterId}
+  setSelectedFactionId={setSelectedFactionId}
   onClose={() => setSelectedLore(null)}
 />
 {selectedTimelineEvent && (
