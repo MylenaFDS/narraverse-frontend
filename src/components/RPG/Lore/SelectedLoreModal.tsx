@@ -12,7 +12,10 @@ import {
   getRegionPlaces,
   type RPGFaction,
   type RegionPlace,
+  getRegionScenes,
+type RegionScene,
 } from "../../../services/api"
+import RegionSceneModal from "./RegionSceneModal"
 
 type Props = {
   selectedLore: Lore | null
@@ -79,6 +82,10 @@ export default function SelectedLoreModal({
   useState<RPGFaction[]>([])
   const [places, setPlaces] =
   useState<RegionPlace[]>([])
+  const [scenes, setScenes] =
+  useState<RegionScene[]>([])
+  const [selectedScene, setSelectedScene] =
+  useState<RegionScene | null>(null)
 
   useEffect(() => {
   if (!selectedLore) return
@@ -89,6 +96,7 @@ export default function SelectedLoreModal({
   getCharactersByLore(selectedLore.id),
   getFactionsByLore(selectedLore.id),
   getRegionPlaces(selectedLore.id),
+  getRegionScenes(selectedLore.id),
 ])
   .then(
     ([
@@ -97,12 +105,14 @@ export default function SelectedLoreModal({
   charactersData,
   factionsData,
   placesData,
+  scenesData,
 ]) => {
   setRelations(relationsData)
   setTimelineEvents(eventsData)
   setCharacters(charactersData)
   setFactions(factionsData || [])
   setPlaces(placesData || [])
+  setScenes(scenesData || [])
 }
   )
     .catch(console.error)
@@ -417,6 +427,72 @@ async function handleDeleteRelation(
 </div>
 <div className="mt-6 border-t border-[#e0a96d]/10 pt-4">
   <h4 className="text-[#e0a96d] font-display mb-3">
+    Cenas exploráveis
+  </h4>
+
+  {scenes.length > 0 ? (
+    <div className="space-y-2">
+      {scenes.map((scene) => (
+        <div
+          key={scene.id}
+          className="
+            rounded-xl
+            border
+            border-[#e0a96d]/10
+            bg-black/20
+            p-3
+          "
+        >
+          <p className="text-[#f2e9e4] font-semibold">
+            🖼️ {scene.title}
+          </p>
+
+          {scene.description && (
+            <p className="text-xs text-[#c9ada7]/70 mt-2 line-clamp-2">
+              {scene.description}
+            </p>
+          )}
+
+          {scene.image_url && (
+            <img
+              src={`http://127.0.0.1:8001/${scene.image_url}`}
+              alt={scene.title}
+              className="
+                mt-3
+                w-full
+                h-32
+                object-cover
+                rounded-xl
+                border
+                border-[#e0a96d]/20
+              "
+            />
+          )}
+
+          <button
+  type="button"
+  onClick={() => setSelectedScene(scene)}
+  className="
+    mt-3
+    text-sm
+    text-[#e0a96d]
+    hover:text-[#f2c078]
+    transition
+  "
+>
+  Entrar na cena
+</button>
+        </div>
+      ))}
+    </div>
+  ) : (
+    <p className="text-sm text-[#c9ada7]/60">
+      Nenhuma cena explorável criada para esta região.
+    </p>
+  )}
+</div>
+<div className="mt-6 border-t border-[#e0a96d]/10 pt-4">
+  <h4 className="text-[#e0a96d] font-display mb-3">
     Locais exploráveis
   </h4>
 
@@ -599,6 +675,10 @@ onClose()
     </p>
   )}
 </div>
+<RegionSceneModal
+  scene={selectedScene}
+  onClose={() => setSelectedScene(null)}
+/>
       <button
         onClick={onClose}
         className="mt-4 bg-red-600 px-4 py-2 rounded-xl"

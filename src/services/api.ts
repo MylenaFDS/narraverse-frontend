@@ -859,3 +859,42 @@ export async function getRegionPlaces(
 
   return res.data
 }
+
+export type RegionScene = {
+  id: number
+  title: string
+  description?: string | null
+  image_url?: string | null
+  is_ai_generated: boolean
+  lore_id: number
+}
+
+export async function getRegionScenes(
+  loreId: number
+): Promise<RegionScene[]> {
+  const res = await api.get(
+    `/region-scenes/lore/${loreId}`
+  )
+
+  return res.data
+}
+
+export type SceneLocation = {
+  id: number
+  name: string
+  description?: string | null
+  pos_x: number
+  pos_y: number
+  scene_id: number
+  target_scene_id?: number | null
+}
+
+export async function getSceneLocations(
+  sceneId: number
+): Promise<SceneLocation[]> {
+  const res = await api.get(
+    `/scene-locations/scene/${sceneId}`
+  )
+
+  return res.data
+}
