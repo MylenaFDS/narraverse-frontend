@@ -19,6 +19,9 @@ export default function ExplorerView({
   const [currentScene, setCurrentScene] =
     useState(scene)
 
+  const [sceneHistory, setSceneHistory] =
+  useState<RegionScene[]>([])
+
   const [locations, setLocations] =
     useState<SceneLocation[]>([])
 
@@ -66,6 +69,11 @@ export default function ExplorerView({
           location.target_scene_id
         )
 
+      setSceneHistory((prev) => [
+  ...prev,
+  currentScene,
+])
+
       setCurrentScene(nextScene)
 
       setTimeout(() => {
@@ -76,7 +84,18 @@ export default function ExplorerView({
       setIsTransitioning(false)
     }
   }
+function handleBack() {
+  const previousScene =
+    sceneHistory[sceneHistory.length - 1]
 
+  if (!previousScene) return
+
+  setCurrentScene(previousScene)
+
+  setSceneHistory((prev) =>
+    prev.slice(0, -1)
+  )
+}
   return (
     <div
       className="fixed inset-0 z-[100] bg-black"
@@ -226,7 +245,33 @@ export default function ExplorerView({
           }
         `}
       />
-
+      {sceneHistory.length > 0 && (
+  <button
+    onClick={handleBack}
+    className={`
+      absolute
+      top-6
+      left-6
+      text-white
+      text-sm
+      bg-black/50
+      border
+      border-white/20
+      px-4
+      py-2
+      rounded-full
+      transition-opacity
+      duration-500
+      ${
+        showUI
+          ? "opacity-100"
+          : "opacity-0"
+      }
+    `}
+  >
+    ← Voltar
+  </button>
+)}
       <button
         onClick={onClose}
         className={`

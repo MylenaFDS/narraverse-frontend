@@ -427,12 +427,12 @@ async function handleDeleteRelation(
 </div>
 <div className="mt-6 border-t border-[#e0a96d]/10 pt-4">
   <h4 className="text-[#e0a96d] font-display mb-3">
-    Cenas exploráveis
+    Região
   </h4>
 
   {scenes.length > 0 ? (
-    <div className="space-y-2">
-      {scenes.map((scene) => (
+  <div className="space-y-2">
+    {[scenes[0]].map((scene) => (
         <div
           key={scene.id}
           className="
