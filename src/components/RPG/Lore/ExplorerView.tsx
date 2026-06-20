@@ -31,6 +31,23 @@ export default function ExplorerView({
   const [showUI, setShowUI] =
     useState(true)
 
+  const [isEditing, setIsEditing] =
+  useState(false)
+
+  const [newLocationPos, setNewLocationPos] =
+  useState<{
+    x: number
+    y: number
+  } | null>(null)
+
+  const [newLocationName, setNewLocationName] =
+  useState("")
+
+const [
+  newLocationDescription,
+  setNewLocationDescription,
+] = useState("")
+
   useEffect(() => {
     getSceneLocations(currentScene.id)
       .then(setLocations)
@@ -100,9 +117,36 @@ const scenePath = [
   ...sceneHistory,
   currentScene,
 ]
+
+function handleSceneClick(
+  e: React.MouseEvent<HTMLDivElement>
+) {
+  if (!isEditing) return
+
+  const rect =
+    e.currentTarget.getBoundingClientRect()
+
+  const x =
+    ((e.clientX - rect.left)
+      / rect.width) * 100
+
+  const y =
+    ((e.clientY - rect.top)
+      / rect.height) * 100
+  setNewLocationPos({
+  x,
+  y,
+})
+  console.log(
+    "NOVO HOTSPOT",
+    x,
+    y
+  )
+}
   return (
     <div
-      className="fixed inset-0 z-[100] bg-black"
+  className="fixed inset-0 z-[100] bg-black"
+  onClick={handleSceneClick}
       onMouseMove={() => setShowUI(true)}
     >
       {imageUrl ? (
@@ -129,7 +173,93 @@ const scenePath = [
           Sem imagem
         </div>
       )}
+{isEditing &&
+ newLocationPos && (
+  <div
+    style={{
+      left: `${newLocationPos.x}%`,
+      top: `${newLocationPos.y}%`,
+    }}
+    className="
+      absolute
+      -translate-x-1/2
+      -translate-y-1/2
+      z-50
+    "
+  >
+    <div
+      className="
+        w-6
+        h-6
+        rounded-full
+        bg-green-400
+        border-2
+        border-white
+      "
+    />
+  </div>
+)}
+{isEditing &&
+ newLocationPos && (
+  <div
+    className="
+      absolute
+      bottom-8
+      right-8
+      z-[120]
+      bg-[#12090b]
+      border
+      border-[#e0a96d]/30
+      rounded-2xl
+      p-4
+      w-[320px]
+    "
+  >
+    <h3 className="text-[#e0a96d] font-display mb-3">
+      Novo Hotspot
+    </h3>
 
+    <input
+      value={newLocationName}
+      onChange={(e) =>
+        setNewLocationName(e.target.value)
+      }
+      placeholder="Nome"
+      className="
+        w-full
+        mb-3
+        bg-black/40
+        border
+        border-[#e0a96d]/20
+        rounded-xl
+        p-3
+        text-sm
+        text-[#f2e9e4]
+        outline-none
+      "
+    />
+
+    <textarea
+      value={newLocationDescription}
+      onChange={(e) =>
+        setNewLocationDescription(e.target.value)
+      }
+      placeholder="Descrição"
+      className="
+        w-full
+        min-h-[90px]
+        bg-black/40
+        border
+        border-[#e0a96d]/20
+        rounded-xl
+        p-3
+        text-sm
+        text-[#f2e9e4]
+        outline-none
+      "
+    />
+  </div>
+)}
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30" />
 
       {locations.map((location) => (
@@ -330,6 +460,27 @@ const scenePath = [
     ← Voltar
   </button>
 )}
+<button
+  onClick={() =>
+    setIsEditing(
+      (prev) => !prev
+    )
+  }
+  className="
+    absolute
+    top-6
+    right-24
+    bg-black/50
+    border
+    border-white/20
+    px-4
+    py-2
+    rounded-full
+    text-white
+  "
+>
+  ✏️ Editar
+</button>
       <button
         onClick={onClose}
         className={`
