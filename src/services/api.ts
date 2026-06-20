@@ -898,3 +898,13 @@ export async function getSceneLocations(
 
   return res.data
 }
+
+export async function getRegionSceneById(
+  sceneId: number
+): Promise<RegionScene> {
+  const res = await api.get(
+    `/region-scenes/${sceneId}`
+  )
+
+  return res.data
+}
