@@ -96,6 +96,10 @@ function handleBack() {
     prev.slice(0, -1)
   )
 }
+const scenePath = [
+  ...sceneHistory,
+  currentScene,
+]
   return (
     <div
       className="fixed inset-0 z-[100] bg-black"
@@ -245,7 +249,60 @@ function handleBack() {
           }
         `}
       />
+      <div
+  className={`
+    absolute
+    top-6
+    left-1/2
+    -translate-x-1/2
+    bg-black/50
+    border
+    border-white/20
+    px-4
+    py-2
+    rounded-full
+    text-sm
+    text-[#f2e9e4]
+    max-w-[80vw]
+    truncate
+    transition-opacity
+    duration-500
+    ${
+      showUI
+        ? "opacity-100"
+        : "opacity-0"
+    }
+  `}
+>
+  {scenePath.map((item, index) => (
+    <span key={item.id}>
+      {index > 0 && (
+        <span className="text-[#e0a96d]/70">
+          {" > "}
+        </span>
+      )}
+      <button
+  onClick={() => {
+    const targetPath =
+      scenePath.slice(0, index)
+
+    setSceneHistory(targetPath)
+
+    setCurrentScene(item)
+  }}
+  className="
+    hover:text-[#e0a96d]
+    transition
+  "
+>
+  {item.title}
+</button>
+    </span>
+  ))}
+</div>
       {sceneHistory.length > 0 && (
+
+        
   <button
     onClick={handleBack}
     className={`
@@ -269,6 +326,7 @@ function handleBack() {
       }
     `}
   >
+    
     ← Voltar
   </button>
 )}
