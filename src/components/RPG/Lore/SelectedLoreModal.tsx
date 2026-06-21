@@ -480,7 +480,7 @@ async function handleDeleteRelation(
     transition
   "
 >
-  Entrar na cena
+  Entrar na região
 </button>
         </div>
       ))}

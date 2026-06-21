@@ -908,3 +908,36 @@ export async function getRegionSceneById(
 
   return res.data
 }
+
+export async function createSceneLocation(
+  sceneId: number,
+  data: {
+    name: string
+    description?: string | null
+    pos_x: number
+    pos_y: number
+    target_scene_id?: number | null
+  }
+): Promise<SceneLocation> {
+  const res = await api.post(
+    `/scene-locations/scene/${sceneId}`,
+    data
+  )
+
+  return res.data
+}
+
+export async function createRegionScene(
+  loreId: number,
+  data: {
+    title: string
+    description?: string | null
+  }
+): Promise<RegionScene> {
+  const res = await api.post(
+    `/region-scenes/lore/${loreId}`,
+    data
+  )
+
+  return res.data
+}

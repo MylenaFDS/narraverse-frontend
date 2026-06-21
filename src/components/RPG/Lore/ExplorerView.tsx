@@ -3,6 +3,9 @@ import { useEffect, useState } from "react"
 import {
   getSceneLocations,
   getRegionSceneById,
+  createSceneLocation,
+  getRegionScenes,
+  createRegionScene,
   type RegionScene,
   type SceneLocation,
 } from "../../../services/api"
@@ -48,11 +51,41 @@ const [
   setNewLocationDescription,
 ] = useState("")
 
+const [availableScenes, setAvailableScenes] =
+  useState<RegionScene[]>([])
+
+const [
+  selectedTargetSceneId,
+  setSelectedTargetSceneId,
+] = useState<number | "new" | null>(null)
+
+  const [createNewScene, setCreateNewScene] =
+  useState(false)
+
+const [newSceneTitle, setNewSceneTitle] =
+  useState("")
+
+const [newSceneDescription, setNewSceneDescription] =
+  useState("")
+
   useEffect(() => {
-    getSceneLocations(currentScene.id)
-      .then(setLocations)
-      .catch(console.error)
-  }, [currentScene.id])
+  getSceneLocations(currentScene.id)
+    .then(setLocations)
+    .catch(console.error)
+}, [currentScene.id])
+
+useEffect(() => {
+  async function loadScenes() {
+    const scenes =
+      await getRegionScenes(
+        currentScene.lore_id
+      )
+
+    setAvailableScenes(scenes)
+  }
+
+  loadScenes()
+}, [currentScene.lore_id])
 
   useEffect(() => {
   const showTimer = setTimeout(() => {
@@ -143,6 +176,70 @@ function handleSceneClick(
     y
   )
 }
+
+async function handleSaveLocation() {
+  let targetSceneId: number | null = null
+
+if (selectedTargetSceneId === "new") {
+  if (!newSceneTitle.trim()) {
+    alert("Digite o título da nova cena.")
+    return
+  }
+
+  const newScene = await createRegionScene(
+    currentScene.lore_id,
+    {
+      title: newSceneTitle,
+      description: newSceneDescription,
+    }
+  )
+
+  targetSceneId = newScene.id
+
+  setAvailableScenes((prev) => [
+    ...prev,
+    newScene,
+  ])
+} else {
+  targetSceneId = selectedTargetSceneId
+}
+  if (!newLocationPos) return
+
+  if (!newLocationName.trim()) {
+    alert("Digite um nome para o hotspot.")
+    return
+  }
+
+  const created = await createSceneLocation(
+    currentScene.id,
+    {
+      name: newLocationName,
+      description: newLocationDescription,
+      pos_x: Math.round(newLocationPos.x),
+      pos_y: Math.round(newLocationPos.y),
+      target_scene_id:
+  targetSceneId,
+    }
+  )
+
+  setLocations((prev) => [
+    ...prev,
+    created,
+  ])
+
+  setNewLocationPos(null)
+setNewLocationName("")
+setNewLocationDescription("")
+
+setSelectedTargetSceneId(null)
+
+setCreateNewScene(false)
+setNewSceneTitle("")
+setNewSceneDescription("")
+
+setIsEditing(false)
+}
+
   return (
     <div
   className="fixed inset-0 z-[100] bg-black"
@@ -202,19 +299,20 @@ function handleSceneClick(
 {isEditing &&
  newLocationPos && (
   <div
-    className="
-      absolute
-      bottom-8
-      right-8
-      z-[120]
-      bg-[#12090b]
-      border
-      border-[#e0a96d]/30
-      rounded-2xl
-      p-4
-      w-[320px]
-    "
-  >
+  onClick={(e) => e.stopPropagation()}
+  className="
+    absolute
+    bottom-8
+    right-8
+    z-[120]
+    bg-[#12090b]
+    border
+    border-[#e0a96d]/30
+    rounded-2xl
+    p-4
+    w-[320px]
+  "
+>
     <h3 className="text-[#e0a96d] font-display mb-3">
       Novo Hotspot
     </h3>
@@ -258,6 +356,147 @@ function handleSceneClick(
         outline-none
       "
     />
+    <select
+  value={selectedTargetSceneId ?? ""}
+  onChange={(e) => {
+  if (e.target.value === "new") {
+    setSelectedTargetSceneId("new")
+    setCreateNewScene(true)
+    return
+  }
+
+  setCreateNewScene(false)
+
+  setSelectedTargetSceneId(
+    e.target.value
+      ? Number(e.target.value)
+      : null
+  )
+}}
+  className="
+    w-full
+    mt-3
+    bg-[#12090b]
+    border
+    border-[#e0a96d]/20
+    rounded-xl
+    p-3
+    text-sm
+    text-[#f2e9e4]
+    outline-none
+  "
+>
+  <option value="">
+    Nenhum destino
+  </option>
+  
+  {availableScenes
+    .filter((scene) => scene.id !== currentScene.id)
+    .map((scene) => (
+      <option
+        key={scene.id}
+        value={scene.id}
+        className="bg-[#12090b] text-[#f2e9e4]"
+      >
+        {scene.title}
+      </option>
+
+      
+    ))}
+
+  <option value="new">
+  ➕ Criar nova cena
+</option>
+</select>
+{createNewScene && (
+  <div className="mt-3 space-y-3">
+    <input
+      value={newSceneTitle}
+      onChange={(e) =>
+        setNewSceneTitle(e.target.value)
+      }
+      placeholder="Título da nova cena"
+      className="
+        w-full
+        bg-black/40
+        border
+        border-[#e0a96d]/20
+        rounded-xl
+        p-3
+        text-sm
+        text-[#f2e9e4]
+        outline-none
+      "
+    />
+
+    <textarea
+      value={newSceneDescription}
+      onChange={(e) =>
+        setNewSceneDescription(e.target.value)
+      }
+      placeholder="Descrição da nova cena"
+      className="
+        w-full
+        min-h-[80px]
+        bg-black/40
+        border
+        border-[#e0a96d]/20
+        rounded-xl
+        p-3
+        text-sm
+        text-[#f2e9e4]
+        outline-none
+      "
+    />
+  </div>
+)}
+    <div className="flex gap-2 mt-4">
+  <button
+  type="button"
+  onClick={(e) => {
+    e.stopPropagation()
+    void handleSaveLocation()
+  }}
+    className="
+      flex-1
+      bg-[#e0a96d]
+      text-black
+      py-2
+      rounded-xl
+      font-semibold
+    "
+  >
+    Salvar
+  </button>
+
+  <button
+  type="button"
+  onClick={(e) => {
+  e.stopPropagation()
+
+  setNewLocationPos(null)
+  setNewLocationName("")
+  setNewLocationDescription("")
+
+  setSelectedTargetSceneId(null)
+  setCreateNewScene(false)
+
+  setNewSceneTitle("")
+  setNewSceneDescription("")
+
+  setIsEditing(false)
+}}
+  className="
+    flex-1
+    bg-red-600
+    text-white
+    py-2
+    rounded-xl
+  "
+>
+  Cancelar
+</button>
+</div>
   </div>
 )}
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30" />
@@ -277,6 +516,7 @@ function handleSceneClick(
           className="
             group
             absolute
+            z-[80]
             -translate-x-1/2
             -translate-y-1/2
             flex
