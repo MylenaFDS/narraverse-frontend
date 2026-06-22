@@ -941,3 +941,56 @@ export async function createRegionScene(
 
   return res.data
 }
+
+export async function updateSceneLocation(
+  locationId: number,
+  data: {
+    name: string
+    description?: string | null
+    pos_x: number
+    pos_y: number
+    target_scene_id?: number | null
+  }
+) {
+  const response = await api.put(
+    `/scene-locations/${locationId}`,
+    data
+  )
+
+  return response.data
+}
+
+export async function deleteSceneLocation(
+  locationId: number
+) {
+  const response = await api.delete(
+    `/scene-locations/${locationId}`
+  )
+
+  return response.data
+}
+
+export async function uploadRegionSceneImage(
+  sceneId: number,
+  file: File
+) {
+  const formData = new FormData()
+
+  formData.append(
+    "file",
+    file
+  )
+
+  const response = await api.post(
+    `/region-scenes/${sceneId}/image`,
+    formData,
+    {
+      headers: {
+        "Content-Type":
+          "multipart/form-data",
+      },
+    }
+  )
+
+  return response.data
+}

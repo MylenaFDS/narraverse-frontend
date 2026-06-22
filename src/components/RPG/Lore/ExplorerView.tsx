@@ -6,6 +6,8 @@ import {
   createSceneLocation,
   getRegionScenes,
   createRegionScene,
+  updateSceneLocation,
+  uploadRegionSceneImage,
   type RegionScene,
   type SceneLocation,
 } from "../../../services/api"
@@ -67,6 +69,20 @@ const [newSceneTitle, setNewSceneTitle] =
 
 const [newSceneDescription, setNewSceneDescription] =
   useState("")
+
+const [
+  editingLocation,
+  setEditingLocation,
+] = useState<
+  SceneLocation | null
+>(null)
+
+const [
+  imageFile,
+  setImageFile,
+] = useState<File | null>(
+  null
+)
 
   useEffect(() => {
   getSceneLocations(currentScene.id)
@@ -180,64 +196,124 @@ function handleSceneClick(
 async function handleSaveLocation() {
   let targetSceneId: number | null = null
 
-if (selectedTargetSceneId === "new") {
-  if (!newSceneTitle.trim()) {
-    alert("Digite o título da nova cena.")
-    return
+  if (selectedTargetSceneId === "new") {
+    if (!newSceneTitle.trim()) {
+      alert("Digite o título da nova cena.")
+      return
+    }
+
+    const newScene =
+      await createRegionScene(
+        currentScene.lore_id,
+        {
+          title: newSceneTitle,
+          description:
+            newSceneDescription,
+        }
+      )
+
+    targetSceneId = newScene.id
+
+    setAvailableScenes((prev) => [
+      ...prev,
+      newScene,
+    ])
+  } else {
+    targetSceneId =
+      selectedTargetSceneId
   }
 
-  const newScene = await createRegionScene(
-    currentScene.lore_id,
-    {
-      title: newSceneTitle,
-      description: newSceneDescription,
-    }
-  )
-
-  targetSceneId = newScene.id
-
-  setAvailableScenes((prev) => [
-    ...prev,
-    newScene,
-  ])
-} else {
-  targetSceneId = selectedTargetSceneId
-}
   if (!newLocationPos) return
 
   if (!newLocationName.trim()) {
-    alert("Digite um nome para o hotspot.")
+    alert(
+      "Digite um nome para o hotspot."
+    )
     return
   }
 
-  const created = await createSceneLocation(
-    currentScene.id,
-    {
-      name: newLocationName,
-      description: newLocationDescription,
-      pos_x: Math.round(newLocationPos.x),
-      pos_y: Math.round(newLocationPos.y),
-      target_scene_id:
-  targetSceneId,
-    }
-  )
+  if (editingLocation) {
+    await updateSceneLocation(
+      editingLocation.id,
+      {
+        name: newLocationName,
+        description:
+          newLocationDescription,
+        pos_x: Math.round(
+          newLocationPos.x
+        ),
+        pos_y: Math.round(
+          newLocationPos.y
+        ),
+        target_scene_id:
+          targetSceneId,
+      }
+    )
+  } else {
+    await createSceneLocation(
+      currentScene.id,
+      {
+        name: newLocationName,
+        description:
+          newLocationDescription,
+        pos_x: Math.round(
+          newLocationPos.x
+        ),
+        pos_y: Math.round(
+          newLocationPos.y
+        ),
+        target_scene_id:
+          targetSceneId,
+      }
+    )
+  }
 
-  setLocations((prev) => [
-    ...prev,
-    created,
-  ])
+  const updatedLocations =
+    await getSceneLocations(
+      currentScene.id
+    )
+
+  setLocations(updatedLocations)
+
+  setEditingLocation(null)
 
   setNewLocationPos(null)
-setNewLocationName("")
-setNewLocationDescription("")
 
-setSelectedTargetSceneId(null)
+  setNewLocationName("")
 
-setCreateNewScene(false)
-setNewSceneTitle("")
-setNewSceneDescription("")
+  setNewLocationDescription("")
 
-setIsEditing(false)
+  setSelectedTargetSceneId(null)
+
+  setCreateNewScene(false)
+
+  setNewSceneTitle("")
+
+  setNewSceneDescription("")
+
+  setIsEditing(false)
+}
+
+async function handleUploadImage() {
+  if (!imageFile) return
+
+  try {
+    const updatedScene =
+      await uploadRegionSceneImage(
+        currentScene.id,
+        imageFile
+      )
+
+    setCurrentScene(updatedScene)
+
+    setImageFile(null)
+  } catch (err) {
+    console.error(err)
+
+    alert(
+      "Erro ao enviar imagem."
+    )
+  }
 }
 
   return (
@@ -266,9 +342,51 @@ setIsEditing(false)
           `}
         />
       ) : (
-        <div className="h-full flex items-center justify-center text-white">
-          Sem imagem
-        </div>
+        <div
+  className="
+    relative
+    z-[300]
+    h-full
+    flex
+    flex-col
+    items-center
+    justify-center
+    gap-4
+    text-white
+  "
+>
+  <p>
+    Esta cena ainda não possui
+    imagem
+  </p>
+
+  <input
+    type="file"
+    accept="image/*"
+    onChange={(e) =>
+      setImageFile(
+        e.target.files?.[0] ||
+          null
+      )
+    }
+  />
+
+  <button
+    onClick={handleUploadImage}
+    disabled={!imageFile}
+    className="
+      px-4
+      py-2
+      rounded-xl
+      bg-[#e0a96d]
+      text-black
+      font-semibold
+      disabled:opacity-50
+    "
+  >
+    Enviar imagem
+  </button>
+</div>
       )}
 {isEditing &&
  newLocationPos && (
@@ -506,9 +624,34 @@ setIsEditing(false)
           key={location.id}
           type="button"
           disabled={!location.target_scene_id}
-          onClick={() =>
-            handleLocationClick(location)
-          }
+          onClick={(e) => {
+  e.stopPropagation()
+
+  if (isEditing) {
+  setEditingLocation(location)
+
+  setNewLocationName(
+    location.name
+  )
+
+  setNewLocationDescription(
+    location.description || ""
+  )
+
+  setSelectedTargetSceneId(
+  location.target_scene_id ?? null
+)
+
+  setNewLocationPos({
+    x: location.pos_x,
+    y: location.pos_y,
+  })
+
+  return
+}
+
+  handleLocationClick(location)
+}}
           style={{
             left: `${location.pos_x}%`,
             top: `${location.pos_y}%`,
