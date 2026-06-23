@@ -84,6 +84,13 @@ const [
   null
 )
 
+const [
+  draggingLocation,
+  setDraggingLocation,
+] = useState<SceneLocation | null>(
+  null
+)
+
   useEffect(() => {
   getSceneLocations(currentScene.id)
     .then(setLocations)
@@ -316,11 +323,75 @@ async function handleUploadImage() {
   }
 }
 
+async function saveLocationPosition(
+  location: SceneLocation
+) {
+  await updateSceneLocation(
+    location.id,
+    {
+      name: location.name,
+      description:
+        location.description || "",
+      pos_x: location.pos_x,
+      pos_y: location.pos_y,
+      target_scene_id:
+        location.target_scene_id,
+    }
+  )
+}
   return (
     <div
   className="fixed inset-0 z-[100] bg-black"
   onClick={handleSceneClick}
-      onMouseMove={() => setShowUI(true)}
+      onMouseMove={(e) => {
+  setShowUI(true)
+
+  if (!draggingLocation) return
+
+  const rect =
+    e.currentTarget.getBoundingClientRect()
+
+  const x =
+    ((e.clientX - rect.left) /
+      rect.width) *
+    100
+
+  const y =
+    ((e.clientY - rect.top) /
+      rect.height) *
+    100
+
+  setLocations((prev) =>
+    prev.map((loc) =>
+      loc.id === draggingLocation.id
+        ? {
+            ...loc,
+            pos_x: Math.round(x),
+            pos_y: Math.round(y),
+          }
+        : loc
+    )
+  )
+}}
+
+onMouseUp={async () => {
+  if (draggingLocation) {
+    const location =
+      locations.find(
+        (l) =>
+          l.id ===
+          draggingLocation.id
+      )
+
+    if (location) {
+      await saveLocationPosition(
+        location
+      )
+    }
+  }
+
+  setDraggingLocation(null)
+}}
     >
       {imageUrl ? (
         <img
@@ -624,6 +695,13 @@ async function handleUploadImage() {
           key={location.id}
           type="button"
           disabled={!location.target_scene_id}
+          onMouseDown={(e) => {
+  if (!isEditing) return
+
+  e.stopPropagation()
+
+  setDraggingLocation(location)
+}}
           onClick={(e) => {
   e.stopPropagation()
 
