@@ -8,6 +8,7 @@ import {
   createRegionScene,
   updateSceneLocation,
   uploadRegionSceneImage,
+  generateHotspots,
   type RegionScene,
   type SceneLocation,
 } from "../../../services/api"
@@ -338,6 +339,47 @@ async function saveLocationPosition(
         location.target_scene_id,
     }
   )
+}
+
+async function handleGenerateHotspots() {
+  try {
+    const hotspots =
+      await generateHotspots(
+    currentScene.title,
+    currentScene.description ?? "",
+  )
+
+    for (const hotspot of hotspots) {
+      await createSceneLocation(
+        currentScene.id,
+        {
+  name: hotspot.name,
+  description: hotspot.description,
+  pos_x: Math.round(
+    Math.random() * 80 + 10
+  ),
+  pos_y: Math.round(
+    Math.random() * 80 + 10
+  ),
+  target_scene_id: null,
+}
+      )
+    }
+
+    const updated =
+      await getSceneLocations(
+        currentScene.id
+      )
+
+    setLocations(updated)
+
+  } catch (err) {
+    console.error(err)
+
+    alert(
+      "Erro ao gerar hotspots."
+    )
+  }
 }
   return (
     <div
@@ -941,6 +983,23 @@ onMouseUp={async () => {
   "
 >
   ✏️ Editar
+</button>
+<button
+  onClick={handleGenerateHotspots}
+  className="
+    absolute
+    top-6
+    right-56
+    bg-[#6d4cff]
+    border
+    border-white/20
+    px-4
+    py-2
+    rounded-full
+    text-white
+  "
+>
+  ✨ IA
 </button>
       <button
         onClick={onClose}

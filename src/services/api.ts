@@ -994,3 +994,18 @@ export async function uploadRegionSceneImage(
 
   return response.data
 }
+
+export async function generateHotspots(
+  sceneTitle: string,
+  sceneDescription: string,
+) {
+  const response = await api.post(
+    "/ai/generate-hotspots",
+    {
+      scene_title: sceneTitle,
+      scene_description: sceneDescription,
+    }
+  )
+
+  return response.data.response
+}
