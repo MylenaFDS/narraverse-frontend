@@ -3,6 +3,7 @@ import { useEffect, useState } from "react"
 
 import {
   getCharacters,
+  getNPCs,
   createCharacter,
   getCharacterSheet,
   saveCharacterSheet,
@@ -46,6 +47,7 @@ export default function RPGSheets({
   const navigate = useNavigate()
 
   const [characters, setCharacters] = useState<Character[]>([])
+  const [npcs, setNpcs] = useState<Character[]>([])
   const [sheetFields, setSheetFields] = useState<RPGSheetField[]>([])
   const [sheetData, setSheetData] = useState<Record<number, string>>({})
 
@@ -111,12 +113,14 @@ const otherCharacters =
       try {
         const [
   chars,
+  npcList,
   fields,
   rpg,
   lore,
   factionsData,
 ] = await Promise.all([
   getCharacters(rpgId),
+  getNPCs(rpgId),
   getSheetFields(rpgId),
   getRPG(rpgId),
   getLore(rpgId),
@@ -124,6 +128,7 @@ const otherCharacters =
 ])
 
         setCharacters(chars)
+        setNpcs(npcList)
         setSheetFields(fields)
         setWorldOptions(
   lore.filter(
@@ -1292,6 +1297,114 @@ pattern={field.field_type === "number" ? "[0-9]*" : undefined}
       </div>
     </div>
   </section>
+  <section>
+  <div className="flex items-center justify-between mb-3">
+    <h3 className="text-lg font-display text-[#e0a96d]">
+      NPCs
+    </h3>
+
+    <span className="text-xs text-[#c9ada7]/50">
+      {npcs.length}
+    </span>
+  </div>
+<div className="w-full max-w-full min-w-0 overflow-x-auto overflow-y-hidden pb-3">
+  <div className="flex gap-4 w-max">
+    {npcs.length === 0 ? (
+      <p className="text-sm text-[#c9ada7]/60">
+        Nenhum NPC cadastrado.
+      </p>
+    ) : (
+      npcs.map((npc) => (
+        <button
+          key={npc.id}
+          onClick={() => handleSelectCharacter(npc)}
+          className="
+            group
+            min-w-[220px]
+            max-w-[220px]
+            shrink-0
+            rounded-2xl
+            border
+            border-[#3a1f24]
+            bg-gradient-to-br
+            from-black/30
+            to-[#1a0f12]
+            p-4
+            text-left
+            hover:border-[#e0a96d]/50
+            hover:bg-[#2a1519]
+            transition-all
+            duration-300
+          "
+        >
+          <div className="flex items-center gap-3 mb-4">
+            <div
+              className="
+                w-12 h-12 rounded-full overflow-hidden
+                bg-gradient-to-br
+                from-[#e0a96d]
+                to-[#8b5e34]
+                flex items-center justify-center
+              "
+            >
+              {getCharacterImageUrl(npc.image_url) ? (
+                <img
+                  src={getCharacterImageUrl(npc.image_url)!}
+                  alt={npc.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                getInitial(npc.name)
+              )}
+            </div>
+
+            <div>
+              <div className="text-[#e0a96d] font-semibold">
+                {npc.name}
+              </div>
+
+              <div className="text-xs text-[#c9ada7]/60">
+                NPC
+              </div>
+            </div>
+          </div>
+
+          <div
+            className="
+              inline-flex
+              rounded-full
+              border
+              border-[#3a1f24]
+              px-2
+              py-1
+              text-[11px]
+            "
+          >
+            {getWorldTitle(npc.world_lore_id)}
+          </div>
+
+          <p className="text-xs mt-3 text-[#c9ada7]/70 line-clamp-3">
+            {getHistoryPreview(npc.history)}
+          </p>
+        </button>
+      ))
+    )}
+  </div>
+</div>
+  <div className="w-full overflow-x-auto">
+    <div className="flex gap-4 w-max">
+      {npcs.map((npc) => (
+        <button
+          key={npc.id}
+          onClick={() => handleSelectCharacter(npc)}
+          className="..."
+        >
+          ...
+        </button>
+      ))}
+    </div>
+  </div>
+</section>
 </div>
       </div>
     </div>

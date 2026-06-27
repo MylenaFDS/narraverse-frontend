@@ -20,6 +20,15 @@ export async function getCharacters(rpgId: number): Promise<Character[]> {
   if (!res.ok) throw new Error("Erro ao buscar personagens")
   return res.json()
 }
+export async function getNPCs(
+  rpgId: number
+): Promise<Character[]> {
+  const res = await api.get(
+    `/characters/${rpgId}/npcs`
+  )
+
+  return res.data
+}
 export async function getPublicRPGCharacters(
   rpgId: number
 ) {
