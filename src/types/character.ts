@@ -12,8 +12,12 @@ export type Character = {
   } | null
 
   image_url?: string | null
+
   user_id: number
   rpg_id: number
+
+  // NOVO
+  is_npc: boolean
 }
 
 export type RPGSheetField = {
@@ -26,6 +30,7 @@ export type CreateSheetFieldDTO = {
   name: string
   field_type: "text" | "number"
 }
+
 export type SheetValueInput = {
   field_id: number
   value: string
@@ -35,8 +40,13 @@ export type CharacterCreatePayload = {
   name: string
   history: string
   world_lore_id: number
+
   faction_id?: number | null
   image_url?: string
+
+  // NOVO
+  is_npc?: boolean
+
   sheet: SheetValueInput[]
 }
 

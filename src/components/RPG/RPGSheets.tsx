@@ -73,6 +73,7 @@ const [worldOptions, setWorldOptions] =
   const [editingFieldId, setEditingFieldId] = useState<number | null>(null)
   const [editingFieldName, setEditingFieldName] = useState("")
   const [isCreatingCharacter, setIsCreatingCharacter] = useState(false)
+  const [isCreatingNPC, setIsCreatingNPC] = useState(false)
   const [editCharacterName, setEditCharacterName] = useState("")
 const [editCharacterHistory, setEditCharacterHistory] = useState("")
 const [editCharacterWorldId, setEditCharacterWorldId] = useState<number | "">("")
@@ -251,10 +252,13 @@ setFactions(factionsData || [])
   name: newCharacterName,
   history: newCharacterHistory,
   world_lore_id: Number(newCharacterWorldId),
+
   faction_id:
     newCharacterFactionId === ""
       ? null
       : Number(newCharacterFactionId),
+
+  is_npc: isCreatingNPC,
 
   sheet: sheetFields.map((f) => ({
     field_id: f.id,
@@ -263,7 +267,8 @@ setFactions(factionsData || [])
 }
 
     const char = await createCharacter(rpgId, payload)
-    let finalChar = char
+
+let finalChar = char
 
 if (newCharacterImageFile) {
   finalChar = await uploadCharacterImage(
@@ -272,12 +277,24 @@ if (newCharacterImageFile) {
   )
 }
 
-    setCharacters((prev) => [...prev, finalChar])
-    setNewCharacterName("")
-    setNewCharacterHistory("")
+// Adiciona na lista correta
+if (isCreatingNPC) {
+  setNpcs((prev) => [...prev, finalChar])
+} else {
+  setCharacters((prev) => [...prev, finalChar])
+}
+
+// Limpa formulário
+setNewCharacterName("")
+setNewCharacterHistory("")
 setNewCharacterWorldId("")
+setNewCharacterFactionId("")
 setNewCharacterImageFile(null)
-    setSheetData({})
+
+setSheetData({})
+
+setIsCreatingCharacter(false)
+setIsCreatingNPC(false)
   }
 
   // ===============================
@@ -309,11 +326,19 @@ setNewCharacterImageFile(null)
 
   setSelectedCharacter(updated)
 
-  setCharacters((prev) =>
-    prev.map((char) =>
-      char.id === updated.id ? updated : char
+  if (updated.is_npc) {
+    setNpcs(prev =>
+        prev.map(npc =>
+            npc.id === updated.id ? updated : npc
+        )
     )
-  )
+} else {
+    setCharacters(prev =>
+        prev.map(char =>
+            char.id === updated.id ? updated : char
+        )
+    )
+}
 
   setEditCharacterImageFile(null)
 }
@@ -329,12 +354,15 @@ async function handleDeleteCharacter() {
 
   await deleteCharacter(selectedCharacter.id)
 
-  setCharacters((prev) =>
-    prev.filter(
-      (char) =>
-        char.id !== selectedCharacter.id
+  if (selectedCharacter.is_npc) {
+    setNpcs(prev =>
+        prev.filter(n => n.id !== selectedCharacter.id)
     )
-  )
+} else {
+    setCharacters(prev =>
+        prev.filter(c => c.id !== selectedCharacter.id)
+    )
+}
 
   setSelectedCharacter(null)
   setSheetData({})
@@ -905,6 +933,7 @@ pattern={field.field_type === "number" ? "[0-9]*" : undefined}
   type="button"
   onClick={() => {
     setIsCreatingCharacter(false)
+    setIsCreatingNPC(false)
     setSheetData({})
   }}
   className="
@@ -1057,6 +1086,63 @@ pattern={field.field_type === "number" ? "[0-9]*" : undefined}
     </p>
   </div>
 </button>
+{isOwner && (
+  <button
+    type="button"
+    onClick={() => {
+    setIsCreatingNPC(true)
+    setIsCreatingCharacter(true)
+  }}
+    className="
+      group
+      mx-auto
+      mt-6
+      flex
+      flex-col
+      items-center
+      justify-center
+      gap-4
+      w-[240px]
+      h-[280px]
+      rounded-3xl
+      border
+      border-dashed
+      border-[#7d4f50]
+      bg-gradient-to-br
+      from-[#1a0d10]
+      to-[#12080a]
+      hover:border-[#e0a96d]/70
+      transition-all
+    "
+  >
+    <div
+      className="
+        w-20
+        h-20
+        rounded-full
+        border
+        border-[#e0a96d]/40
+        flex
+        items-center
+        justify-center
+        text-5xl
+        text-[#e0a96d]
+      "
+    >
+      ★
+    </div>
+
+    <div className="text-center">
+      <h3 className="text-xl font-display text-[#e0a96d]">
+        Novo NPC
+      </h3>
+
+      <p className="text-sm text-[#c9ada7]/60">
+        Criar personagem controlado pelo mestre.
+      </p>
+    </div>
+  </button>
+)}
             </div>
           )}
                </div>
@@ -1307,101 +1393,105 @@ pattern={field.field_type === "number" ? "[0-9]*" : undefined}
       {npcs.length}
     </span>
   </div>
-<div className="w-full max-w-full min-w-0 overflow-x-auto overflow-y-hidden pb-3">
-  <div className="flex gap-4 w-max">
-    {npcs.length === 0 ? (
-      <p className="text-sm text-[#c9ada7]/60">
-        Nenhum NPC cadastrado.
-      </p>
-    ) : (
-      npcs.map((npc) => (
-        <button
-          key={npc.id}
-          onClick={() => handleSelectCharacter(npc)}
-          className="
-            group
-            min-w-[220px]
-            max-w-[220px]
-            shrink-0
-            rounded-2xl
-            border
-            border-[#3a1f24]
-            bg-gradient-to-br
-            from-black/30
-            to-[#1a0f12]
-            p-4
-            text-left
-            hover:border-[#e0a96d]/50
-            hover:bg-[#2a1519]
-            transition-all
-            duration-300
-          "
-        >
-          <div className="flex items-center gap-3 mb-4">
-            <div
-              className="
-                w-12 h-12 rounded-full overflow-hidden
-                bg-gradient-to-br
-                from-[#e0a96d]
-                to-[#8b5e34]
-                flex items-center justify-center
-              "
-            >
-              {getCharacterImageUrl(npc.image_url) ? (
-                <img
-                  src={getCharacterImageUrl(npc.image_url)!}
-                  alt={npc.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                getInitial(npc.name)
-              )}
-            </div>
 
-            <div>
-              <div className="text-[#e0a96d] font-semibold">
-                {npc.name}
-              </div>
-
-              <div className="text-xs text-[#c9ada7]/60">
-                NPC
-              </div>
-            </div>
-          </div>
-
-          <div
+  <div className="w-full max-w-full min-w-0 overflow-x-auto overflow-y-hidden pb-3">
+    <div className="flex gap-4 w-max">
+      {npcs.length === 0 ? (
+        <p className="text-sm text-[#c9ada7]/60">
+          Nenhum NPC cadastrado.
+        </p>
+      ) : (
+        npcs.map((npc) => (
+          <button
+            key={npc.id}
+            onClick={() => handleSelectCharacter(npc)}
             className="
-              inline-flex
-              rounded-full
+              group
+              min-w-[220px]
+              max-w-[220px]
+              shrink-0
+              rounded-2xl
               border
               border-[#3a1f24]
-              px-2
-              py-1
-              text-[11px]
+              bg-gradient-to-br
+              from-black/30
+              to-[#1a0f12]
+              p-4
+              text-left
+              hover:border-[#e0a96d]/50
+              hover:bg-[#2a1519]
+              transition-all
+              duration-300
             "
           >
-            {getWorldTitle(npc.world_lore_id)}
-          </div>
+            <div className="flex items-center gap-3 mb-4">
+              <div
+                className="
+                  w-12
+                  h-12
+                  rounded-full
+                  overflow-hidden
+                  bg-gradient-to-br
+                  from-[#e0a96d]
+                  to-[#8b5e34]
+                  flex
+                  items-center
+                  justify-center
+                  shrink-0
+                "
+              >
+                {getCharacterImageUrl(npc.image_url) ? (
+                  <img
+                    src={getCharacterImageUrl(npc.image_url)!}
+                    alt={npc.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  getInitial(npc.name)
+                )}
+              </div>
 
-          <p className="text-xs mt-3 text-[#c9ada7]/70 line-clamp-3">
-            {getHistoryPreview(npc.history)}
-          </p>
-        </button>
-      ))
-    )}
-  </div>
-</div>
-  <div className="w-full overflow-x-auto">
-    <div className="flex gap-4 w-max">
-      {npcs.map((npc) => (
-        <button
-          key={npc.id}
-          onClick={() => handleSelectCharacter(npc)}
-          className="..."
-        >
-          ...
-        </button>
-      ))}
+              <div className="min-w-0">
+                <div className="text-[#e0a96d] font-semibold truncate">
+                  {npc.name}
+                </div>
+
+                <div className="text-[11px] text-[#c9ada7]/60">
+                  NPC
+                </div>
+              </div>
+            </div>
+
+            <div
+              className="
+                inline-flex
+                max-w-full
+                rounded-full
+                border
+                border-[#3a1f24]
+                bg-black/25
+                px-2
+                py-1
+                text-[11px]
+                text-[#c9ada7]/70
+                mb-3
+              "
+            >
+              <span className="truncate">
+                {getWorldTitle(npc.world_lore_id)}
+              </span>
+            </div>
+
+            <p className="text-xs text-[#c9ada7]/65 leading-relaxed line-clamp-3">
+              {getHistoryPreview(npc.history)}
+            </p>
+
+            <div className="mt-4 text-[11px] text-[#e0a96d]/70 opacity-0 group-hover:opacity-100 transition">
+              Ver ficha →
+            </div>
+          </button>
+        ))
+      )}
     </div>
   </div>
 </section>
