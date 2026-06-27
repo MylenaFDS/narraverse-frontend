@@ -568,7 +568,11 @@ const isCharacterOwner =
         setEditCharacterName(e.target.value)
       }
       className="rpg-input"
-      placeholder="Nome do personagem"
+      placeholder={
+  isCreatingNPC
+    ? "Nome do NPC"
+    : "Nome do personagem"
+}
     />
 
     <select
@@ -801,7 +805,7 @@ pattern={field.field_type === "number" ? "[0-9]*" : undefined}
   // ===============================
   <>
               <h2 className="text-xl font-display text-[#e0a96d]">
-                Criar personagem
+                {isCreatingNPC ? "Criar NPC" : "Criar personagem"}
               </h2>
 
               <input
@@ -883,7 +887,11 @@ pattern={field.field_type === "number" ? "[0-9]*" : undefined}
 </label>
 
 <textarea
-  placeholder="Conte a história do personagem..."
+  placeholder={
+  isCreatingNPC
+    ? "Conte a história do NPC..."
+    : "Conte a história do personagem..."
+}
   value={newCharacterHistory}
   onChange={(e) =>
     setNewCharacterHistory(e.target.value)
@@ -927,7 +935,7 @@ pattern={field.field_type === "number" ? "[0-9]*" : undefined}
                 onClick={handleCreateCharacter}
                 className="rpg-btn w-full mt-3"
               >
-                Criar personagem
+                {isCreatingNPC ? "Criar NPC" : "Criar personagem"}
               </button>
               <button
   type="button"
