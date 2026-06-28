@@ -1009,3 +1009,13 @@ export async function generateHotspots(
 
   return response.data.response
 }
+
+export async function generateNPCWithAI(
+  rpgId: number
+) {
+  const res = await api.post(
+    `/characters/${rpgId}/generate-npc`
+  )
+
+  return res.data
+}

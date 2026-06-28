@@ -20,6 +20,7 @@ import {
   getLore,
   deleteSheetField,
   getFactions,
+  generateNPCWithAI,
   type RPGFaction,
 } from "../../services/api"
 
@@ -74,6 +75,8 @@ const [worldOptions, setWorldOptions] =
   const [editingFieldName, setEditingFieldName] = useState("")
   const [isCreatingCharacter, setIsCreatingCharacter] = useState(false)
   const [isCreatingNPC, setIsCreatingNPC] = useState(false)
+  const [isGeneratingNPC, setIsGeneratingNPC] =
+  useState(false)
   const [editCharacterName, setEditCharacterName] = useState("")
 const [editCharacterHistory, setEditCharacterHistory] = useState("")
 const [editCharacterWorldId, setEditCharacterWorldId] = useState<number | "">("")
@@ -425,6 +428,43 @@ function handleSheetChange(
     ...prev,
     [field.id]: finalValue,
   }))
+}
+
+async function handleGenerateNPC() {
+  setIsGeneratingNPC(true)
+
+  try {
+    const npc = await generateNPCWithAI(rpgId)
+
+    setNewCharacterName(npc.name)
+    setNewCharacterHistory(npc.history)
+
+    if (npc.world_lore_id) {
+      setNewCharacterWorldId(npc.world_lore_id)
+    }
+
+    if (npc.faction_id) {
+      setNewCharacterFactionId(npc.faction_id)
+    }
+
+    // NOVO
+    if (npc.sheet) {
+      const values: Record<number, string> = {}
+
+      sheetFields.forEach((field) => {
+        const value = npc.sheet[field.name]
+
+        if (value !== undefined) {
+          values[field.id] = String(value)
+        }
+      })
+
+      setSheetData(values)
+    }
+
+  } finally {
+    setIsGeneratingNPC(false)
+  }
 }
 const isCharacterOwner =
   selectedCharacter?.user_id === loggedUserId
@@ -888,55 +928,92 @@ pattern={field.field_type === "number" ? "[0-9]*" : undefined}
 
 <textarea
   placeholder={
-  isCreatingNPC
-    ? "Conte a história do NPC..."
-    : "Conte a história do personagem..."
-}
+    isCreatingNPC
+      ? "Conte a história do NPC..."
+      : "Conte a história do personagem..."
+  }
   value={newCharacterHistory}
   onChange={(e) =>
     setNewCharacterHistory(e.target.value)
   }
   className="rpg-input w-full mb-3 min-h-[120px] resize-y"
 />
-              {sheetFields.map((field) => (
-                <div key={field.id} className="mb-2">
-                  <label>{field.name}</label>
 
-                  <input
-                    type="text"
-inputMode={field.field_type === "number" ? "numeric" : "text"}
-pattern={field.field_type === "number" ? "[0-9]*" : undefined}
-                    value={sheetData[field.id] || ""}
-                    onChange={(e) =>
-  handleSheetChange(field, e.target.value)
-}
-                    className="
-  w-full
-  rounded-xl
-  border
-  border-[#4a2329]
-  bg-[#12080a]/80
-  px-4
-  py-3
-  text-[#f5d7b2]
-  placeholder:text-[#c9ada7]/25
-  outline-none
-  transition-all
-  duration-300
-  focus:border-[#e0a96d]
-  focus:bg-black/40
-  focus:shadow-[0_0_12px_rgba(224,169,109,0.15)]
-"
-                  />
-                </div>
-              ))}
+{isCreatingNPC && (
+  <button
+    type="button"
+    onClick={handleGenerateNPC}
+    disabled={isGeneratingNPC}
+    className="
+      rpg-btn
+      w-full
+      mb-4
+      bg-gradient-to-r
+      from-purple-900
+      to-indigo-900
+      hover:from-purple-800
+      hover:to-indigo-800
+      disabled:opacity-50
+    "
+  >
+    {isGeneratingNPC
+      ? "Gerando NPC..."
+      : "✨ Gerar NPC com IA"}
+  </button>
+)}
 
-              <button
-                onClick={handleCreateCharacter}
-                className="rpg-btn w-full mt-3"
-              >
-                {isCreatingNPC ? "Criar NPC" : "Criar personagem"}
-              </button>
+{sheetFields.map((field) => (
+  <div key={field.id} className="mb-2">
+    <label>{field.name}</label>
+
+    <input
+      type="text"
+      inputMode={
+        field.field_type === "number"
+          ? "numeric"
+          : "text"
+      }
+      pattern={
+        field.field_type === "number"
+          ? "[0-9]*"
+          : undefined
+      }
+      value={sheetData[field.id] || ""}
+      onChange={(e) =>
+        handleSheetChange(
+          field,
+          e.target.value
+        )
+      }
+      className="
+        w-full
+        rounded-xl
+        border
+        border-[#4a2329]
+        bg-[#12080a]/80
+        px-4
+        py-3
+        text-[#f5d7b2]
+        placeholder:text-[#c9ada7]/25
+        outline-none
+        transition-all
+        duration-300
+        focus:border-[#e0a96d]
+        focus:bg-black/40
+        focus:shadow-[0_0_12px_rgba(224,169,109,0.15)]
+      "
+    />
+  </div>
+))}
+
+<button
+  onClick={handleCreateCharacter}
+  className="rpg-btn w-full mt-3"
+>
+  {isCreatingNPC
+    ? "Criar NPC"
+    : "Criar personagem"}
+</button>
               <button
   type="button"
   onClick={() => {
