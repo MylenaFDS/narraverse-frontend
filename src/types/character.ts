@@ -1,3 +1,7 @@
+import type {
+  InventoryItem,
+} from "../engine/inventory/InventoryTypes"
+
 export interface RPGSheetField {
   id: number
 
@@ -33,6 +37,8 @@ export type Character = {
   } | null
 
   image_url?: string | null
+  
+  inventory?: InventoryItem[]
 
   user_id: number
 

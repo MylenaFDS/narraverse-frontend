@@ -53,14 +53,14 @@ export class CombatEngine {
       WeatherEngine.current(context)
 
     const attackerEquipment =
-      EquipmentEngine.get(
-        combat.attacker.character.id,
-      )
+  EquipmentEngine.get(
+    combat.attacker.character.inventory ?? [],
+  )
 
-    const defenderEquipment =
-      EquipmentEngine.get(
-        combat.defender.character.id,
-      )
+const defenderEquipment =
+  EquipmentEngine.get(
+    combat.defender.character.inventory ?? [],
+  )
 
     const attack =
       (

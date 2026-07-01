@@ -1,12 +1,16 @@
 import { InventoryEngine } from "../inventory/InventoryEngine"
 
-import type { InventoryItem } from "../inventory/InventoryTypes"
+import type {
+  InventoryItem,
+} from "../inventory/InventoryTypes"
 
 export interface EquipmentStats {
 
   weapon: string
 
   armor: string
+
+  equipped: InventoryItem[]
 
   attackBonus: number
 
@@ -16,6 +20,8 @@ export interface EquipmentStats {
 
   movementBonus: number
 
+  modifiers: Record<string, number>
+
 }
 
 export class EquipmentEngine {
@@ -23,6 +29,11 @@ export class EquipmentEngine {
   static get(
     inventory: InventoryItem[],
   ): EquipmentStats {
+
+    const equipped =
+      InventoryEngine.getEquipped(
+        inventory,
+      )
 
     const weapon =
       InventoryEngine.getWeapon(
@@ -34,6 +45,27 @@ export class EquipmentEngine {
         inventory,
       )
 
+    const modifiers: Record<
+      string,
+      number
+    > = {}
+
+    for (const item of equipped) {
+
+      if (!item.modifiers) continue
+
+      for (const [key, value] of Object.entries(
+        item.modifiers,
+      )) {
+
+        modifiers[key] =
+          (modifiers[key] ?? 0) +
+          Number(value)
+
+      }
+
+    }
+
     return {
 
       weapon:
@@ -44,23 +76,36 @@ export class EquipmentEngine {
         armor?.name ??
         "Sem armadura",
 
+      equipped,
+
       attackBonus:
-        weapon?.modifiers?.attack ??
-        0,
+        modifiers.attack ?? 0,
 
       defenseBonus:
-        armor?.modifiers?.defense ??
-        0,
+        modifiers.defense ?? 0,
 
       criticalBonus:
-        weapon?.modifiers?.critical ??
-        0,
+        modifiers.critical ?? 0,
 
       movementBonus:
-        armor?.modifiers?.movement ??
-        0,
+        modifiers.movement ?? 0,
+
+      modifiers,
 
     }
+
+  }
+
+  static getModifier(
+    stats: EquipmentStats,
+    modifier: string,
+  ): number {
+
+    return (
+      stats.modifiers[
+        modifier
+      ] ?? 0
+    )
 
   }
 
