@@ -17,7 +17,7 @@ export class TerrainEngine {
   ): TerrainData {
 
     const terrain =
-      context.scene?.terrain?.toLowerCase()
+      context.currentScene?.terrain?.toLowerCase()
 
     switch (terrain) {
 

@@ -17,7 +17,7 @@ export class WeatherEngine {
   ): WeatherData {
 
     const weather =
-      context.scene?.weather?.toLowerCase()
+      context.currentScene?.weather?.toLowerCase()
 
     switch (weather) {
 
