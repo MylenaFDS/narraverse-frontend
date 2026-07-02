@@ -22,4 +22,12 @@ export interface BrainProfile {
 
   memories: string[]
 
+  // ======================
+  // NOVO
+  // ======================
+
+  currentGoal?: Goal | null
+
+  currentEmotion?: string
+
 }

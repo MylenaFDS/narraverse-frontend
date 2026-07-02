@@ -1,5 +1,10 @@
 import type { Decision } from "./WorldDecisionEngine"
+
 import { MemoryEngine } from "./MemoryEngine"
+
+import type { AIContext } from "./brain/AIContext"
+
+import type { PerceptionResult } from "./brain/PerceptionTypes"
 
 export interface NarrativeContext {
 
@@ -12,6 +17,17 @@ export interface NarrativeContext {
   action: string
 
   result?: string
+
+}
+
+export interface NarrativeComposeInput {
+
+  decision: Decision
+
+  context: AIContext
+
+  perception: PerceptionResult
+
 }
 
 export class NarrativeEngine {
@@ -48,9 +64,13 @@ export class NarrativeEngine {
 
       default:
 
-        return context.result ??
+        return (
+          context.result ??
           "Algo aconteceu."
+        )
+
     }
+
   }
 
   static summarizeTurn(
@@ -58,6 +78,7 @@ export class NarrativeEngine {
   ) {
 
     return texts.join("\n")
+
   }
 
   static summarizeRecentEvents() {
@@ -65,10 +86,15 @@ export class NarrativeEngine {
     const memories =
       MemoryEngine.getRecent(10)
 
-    return memories.map(
-      memory =>
-        `• ${memory.title}`
-    ).join("\n")
+    return memories
+      .map(
+
+        memory =>
+          `• ${memory.title}`,
+
+      )
+      .join("\n")
+
   }
 
   static explainDecision(
@@ -76,6 +102,142 @@ export class NarrativeEngine {
   ) {
 
     return decision.reason
+
+  }
+
+  // =====================================================
+  // NOVO
+  // =====================================================
+
+  static compose(
+
+    input: NarrativeComposeInput,
+
+  ): string {
+
+    const {
+
+      decision,
+
+      context,
+
+      perception,
+
+    } = input
+
+    const profile =
+      context.profile
+
+    const self =
+      context.self
+
+    const visibleCharacters =
+      perception.visibleCharacters
+        .map(
+
+          id =>
+
+            context.nearbyCharacters.find(
+
+              c => c.id === id,
+
+            )?.name,
+
+        )
+        .filter(Boolean)
+        .join(", ")
+
+    const visibleNPCs =
+      perception.visibleNPCs
+        .map(
+
+          id =>
+
+            context.nearbyNPCs.find(
+
+              npc => npc.id === id,
+
+            )?.name,
+
+        )
+        .filter(Boolean)
+        .join(", ")
+
+    const memories =
+      MemoryEngine
+        .getRecent(5)
+        .map(
+
+          memory =>
+            `• ${memory.title}`,
+
+        )
+        .join("\n")
+
+    return `
+
+Você interpreta ${self.name}.
+
+==========================
+PERSONALIDADE
+==========================
+
+${profile.personality}
+
+==========================
+OBJETIVOS
+==========================
+
+${profile.currentGoal?.title ?? "Sem objetivo"}
+
+==========================
+ESTADO EMOCIONAL
+==========================
+
+${profile.currentEmotion}
+
+==========================
+O QUE VOCÊ VÊ
+==========================
+
+Personagens:
+${visibleCharacters || "Ninguém"}
+
+NPCs:
+${visibleNPCs || "Nenhum"}
+
+==========================
+MEMÓRIAS IMPORTANTES
+==========================
+
+${memories || "Nenhuma"}
+
+==========================
+DECISÃO TOMADA
+==========================
+
+${decision.action}
+
+Motivo:
+
+${decision.reason}
+
+==========================
+INSTRUÇÕES
+==========================
+
+Escreva um turno em primeira pessoa.
+
+Mantenha coerência com a personalidade.
+
+Não invente personagens que não estejam visíveis.
+
+Não utilize informações que o personagem não poderia conhecer.
+
+Escreva apenas o turno.
+
+`.trim()
+
   }
 
 }

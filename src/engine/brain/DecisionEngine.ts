@@ -1,76 +1,93 @@
 import type { BrainProfile } from "./BrainProfile"
 import type { Decision } from "./DecisionTypes"
 
+import { UtilityEngine } from "./UtilityEngine"
+
 export class DecisionEngine {
 
   static decide(
+
     profile: BrainProfile,
+
+    goal: string | null,
+
+    emotion: string,
+
   ): Decision {
 
-    const goal = profile.goals
-      .filter(g => !g.completed)
-      .sort(
-        (a, b) =>
-          b.priority - a.priority,
-      )[0]
+    const utilities =
+      UtilityEngine.evaluate(
+        profile,
+      )
 
-    if (!goal) {
+    const best =
+      utilities[0]
 
-      return {
+    let probability = Math.min(
+      100,
+      best.score,
+    )
 
-        action: "idle",
+    // ==========================
+    // Influência emocional
+    // ==========================
 
-        probability: 100,
-
-        reason:
-          "Nenhum objetivo ativo.",
-
-      }
-
-    }
-
-    if (
-      profile.emotions.fear > 80
+    switch (
+      emotion.toLowerCase()
     ) {
 
-      return {
+      case "raiva":
 
-        action: "flee",
+        probability += 10
+        break
 
-        probability: 95,
+      case "medo":
 
-        reason:
-          "Medo extremamente elevado.",
+        probability -= 15
+        break
 
-      }
+      case "tristeza":
 
-    }
+        probability -= 5
+        break
 
-    if (
-      profile.emotions.anger > 80
-    ) {
+      case "confiança":
 
-      return {
+        probability += 5
+        break
 
-        action: "attack",
+      case "felicidade":
 
-        probability: 90,
-
-        reason:
-          "Raiva muito elevada.",
-
-      }
+        probability += 3
+        break
 
     }
+
+    probability = Math.max(
+      5,
+      Math.min(
+        100,
+        probability,
+      ),
+    )
 
     return {
 
-      action: "advance_goal",
+      action: best.action,
 
-      probability: 85,
+      probability,
 
-      reason:
-        goal.title,
+      reason: [
+
+        ...(goal
+          ? [`Objetivo: ${goal}`]
+          : []),
+
+        `Emoção: ${emotion}`,
+
+        ...best.reasons,
+
+      ].join(", "),
 
     }
 
