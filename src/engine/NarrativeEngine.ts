@@ -1,4 +1,4 @@
-import type { Decision } from "./DecisionEngine"
+import type { Decision } from "./WorldDecisionEngine"
 import { MemoryEngine } from "./MemoryEngine"
 
 export interface NarrativeContext {

@@ -2,7 +2,7 @@ import type { WorldContext } from "./ContextEngine"
 
 import { RuleEngine } from "./RuleEngine"
 import { MemoryEngine } from "./MemoryEngine"
-import { DecisionEngine } from "./DecisionEngine"
+import { DecisionEngine } from "./WorldDecisionEngine"
 import { ActionEngine } from "./ActionEngine"
 import { WorldStateEngine } from "./WorldStateEngine"
 import { EventEngine } from "./EventEngine"

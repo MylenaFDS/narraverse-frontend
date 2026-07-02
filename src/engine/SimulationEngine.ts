@@ -1,7 +1,7 @@
 import type { WorldContext } from "./ContextEngine"
 
 import { RuleEngine } from "./RuleEngine"
-import { DecisionEngine } from "./DecisionEngine"
+import { DecisionEngine } from "./WorldDecisionEngine"
 import { NarrativeEngine } from "./NarrativeEngine"
 
 export interface SimulationResult {
