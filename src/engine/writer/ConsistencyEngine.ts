@@ -1,8 +1,6 @@
 import type { BrainProfile } from "../brain/BrainProfile"
 
-import type { ActionSequence }
-
-from "../brain/ActionSequence"
+import type { ConsistencyIssue } from "./ConsistencyIssue"
 
 import type { ConsistencyResult }
 
@@ -14,21 +12,16 @@ export class ConsistencyEngine {
 
     profile: BrainProfile,
 
-    actions: ActionSequence,
 
   ): ConsistencyResult {
 
-    const issues = []
+    const issues: ConsistencyIssue[] = []
 
     // =======================
     // Personagem vivo?
     // =======================
 
-    if (
-
-      profile.character.health <= 0
-
-    ) {
+    {
 
       issues.push({
 

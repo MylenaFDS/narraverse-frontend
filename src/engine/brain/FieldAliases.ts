@@ -41,5 +41,24 @@ export const FieldAliases = {
     "preso",
 
   ],
+  
+  sanity: [
 
+  "sanidade",
+
+  "mental",
+
+  "sanity",
+
+],
+
+stamina: [
+
+  "vigor",
+
+  "energia",
+
+  "stamina",
+
+],
 }
