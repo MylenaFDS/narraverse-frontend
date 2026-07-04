@@ -12,4 +12,8 @@ export interface Relationship {
 
   rivalry: number
 
+  authority: number
+
+  history: string[]
+
 }

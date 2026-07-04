@@ -1,5 +1,6 @@
 import type { BrainProfile } from "./BrainProfile"
-import type { UtilityScore } from "./UtilityTypes"
+
+import type { UtilityScore } from "./UtilityScore"
 
 export class UtilityEngine {
 
@@ -9,37 +10,115 @@ export class UtilityEngine {
 
   ): UtilityScore[] {
 
-    const actions: UtilityScore[] = []
+    const scores: UtilityScore[] = []
 
-    actions.push({
+    const goal =
 
-      action: "attack",
+      profile.goals
+
+        .filter(
+
+          g => !g.completed,
+
+        )
+
+        .sort(
+
+          (a, b) =>
+
+            b.priority - a.priority,
+
+        )[0]
+
+    if (!goal) {
+
+      return []
+
+    }
+
+    // -------------------------
+    // Explorar
+    // -------------------------
+
+    scores.push({
+
+      action: "explore",
 
       score:
 
-        profile.emotions.anger +
-
-        profile.personality.courage,
+        profile.personality.curiosity,
 
       reasons: [
 
-        "Raiva",
-
-        "Coragem",
+        "Curiosidade",
 
       ],
 
     })
 
-    actions.push({
+    // -------------------------
+    // Conversar
+    // -------------------------
 
-      action: "flee",
+    scores.push({
+
+      action: "talk",
 
       score:
 
-        profile.emotions.fear -
+        profile.personality.empathy +
 
-        profile.personality.courage,
+        profile.personality.loyalty,
+
+      reasons: [
+
+        "Empatia",
+
+        "Lealdade",
+
+      ],
+
+    })
+
+    // -------------------------
+    // Atacar
+    // -------------------------
+
+    scores.push({
+
+      action: "attack",
+
+      score:
+
+        profile.personality.courage +
+
+        profile.personality.ambition -
+
+        profile.personality.empathy,
+
+      reasons: [
+
+        "Coragem",
+
+        "Ambição",
+
+      ],
+
+    })
+
+    // -------------------------
+    // Fugir
+    // -------------------------
+
+    scores.push({
+
+      action: "retreat",
+
+      score:
+
+        profile.emotions.fear *
+
+        1.5,
 
       reasons: [
 
@@ -49,27 +128,33 @@ export class UtilityEngine {
 
     })
 
-    actions.push({
+    // -------------------------
+    // Defender
+    // -------------------------
 
-      action: "talk",
+    scores.push({
+
+      action: "defend",
 
       score:
 
-        profile.personality.empathy +
+        profile.personality.loyalty +
 
-        profile.emotions.trust,
+        profile.personality.honor,
 
       reasons: [
 
-        "Empatia",
+        "Honra",
 
-        "Confiança",
+        "Lealdade",
 
       ],
 
     })
 
-    return actions.sort(
+    // -------------------------
+
+    return scores.sort(
 
       (a, b) =>
 

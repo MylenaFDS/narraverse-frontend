@@ -4,9 +4,14 @@ import type { WorldContext } from "../ContextEngine"
 import { PersonalityEngine } from "./PersonalityEngine"
 import { EmotionEngine } from "./EmotionEngine"
 import { GoalEngine } from "./GoalEngine"
+import { StrategyEngine } from "./StrategyEngine"
 import { DecisionEngine } from "./DecisionEngine"
 import { PlanningEngine } from "./PlanningEngine"
 import { PredictionEngine } from "./PredictionEngine"
+import { MemoryReasoningEngine } from "./MemoryReasoningEngine"
+import { TacticalEngine } from "./TacticalEngine"
+import { ActionGeneratorEngine } from "./ActionGeneratorEngine"
+import { NarrativeContextEngine } from "./NarrativeContextEngine"
 
 import type { BrainProfile } from "./BrainProfile"
 
@@ -41,12 +46,30 @@ export class BrainEngine {
       )
 
     // ==========================
+    // Memórias relevantes
+    // ==========================
+
+    const memory =
+      MemoryReasoningEngine.analyze(
+        profile,
+      )
+
+    // ==========================
     // Objetivo principal
     // ==========================
 
     const goal =
       GoalEngine.current(
         profile.goals,
+      )
+
+    // ==========================
+    // Estratégia
+    // ==========================
+
+    const strategy =
+      StrategyEngine.create(
+        profile,
       )
 
     // ==========================
@@ -57,8 +80,30 @@ export class BrainEngine {
       goal
         ? PlanningEngine.create(
             goal,
+            strategy,
           )
         : null
+
+    // ==========================
+    // Situação tática
+    // ==========================
+
+    const tactical =
+      TacticalEngine.decide({
+
+        health: 100,
+
+        alliesNearby: 1,
+
+        enemiesNearby: 1,
+
+        hasCover: false,
+
+        distanceToTarget: 5,
+
+        isCornered: false,
+
+      })
 
     // ==========================
     // Decisão
@@ -76,12 +121,46 @@ export class BrainEngine {
       )
 
     // ==========================
+    // Sequência de ações
+    // ==========================
+
+    const actionSequence =
+      ActionGeneratorEngine.generate(
+        decision,
+      )
+
+    // ==========================
     // Previsão
     // ==========================
 
     const prediction =
       PredictionEngine.predict(
         decision,
+      )
+
+    // ==========================
+    // Contexto narrativo
+    // ==========================
+
+    const narrativeContext =
+      NarrativeContextEngine.create(
+
+        profile,
+
+        {
+
+          goal,
+
+          strategy,
+
+          tactical,
+
+          decision,
+
+          plan,
+
+        },
+
       )
 
     return {
@@ -94,13 +173,23 @@ export class BrainEngine {
 
       emotion,
 
+      memory,
+
       goal,
+
+      strategy,
 
       plan,
 
+      tactical,
+
       decision,
 
+      actionSequence,
+
       prediction,
+
+      narrativeContext,
 
     }
 
