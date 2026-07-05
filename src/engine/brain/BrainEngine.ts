@@ -16,6 +16,7 @@ import { TacticalEngine } from "./TacticalEngine"
 import { ActionGeneratorEngine } from "./ActionGeneratorEngine"
 import { NarrativeContextEngine } from "./NarrativeContextEngine"
 import { CharacterSheetAdapter } from "./CharacterSheetAdapter"
+import { ReasoningEngine } from "./ReasoningEngine"
 
 import type { BrainProfile } from "./BrainProfile"
 
@@ -107,6 +108,8 @@ export class BrainEngine {
 
       )
 
+      
+
     // ==========================
     // Objetivo
     // ==========================
@@ -132,6 +135,27 @@ export class BrainEngine {
         inventory,
 
       )
+
+    // ==========================
+// Raciocínio
+// ==========================
+
+const reasoning =
+  ReasoningEngine.think(
+
+    goal,
+
+    strategy,
+
+    state,
+
+    world,
+
+    inventory,
+
+    risk,
+
+  )
 
     // ==========================
     // Planejamento
@@ -254,6 +278,8 @@ export class BrainEngine {
       state,
 
       risk,
+
+      reasoning,
 
       goal,
 
