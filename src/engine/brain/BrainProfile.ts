@@ -10,6 +10,7 @@ import type { Desire } from "./DesireTypes"
 import type { Fear } from "./FearTypes"
 import type { Trust } from "./TrustTypes"
 import type { Reputation } from "./ReputationTypes"
+import type { InventoryItem } from "./InventoryTypes"
 
 export interface BrainProfile {
 
@@ -52,7 +53,8 @@ export interface BrainProfile {
   knowledge: Knowledge[]
 
   memories: string[]
-
+  
+  inventory: InventoryItem[]
   // ==========================
   // Estado atual
   // ==========================

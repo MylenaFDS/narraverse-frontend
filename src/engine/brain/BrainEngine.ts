@@ -9,6 +9,8 @@ import { DecisionEngine } from "./DecisionEngine"
 import { PlanningEngine } from "./PlanningEngine"
 import { PredictionEngine } from "./PredictionEngine"
 import { MemoryReasoningEngine } from "./MemoryReasoningEngine"
+import { InventoryReasoningEngine } from "./InventoryReasoningEngine"
+import { WorldReasoningEngine } from "./WorldReasoningEngine"
 import { TacticalEngine } from "./TacticalEngine"
 import { ActionGeneratorEngine } from "./ActionGeneratorEngine"
 import { NarrativeContextEngine } from "./NarrativeContextEngine"
@@ -55,6 +57,24 @@ export class BrainEngine {
       )
 
     // ==========================
+    // Inventário
+    // ==========================
+
+    const inventory =
+      InventoryReasoningEngine.analyze(
+        profile.inventory,
+      )
+
+    // ==========================
+    // Mundo
+    // ==========================
+
+    const world =
+      WorldReasoningEngine.analyze(
+        context,
+      )
+
+    // ==========================
     // Objetivo principal
     // ==========================
 
@@ -93,11 +113,19 @@ export class BrainEngine {
 
         health: 100,
 
-        alliesNearby: 1,
+        alliesNearby:
+          world.hasAlliesNearby
+            ? 1
+            : 0,
 
-        enemiesNearby: 1,
+        enemiesNearby:
+          world.hasEnemiesNearby
+            ? 1
+            : 0,
 
-        hasCover: false,
+        hasCover:
+
+          world.isIndoor,
 
         distanceToTarget: 5,
 
@@ -174,6 +202,10 @@ export class BrainEngine {
       emotion,
 
       memory,
+
+      inventory,
+
+      world,
 
       goal,
 
