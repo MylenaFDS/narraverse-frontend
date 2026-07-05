@@ -1,36 +1,22 @@
-import type { BrainProfile } from "./BrainProfile"
-
+import type { Goal } from "./GoalTypes"
+import type { Personality } from "./PersonalityTypes"
+import type { WorldKnowledge } from "./WorldKnowledge"
+import type { InventoryKnowledge } from "./InventoryKnowledge"
 import type { Strategy } from "./StrategyTypes"
 
 export class StrategyEngine {
 
   static create(
 
-    profile: BrainProfile,
+    personality: Personality,
+
+    goal: Goal | null,
+
+    world: WorldKnowledge,
+
+    inventory: InventoryKnowledge,
 
   ): Strategy | null {
-
-    const goal =
-
-      profile.goals
-
-        .filter(
-
-          goal =>
-
-            !goal.completed,
-
-        )
-
-        .sort(
-
-          (a, b) =>
-
-            b.priority -
-
-            a.priority,
-
-        )[0]
 
     if (!goal) {
 
@@ -40,6 +26,40 @@ export class StrategyEngine {
 
     const title =
       goal.title.toLowerCase()
+
+    // ==========================
+    // Sobrevivência
+    // ==========================
+
+    if (
+
+      world.hasDanger &&
+
+      !inventory.hasWeapon
+
+    ) {
+
+      return {
+
+        id: "survive",
+
+        title: "Sobrevivência",
+
+        description:
+
+          "Evitar combate e procurar segurança.",
+
+        priority: 100,
+
+        estimatedTurns: 2,
+
+      }
+
+    }
+
+    // ==========================
+    // Combate
+    // ==========================
 
     if (
 
@@ -57,7 +77,11 @@ export class StrategyEngine {
 
         description:
 
-          "Localizar, perseguir e derrotar o alvo.",
+          inventory.hasWeapon
+
+            ? "Atacar diretamente o alvo."
+
+            : "Buscar recursos antes do confronto.",
 
         priority: goal.priority,
 
@@ -66,6 +90,10 @@ export class StrategyEngine {
       }
 
     }
+
+    // ==========================
+    // Proteção
+    // ==========================
 
     if (
 
@@ -91,6 +119,10 @@ export class StrategyEngine {
 
     }
 
+    // ==========================
+    // Exploração
+    // ==========================
+
     if (
 
       title.includes("explorar")
@@ -105,7 +137,11 @@ export class StrategyEngine {
 
         description:
 
-          "Descobrir novas regiões e obter informações.",
+          world.isIndoor
+
+            ? "Explorar cuidadosamente o interior."
+
+            : "Explorar a região ao redor.",
 
         priority: goal.priority,
 
@@ -115,29 +151,58 @@ export class StrategyEngine {
 
     }
 
-    if (
+    // Diplomacia
+if (
 
-      title.includes("convencer")
+  title.includes("convencer") ||
 
-    ) {
+  title.includes("negociar") ||
 
-      return {
+  title.includes("persuadir")
 
-        id: "diplomacy",
+) {
 
-        title: "Diplomacia",
+  const diplomatic =
 
-        description:
+    personality.empathy > 60 &&
 
-          "Influenciar outro personagem.",
+    personality.intelligence > 60
 
-        priority: goal.priority,
+  const manipulative =
 
-        estimatedTurns: 5,
+    personality.cruelty > 70 &&
 
-      }
+    personality.intelligence > 60
 
-    }
+  return {
+
+    id: "diplomacy",
+
+    title: "Diplomacia",
+
+    description:
+
+      diplomatic
+
+        ? "Negociar utilizando empatia e argumentos."
+
+        : manipulative
+
+        ? "Manipular a conversa em benefício próprio."
+
+        : "Buscar argumentos sólidos antes de agir.",
+
+    priority: goal.priority,
+
+    estimatedTurns: 5,
+
+  }
+
+}
+
+    // ==========================
+    // Genérico
+    // ==========================
 
     return {
 
@@ -145,9 +210,7 @@ export class StrategyEngine {
 
       title: goal.title,
 
-      description:
-
-        goal.title,
+      description: goal.title,
 
       priority: goal.priority,
 

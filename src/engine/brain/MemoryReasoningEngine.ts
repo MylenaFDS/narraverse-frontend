@@ -1,14 +1,12 @@
 import { MemoryEngine } from "../MemoryEngine"
 
-import type { BrainProfile } from "./BrainProfile"
-
 import type { MemoryReasoningResult } from "./MemoryReasoningTypes"
 
 export class MemoryReasoningEngine {
 
   static analyze(
 
-    profile: BrainProfile,
+    characterId: number,
 
   ): MemoryReasoningResult {
 
@@ -24,7 +22,7 @@ export class MemoryReasoningEngine {
 
             memory.characterId ===
 
-            profile.character.id,
+            characterId,
 
         )
 

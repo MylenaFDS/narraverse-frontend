@@ -1,7 +1,5 @@
 import type { EmotionState } from "./EmotionTypes"
 
-import type { BrainProfile } from "./BrainProfile"
-
 export class EmotionEngine {
 
   static create(): EmotionState {
@@ -56,21 +54,17 @@ export class EmotionEngine {
   }
 
   // =============================
-  // NOVO
+  // Emoção atual
   // =============================
 
   static current(
-  profile: BrainProfile,
-): string {
 
-  return (
+    currentEmotion: string | null | undefined,
 
-    profile.currentEmotion ??
+  ): string {
 
-    "Neutro"
+    return currentEmotion ?? "Neutro"
 
-  )
-
-}
+  }
 
 }

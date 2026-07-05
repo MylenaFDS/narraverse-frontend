@@ -1,4 +1,4 @@
-import type { WorldContext } from "../ContextEngine"
+import type { AIContext } from "../context/ContextBuilder"
 
 import type { WorldKnowledge } from "./WorldKnowledge"
 
@@ -6,63 +6,101 @@ export class WorldReasoningEngine {
 
   static analyze(
 
-    context: WorldContext,
+    context: AIContext,
 
   ): WorldKnowledge {
+
+    const scene = context.scene
+
+    const terrain =
+
+      scene?.terrain
+        ?.toLowerCase()
+        .trim() ?? ""
+
+    const weather =
+
+      scene?.weather
+        ?.toLowerCase()
+        .trim() ?? ""
+
+    const light =
+
+      scene?.light
+        ?.toLowerCase()
+        .trim() ?? ""
+
+    const time =
+
+      scene?.time
+        ?.toLowerCase()
+        .trim() ?? ""
 
     return {
 
       isNight:
 
-        context.timeOfDay === "night",
+        time === "night",
 
       isRaining:
 
-        context.weather === "rain",
+        weather.includes("chuva"),
 
       isSnowing:
 
-        context.weather === "snow",
+        weather.includes("neve"),
 
       isFoggy:
 
-        context.weather === "fog",
+        weather.includes("névoa") ||
+
+        weather.includes("neblina"),
 
       isDark:
 
-        context.light === "dark",
+        light === "dark",
 
       isIndoor:
 
-        context.locationType === "indoor",
+        terrain.includes("interior") ||
+
+        terrain.includes("castelo") ||
+
+        terrain.includes("caverna"),
 
       isOutdoor:
 
-        context.locationType === "outdoor",
+        !(
+          terrain.includes("interior") ||
+          terrain.includes("castelo") ||
+          terrain.includes("caverna")
+        ),
 
       hasFire:
 
-        context.environment.includes("fire"),
+        terrain.includes("fogo"),
 
       hasWater:
 
-        context.environment.includes("water"),
+        terrain.includes("rio") ||
+        terrain.includes("lago") ||
+        terrain.includes("mar"),
 
       hasDanger:
 
-        context.dangerLevel > 0,
+        context.character.nearbyNPCs.length > 0,
 
       hasEnemiesNearby:
 
-        context.nearbyEnemies.length > 0,
+        context.character.nearbyNPCs.length > 0,
 
       hasAlliesNearby:
 
-        context.nearbyAllies.length > 0,
+        context.character.nearbyCharacters.length > 1,
 
       locationType:
 
-        context.locationType,
+        terrain,
 
     }
 

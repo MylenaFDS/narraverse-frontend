@@ -14,6 +14,10 @@ export interface WorldScene {
 
   weather?: string
 
+  light?: string
+
+  time?: string
+
 }
 
 export interface WorldTurn {

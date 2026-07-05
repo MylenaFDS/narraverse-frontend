@@ -1,5 +1,4 @@
-import type { Character } from "../../types/character"
-import type { WorldContext } from "../ContextEngine"
+import type { AIContext } from "../context/ContextBuilder"
 
 import { PersonalityEngine } from "./PersonalityEngine"
 import { EmotionEngine } from "./EmotionEngine"
@@ -21,21 +20,30 @@ export class BrainEngine {
 
   static think(
 
-    context: WorldContext,
-
-    character: Character,
+    context: AIContext,
 
     profile: BrainProfile,
 
   ) {
 
     // ==========================
+    // Personagem
+    // ==========================
+
+    const character =
+
+      context.character.self
+
+    // ==========================
     // Personalidade
     // ==========================
 
     const personality =
+
       PersonalityEngine.build(
+
         profile,
+
       )
 
     // ==========================
@@ -43,8 +51,11 @@ export class BrainEngine {
     // ==========================
 
     const emotion =
+
       EmotionEngine.current(
-        profile,
+
+        profile.currentEmotion,
+
       )
 
     // ==========================
@@ -52,8 +63,11 @@ export class BrainEngine {
     // ==========================
 
     const memory =
+
       MemoryReasoningEngine.analyze(
-        profile,
+
+        character.id,
+
       )
 
     // ==========================
@@ -61,8 +75,11 @@ export class BrainEngine {
     // ==========================
 
     const inventory =
+
       InventoryReasoningEngine.analyze(
+
         profile.inventory,
+
       )
 
     // ==========================
@@ -70,8 +87,11 @@ export class BrainEngine {
     // ==========================
 
     const world =
+
       WorldReasoningEngine.analyze(
+
         context,
+
       )
 
     // ==========================
@@ -79,8 +99,11 @@ export class BrainEngine {
     // ==========================
 
     const goal =
+
       GoalEngine.current(
+
         profile.goals,
+
       )
 
     // ==========================
@@ -88,8 +111,17 @@ export class BrainEngine {
     // ==========================
 
     const strategy =
+
       StrategyEngine.create(
-        profile,
+
+        personality,
+
+        goal,
+
+        world,
+
+        inventory,
+
       )
 
     // ==========================
@@ -97,11 +129,17 @@ export class BrainEngine {
     // ==========================
 
     const plan =
+
       goal
+
         ? PlanningEngine.create(
+
             goal,
+
             strategy,
+
           )
+
         : null
 
     // ==========================
@@ -109,18 +147,25 @@ export class BrainEngine {
     // ==========================
 
     const tactical =
+
       TacticalEngine.decide({
 
         health: 100,
 
         alliesNearby:
+
           world.hasAlliesNearby
+
             ? 1
+
             : 0,
 
         enemiesNearby:
+
           world.hasEnemiesNearby
+
             ? 1
+
             : 0,
 
         hasCover:
@@ -138,6 +183,7 @@ export class BrainEngine {
     // ==========================
 
     const decision =
+
       DecisionEngine.decide(
 
         profile,
@@ -153,8 +199,11 @@ export class BrainEngine {
     // ==========================
 
     const actionSequence =
+
       ActionGeneratorEngine.generate(
+
         decision,
+
       )
 
     // ==========================
@@ -162,8 +211,11 @@ export class BrainEngine {
     // ==========================
 
     const prediction =
+
       PredictionEngine.predict(
+
         decision,
+
       )
 
     // ==========================
@@ -171,6 +223,7 @@ export class BrainEngine {
     // ==========================
 
     const narrativeContext =
+
       NarrativeContextEngine.create(
 
         profile,
