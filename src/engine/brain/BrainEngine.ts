@@ -10,9 +10,12 @@ import { PredictionEngine } from "./PredictionEngine"
 import { MemoryReasoningEngine } from "./MemoryReasoningEngine"
 import { InventoryReasoningEngine } from "./InventoryReasoningEngine"
 import { WorldReasoningEngine } from "./WorldReasoningEngine"
+import { CharacterStateEngine } from "./CharacterStateEngine"
+import { RiskAssessmentEngine } from "./RiskAssessmentEngine"
 import { TacticalEngine } from "./TacticalEngine"
 import { ActionGeneratorEngine } from "./ActionGeneratorEngine"
 import { NarrativeContextEngine } from "./NarrativeContextEngine"
+import { CharacterSheetAdapter } from "./CharacterSheetAdapter"
 
 import type { BrainProfile } from "./BrainProfile"
 
@@ -31,7 +34,6 @@ export class BrainEngine {
     // ==========================
 
     const character =
-
       context.character.self
 
     // ==========================
@@ -39,11 +41,8 @@ export class BrainEngine {
     // ==========================
 
     const personality =
-
       PersonalityEngine.build(
-
         profile,
-
       )
 
     // ==========================
@@ -51,23 +50,17 @@ export class BrainEngine {
     // ==========================
 
     const emotion =
-
       EmotionEngine.current(
-
         profile.currentEmotion,
-
       )
 
     // ==========================
-    // Memórias relevantes
+    // Memórias
     // ==========================
 
     const memory =
-
       MemoryReasoningEngine.analyze(
-
         character.id,
-
       )
 
     // ==========================
@@ -75,11 +68,8 @@ export class BrainEngine {
     // ==========================
 
     const inventory =
-
       InventoryReasoningEngine.analyze(
-
         profile.inventory,
-
       )
 
     // ==========================
@@ -87,23 +77,43 @@ export class BrainEngine {
     // ==========================
 
     const world =
-
       WorldReasoningEngine.analyze(
-
         context,
+      )
+
+    // ==========================
+    // Estado do personagem
+    // ==========================
+
+    const state =
+  CharacterStateEngine.build(
+    CharacterSheetAdapter.toEngine(
+      character,
+    ),
+  )
+
+    // ==========================
+    // Avaliação de risco
+    // ==========================
+
+    const risk =
+      RiskAssessmentEngine.analyze(
+
+        state,
+
+        world,
+
+        inventory,
 
       )
 
     // ==========================
-    // Objetivo principal
+    // Objetivo
     // ==========================
 
     const goal =
-
       GoalEngine.current(
-
         profile.goals,
-
       )
 
     // ==========================
@@ -111,7 +121,6 @@ export class BrainEngine {
     // ==========================
 
     const strategy =
-
       StrategyEngine.create(
 
         personality,
@@ -129,17 +138,11 @@ export class BrainEngine {
     // ==========================
 
     const plan =
-
       goal
-
         ? PlanningEngine.create(
-
             goal,
-
             strategy,
-
           )
-
         : null
 
     // ==========================
@@ -147,34 +150,30 @@ export class BrainEngine {
     // ==========================
 
     const tactical =
-
       TacticalEngine.decide({
 
-        health: 100,
+        health:
+          state.wounded
+            ? 20
+            : 100,
 
         alliesNearby:
-
           world.hasAlliesNearby
-
             ? 1
-
             : 0,
 
         enemiesNearby:
-
           world.hasEnemiesNearby
-
             ? 1
-
             : 0,
 
         hasCover:
-
           world.isIndoor,
 
         distanceToTarget: 5,
 
-        isCornered: false,
+        isCornered:
+          risk.level === "critical",
 
       })
 
@@ -183,7 +182,6 @@ export class BrainEngine {
     // ==========================
 
     const decision =
-
       DecisionEngine.decide(
 
         profile,
@@ -199,11 +197,8 @@ export class BrainEngine {
     // ==========================
 
     const actionSequence =
-
       ActionGeneratorEngine.generate(
-
         decision,
-
       )
 
     // ==========================
@@ -211,11 +206,8 @@ export class BrainEngine {
     // ==========================
 
     const prediction =
-
       PredictionEngine.predict(
-
         decision,
-
       )
 
     // ==========================
@@ -223,7 +215,6 @@ export class BrainEngine {
     // ==========================
 
     const narrativeContext =
-
       NarrativeContextEngine.create(
 
         profile,
@@ -259,6 +250,10 @@ export class BrainEngine {
       inventory,
 
       world,
+
+      state,
+
+      risk,
 
       goal,
 
