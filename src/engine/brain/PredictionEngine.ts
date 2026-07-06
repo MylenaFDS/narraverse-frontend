@@ -1,44 +1,52 @@
-import type { Decision } from "./DecisionTypes"
+import type { Decision, Prediction } from "./types"
 
 export class PredictionEngine {
 
   static predict(
     decision: Decision,
-  ) {
+  ): Prediction {
 
     switch (decision.action) {
 
       case "attack":
 
-        return [
+        return {
 
-          "Pode iniciar combate",
+          successChance: 70,
 
-          "Pode gerar ferimentos",
+          summary: "O combate tem boas chances de sucesso.",
 
-        ]
+        }
 
       case "flee":
 
-        return [
+        return {
 
-          "Pode perder reputação",
+          successChance: 80,
 
-          "Pode sobreviver",
+          summary: "Há grande chance de escapar em segurança.",
 
-        ]
+        }
 
       case "advance_goal":
 
-        return [
+        return {
 
-          "Objetivo pode avançar",
+          successChance: 75,
 
-        ]
+          summary: "O objetivo provavelmente avançará.",
+
+        }
 
       default:
 
-        return []
+        return {
+
+          successChance: 50,
+
+          summary: "Resultado imprevisível.",
+
+        }
 
     }
 

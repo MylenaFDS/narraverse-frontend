@@ -20,6 +20,7 @@ import { ReasoningEngine } from "./ReasoningEngine"
 import { IntentEngine } from "./IntentEngine"
 import { CharacterBehaviorEngine } from "./CharacterBehaviorEngine"
 import { ConsequenceEngine } from "./ConsequenceEngine"
+import { ReflectionEngine } from "./ReflectionEngine"
 
 import type { BrainProfile } from "./BrainProfile"
 
@@ -58,6 +59,9 @@ export class BrainEngine {
         profile.currentEmotion,
       )
 
+    const dominantEmotion =
+      emotion
+
     // ==========================
     // Memórias
     // ==========================
@@ -86,32 +90,26 @@ export class BrainEngine {
       )
 
     // ==========================
-    // Estado do personagem
+    // Estado
     // ==========================
 
     const state =
-  CharacterStateEngine.build(
-    CharacterSheetAdapter.toEngine(
-      character,
-    ),
-  )
+      CharacterStateEngine.build(
+        CharacterSheetAdapter.toEngine(
+          character,
+        ),
+      )
 
     // ==========================
-    // Avaliação de risco
+    // Risco
     // ==========================
 
     const risk =
       RiskAssessmentEngine.analyze(
-
         state,
-
         world,
-
         inventory,
-
       )
-
-      
 
     // ==========================
     // Objetivo
@@ -122,43 +120,34 @@ export class BrainEngine {
         profile.goals,
       )
 
+    const immediateGoal =
+      goal?.title ?? null
+
     // ==========================
     // Estratégia
     // ==========================
 
     const strategy =
       StrategyEngine.create(
-
         personality,
-
         goal,
-
         world,
-
         inventory,
-
       )
 
     // ==========================
-// Raciocínio
-// ==========================
+    // Raciocínio
+    // ==========================
 
-const reasoning =
-  ReasoningEngine.think(
-
-    goal,
-
-    strategy,
-
-    state,
-
-    world,
-
-    inventory,
-
-    risk,
-
-  )
+    const reasoning =
+      ReasoningEngine.think(
+        goal,
+        strategy,
+        state,
+        world,
+        inventory,
+        risk,
+      )
 
     // ==========================
     // Planejamento
@@ -173,7 +162,7 @@ const reasoning =
         : null
 
     // ==========================
-    // Situação tática
+    // Tática
     // ==========================
 
     const tactical =
@@ -205,154 +194,143 @@ const reasoning =
       })
 
     // ==========================
-// Decisão
-// ==========================
+    // Decisão
+    // ==========================
 
-const decision =
-  DecisionEngine.decide(
+    const decision =
+      DecisionEngine.decide(
+        profile,
+        goal?.title ?? null,
+        emotion,
+      )
 
-    profile,
+    // ==========================
+    // Intenção
+    // ==========================
 
-    goal?.title ?? null,
+    const intent =
+      IntentEngine.create(
+        decision,
+      )
 
-    emotion,
+    // ==========================
+    // Comportamento
+    // ==========================
 
-  )
+    const behavior =
+      CharacterBehaviorEngine.build(
+        personality,
+        emotion,
+        intent,
+      )
 
-// ==========================
-// Intenção
-// ==========================
+    // ==========================
+    // Sequência de ações
+    // ==========================
 
-const intent =
-  IntentEngine.create(
-    decision,
-  )
+    const actionSequence =
+      ActionGeneratorEngine.generate(
+        decision,
+      )
 
-// ==========================
-// Comportamento
-// ==========================
+    // ==========================
+    // Previsão
+    // ==========================
 
-const behavior =
-  CharacterBehaviorEngine.build(
+    const prediction =
+      PredictionEngine.predict(
+        decision,
+      )
 
-    personality,
+    // ==========================
+    // Consequências
+    // ==========================
 
-    emotion,
+    const consequence =
+      ConsequenceEngine.predict(
+        decision,
+      )
 
-    intent,
+    // ==========================
+    // Reflexão
+    // ==========================
 
-  )
+    const reflection =
+      ReflectionEngine.analyze(
+        decision,
+        actionSequence,
+        prediction,
+        consequence,
+      )
 
-// ==========================
-// Emoção dominante
-// ==========================
+    // ==========================
+    // Contexto narrativo
+    // ==========================
 
-const dominantEmotion =
-  emotion
+    const narrativeContext =
+      NarrativeContextEngine.create(
+        profile,
+        {
+          goal,
+          strategy,
+          tactical,
+          decision,
+          plan,
+        },
+      )
 
-// ==========================
-// Prioridade imediata
-// ==========================
+    return {
 
-const immediateGoal =
-  goal?.title ?? null
+      context,
 
-// ==========================
-// Sequência de ações
-// ==========================
+      character,
 
-const actionSequence =
-  ActionGeneratorEngine.generate(
-    decision,
-  )
+      personality,
 
-// ==========================
-// Previsão
-// ==========================
+      emotion,
 
-const prediction =
-  PredictionEngine.predict(
-    decision,
-  )
+      dominantEmotion,
 
-  const consequence =
-  ConsequenceEngine.predict(
-    decision,
-  )
+      memory,
 
-// ==========================
-// Contexto narrativo
-// ==========================
+      inventory,
 
-const narrativeContext =
-  NarrativeContextEngine.create(
+      world,
 
-    profile,
+      state,
 
-    {
+      risk,
+
+      reasoning,
+
+      immediateGoal,
 
       goal,
 
       strategy,
 
+      plan,
+
       tactical,
 
       decision,
 
-      plan,
+      intent,
 
-    },
+      behavior,
 
-  )
+      actionSequence,
 
-return {
+      prediction,
 
-  context,
+      consequence,
 
-  character,
+      reflection,
 
-  personality,
+      narrativeContext,
 
-  emotion,
+    }
 
-  dominantEmotion,
-
-  memory,
-
-  inventory,
-
-  world,
-
-  state,
-
-  risk,
-
-  reasoning,
-
-  immediateGoal,
-
-  goal,
-
-  strategy,
-
-  plan,
-
-  tactical,
-
-  decision,
-
-  intent,
-
-  behavior,
-
-  actionSequence,
-
-  prediction,
-
-  consequence,
-
-  narrativeContext,
+  }
 
 }
-
-  }}
