@@ -1,5 +1,7 @@
 export interface LearnedFact {
 
+  characterId: number
+
   situation: string
 
   result: string
@@ -20,6 +22,8 @@ export class LearningEngine {
 
   static learn(
 
+    characterId: number,
+
     situation: string,
 
     result: string,
@@ -34,6 +38,8 @@ export class LearningEngine {
 
         fact =>
 
+          fact.characterId === characterId &&
+
           fact.situation === situation &&
 
           fact.result === result,
@@ -46,15 +52,17 @@ export class LearningEngine {
 
       existing.lastUsed = Date.now()
 
+      existing.success = success
+
       existing.confidence = Math.min(
 
         100,
 
-        existing.confidence + 5,
+        existing.confidence +
+
+          (success ? 5 : -3),
 
       )
-
-      existing.success = success
 
       return
 
@@ -62,13 +70,17 @@ export class LearningEngine {
 
     this.memory.push({
 
+      characterId,
+
       situation,
 
       result,
 
       success,
 
-      confidence: success ? 70 : 30,
+      confidence:
+
+        success ? 70 : 30,
 
       occurrences: 1,
 
@@ -80,6 +92,8 @@ export class LearningEngine {
 
   static find(
 
+    characterId: number,
+
     situation: string,
 
   ) {
@@ -90,6 +104,8 @@ export class LearningEngine {
 
         fact =>
 
+          fact.characterId === characterId &&
+
           fact.situation === situation,
 
       )
@@ -98,15 +114,53 @@ export class LearningEngine {
 
         (a, b) =>
 
-          b.confidence - a.confidence,
+          b.confidence -
+
+          a.confidence,
 
       )
 
   }
 
-  static clear() {
+  static all(
 
-    this.memory = []
+    characterId: number,
+
+  ) {
+
+    return this.memory.filter(
+
+      fact =>
+
+        fact.characterId === characterId,
+
+    )
+
+  }
+
+  static clear(
+
+    characterId?: number,
+
+  ) {
+
+    if (characterId === undefined) {
+
+      this.memory = []
+
+      return
+
+    }
+
+    this.memory =
+
+      this.memory.filter(
+
+        fact =>
+
+          fact.characterId !== characterId,
+
+      )
 
   }
 
