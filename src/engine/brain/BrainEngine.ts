@@ -17,6 +17,8 @@ import { ActionGeneratorEngine } from "./ActionGeneratorEngine"
 import { NarrativeContextEngine } from "./NarrativeContextEngine"
 import { CharacterSheetAdapter } from "./CharacterSheetAdapter"
 import { ReasoningEngine } from "./ReasoningEngine"
+import { IntentEngine } from "./IntentEngine"
+import { CharacterBehaviorEngine } from "./CharacterBehaviorEngine"
 
 import type { BrainProfile } from "./BrainProfile"
 
@@ -202,103 +204,147 @@ const reasoning =
       })
 
     // ==========================
-    // Decisão
-    // ==========================
+// Decisão
+// ==========================
 
-    const decision =
-      DecisionEngine.decide(
+const decision =
+  DecisionEngine.decide(
 
-        profile,
+    profile,
 
-        goal?.title ?? null,
+    goal?.title ?? null,
 
-        emotion,
+    emotion,
 
-      )
+  )
 
-    // ==========================
-    // Sequência de ações
-    // ==========================
+// ==========================
+// Intenção
+// ==========================
 
-    const actionSequence =
-      ActionGeneratorEngine.generate(
-        decision,
-      )
+const intent =
+  IntentEngine.create(
+    decision,
+  )
 
-    // ==========================
-    // Previsão
-    // ==========================
+// ==========================
+// Comportamento
+// ==========================
 
-    const prediction =
-      PredictionEngine.predict(
-        decision,
-      )
+const behavior =
+  CharacterBehaviorEngine.build(
 
-    // ==========================
-    // Contexto narrativo
-    // ==========================
+    personality,
 
-    const narrativeContext =
-      NarrativeContextEngine.create(
+    emotion,
 
-        profile,
+    intent,
 
-        {
+  )
 
-          goal,
+// ==========================
+// Emoção dominante
+// ==========================
 
-          strategy,
+const dominantEmotion =
+  emotion
 
-          tactical,
+// ==========================
+// Prioridade imediata
+// ==========================
 
-          decision,
+const immediateGoal =
+  goal?.title ?? null
 
-          plan,
+// ==========================
+// Sequência de ações
+// ==========================
 
-        },
+const actionSequence =
+  ActionGeneratorEngine.generate(
+    decision,
+  )
 
-      )
+// ==========================
+// Previsão
+// ==========================
 
-    return {
+const prediction =
+  PredictionEngine.predict(
+    decision,
+  )
 
-      context,
+// ==========================
+// Contexto narrativo
+// ==========================
 
-      character,
+const narrativeContext =
+  NarrativeContextEngine.create(
 
-      personality,
+    profile,
 
-      emotion,
-
-      memory,
-
-      inventory,
-
-      world,
-
-      state,
-
-      risk,
-
-      reasoning,
+    {
 
       goal,
 
       strategy,
 
-      plan,
-
       tactical,
 
       decision,
 
-      actionSequence,
+      plan,
 
-      prediction,
+    },
 
-      narrativeContext,
+  )
 
-    }
+return {
 
-  }
+  context,
+
+  character,
+
+  personality,
+
+  emotion,
+
+  dominantEmotion,
+
+  memory,
+
+  inventory,
+
+  world,
+
+  state,
+
+  risk,
+
+  reasoning,
+
+  immediateGoal,
+
+  goal,
+
+  strategy,
+
+  plan,
+
+  tactical,
+
+  decision,
+
+  intent,
+
+  behavior,
+
+  actionSequence,
+
+  prediction,
+
+  narrativeContext,
 
 }
+
+  }}
