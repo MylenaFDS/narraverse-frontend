@@ -1,4 +1,4 @@
-import type { MemoryEvent } from "../MemoryEngine"
+import type { MemoryEvent } from "../../MemoryEngine"
 
 export interface MemoryReasoningResult {
 

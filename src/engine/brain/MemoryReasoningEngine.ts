@@ -1,6 +1,6 @@
 import { MemoryEngine } from "../MemoryEngine"
 
-import type { MemoryReasoningResult } from "./MemoryReasoningTypes"
+import type { MemoryReasoningResult } from "./types/MemoryReasoning"
 
 export class MemoryReasoningEngine {
 

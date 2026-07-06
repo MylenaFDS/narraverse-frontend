@@ -1,6 +1,6 @@
 import type {
   Personality,
-} from "./PersonalityTypes"
+} from "./types/Personality"
 
 export const PersonalityPresets = {
 

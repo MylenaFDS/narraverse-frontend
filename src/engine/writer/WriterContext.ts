@@ -1,6 +1,6 @@
 import type { NarrativePrompt }
 
-from "../brain/NarrativePrompt"
+from "../brain/types/NarrativePrompt"
 
 export interface WriterContext {
 

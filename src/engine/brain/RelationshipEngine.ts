@@ -1,6 +1,6 @@
 import type {
   Relationship,
-} from "./RelationshipTypes"
+} from "./types/Relationship"
 
 export class RelationshipEngine {
 

@@ -1,8 +1,8 @@
-import type { Goal } from "./GoalTypes"
-import type { Personality } from "./PersonalityTypes"
-import type { WorldKnowledge } from "./WorldKnowledge"
-import type { InventoryKnowledge } from "./InventoryKnowledge"
-import type { Strategy } from "./StrategyTypes"
+import type { Goal } from "./types/Goal"
+import type { Personality } from "./types/Personality"
+import type { WorldKnowledge } from "./types/WorldKnowledge"
+import type { InventoryKnowledge } from "./types/InventoryKnowledge"
+import type { Strategy } from "./types/Strategy"
 
 export class StrategyEngine {
 

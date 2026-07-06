@@ -1,12 +1,12 @@
-import type { Goal } from "./GoalTypes"
-import type { Strategy } from "./StrategyTypes"
+import type { Goal } from "./types/Goal"
+import type { Strategy } from "./types/Strategy"
 
 import type {
 
   Plan,
   PlanStep,
 
-} from "./PlanningTypes"
+} from "./types/Planning"
 
 export class PlanningEngine {
 

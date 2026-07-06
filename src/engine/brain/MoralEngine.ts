@@ -1,4 +1,4 @@
-import type { Personality } from "./PersonalityTypes"
+import type { Personality } from "./types/Personality"
 
 export class MoralEngine {
 

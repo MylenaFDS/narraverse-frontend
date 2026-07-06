@@ -1,16 +1,16 @@
-import type { Goal } from "./GoalTypes"
+import type { Goal } from "./types/Goal"
 
-import type { Strategy } from "./StrategyTypes"
+import type { Strategy } from "./types/Strategy"
 
-import type { WorldKnowledge } from "./WorldKnowledge"
+import type { WorldKnowledge } from "./types/WorldKnowledge"
 
-import type { InventoryKnowledge } from "./InventoryKnowledge"
+import type { InventoryKnowledge } from "./types/InventoryKnowledge"
 
-import type { CharacterState } from "./CharacterState"
+import type { CharacterState } from "./types/CharacterState"
 
-import type { RiskAssessment } from "./RiskAssessmentTypes"
+import type { RiskAssessment } from "./types/RiskAssessment"
 
-import type { ReasoningResult } from "./ReasoningTypes"
+import type { ReasoningResult } from "./types/Reasoning"
 
 export class ReasoningEngine {
 

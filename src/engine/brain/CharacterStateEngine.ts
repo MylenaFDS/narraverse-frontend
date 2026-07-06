@@ -1,6 +1,6 @@
 import type { SheetField } from "./SheetField"
 
-import type { CharacterState } from "./CharacterState"
+import type { CharacterState } from "./types/CharacterState"
 
 import { SheetInterpreterEngine } from "./SheetInterpreterEngine"
 

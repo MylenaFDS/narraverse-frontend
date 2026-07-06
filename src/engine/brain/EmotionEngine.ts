@@ -1,4 +1,4 @@
-import type { EmotionState } from "./EmotionTypes"
+import type { EmotionState } from "./types/Emotion"
 
 export class EmotionEngine {
 

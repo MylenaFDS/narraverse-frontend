@@ -1,16 +1,16 @@
 import type { Character } from "../../types/character"
 
-import type { Personality } from "./PersonalityTypes"
-import type { EmotionState } from "./EmotionTypes"
-import type { Goal } from "./GoalTypes"
-import type { Relationship } from "./RelationshipTypes"
-import type { Knowledge } from "./KnowledgeTypes"
-import type { Belief } from "./BeliefTypes"
-import type { Desire } from "./DesireTypes"
-import type { Fear } from "./FearTypes"
-import type { Trust } from "./TrustTypes"
-import type { Reputation } from "./ReputationTypes"
-import type { InventoryItem } from "./InventoryTypes"
+import type { Personality } from "./types/Personality"
+import type { EmotionState } from "./types/Emotion"
+import type { Goal } from "./types/Goal"
+import type { Relationship } from "./types/Relationship"
+import type { Knowledge } from "./types/Knowledge"
+import type { Belief } from "./types/Belief"
+import type { Desire } from "./types/Desire"
+import type { Fear } from "./types/Fear"
+import type { Trust } from "./types/Trust"
+import type { Reputation } from "./types/Reputation"
+import type { InventoryItem } from "./types/Inventory"
 
 export interface BrainProfile {
 

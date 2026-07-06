@@ -1,4 +1,4 @@
-import type { Goal } from "./GoalTypes"
+import type { Goal } from "./types/Goal"
 
 export class GoalEngine {
 

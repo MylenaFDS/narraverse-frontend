@@ -1,4 +1,4 @@
-import type { GeneratedAction } from "./ActionGeneratorTypes"
+import type { GeneratedAction } from "./ActionGenerator"
 
 export interface ActionSequence {
 

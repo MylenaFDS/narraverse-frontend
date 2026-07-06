@@ -1,6 +1,6 @@
 import type { BrainProfile } from "./BrainProfile"
 
-import type { Motivation } from "./MotivationTypes"
+import type { Motivation } from "./types/Motivation"
 
 import { GoalEngine } from "./GoalEngine"
 import { DesireEngine } from "./DesireEngine"

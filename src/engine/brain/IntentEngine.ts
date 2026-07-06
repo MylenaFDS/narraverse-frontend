@@ -1,5 +1,5 @@
-import type { Decision } from "./DecisionTypes"
-import type { Intent } from "./IntentTypes"
+import type { Decision } from "./types/Decision"
+import type { Intent } from "./types/Intent"
 
 export class IntentEngine {
 

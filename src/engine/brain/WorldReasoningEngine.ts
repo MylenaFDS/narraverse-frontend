@@ -1,6 +1,6 @@
 import type { AIContext } from "../context/ContextBuilder"
 
-import type { WorldKnowledge } from "./WorldKnowledge"
+import type { WorldKnowledge } from "./types/WorldKnowledge"
 
 export class WorldReasoningEngine {
 

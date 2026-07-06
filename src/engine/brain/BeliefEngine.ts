@@ -1,4 +1,4 @@
-import type { Belief } from "./BeliefTypes"
+import type { Belief } from "./types/Belief"
 
 export class BeliefEngine {
 

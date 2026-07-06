@@ -1,6 +1,6 @@
-import type { InventoryItem } from "./InventoryTypes"
+import type { InventoryItem } from "./types/Inventory"
 
-import type { InventoryKnowledge } from "./InventoryKnowledge"
+import type { InventoryKnowledge } from "./types/InventoryKnowledge"
 
 import { ItemAliases } from "./ItemAliases"
 

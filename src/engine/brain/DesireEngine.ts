@@ -1,4 +1,4 @@
-import type { Desire } from "./DesireTypes"
+import type { Desire } from "./types/Desire"
 
 export class DesireEngine {
 

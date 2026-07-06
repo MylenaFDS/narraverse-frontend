@@ -4,7 +4,7 @@ import { MemoryEngine } from "./MemoryEngine"
 
 import type { AIContext } from "./brain/AIContext"
 
-import type { PerceptionResult } from "./brain/PerceptionTypes"
+import type { PerceptionResult } from "./brain/types/Perception"
 
 export interface NarrativeContext {
 

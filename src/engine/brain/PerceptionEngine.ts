@@ -2,7 +2,7 @@ import type { AIContext } from "./AIContext"
 
 import type {
   PerceptionResult,
-} from "./PerceptionTypes"
+} from "./types/Perception"
 
 export class PerceptionEngine {
 

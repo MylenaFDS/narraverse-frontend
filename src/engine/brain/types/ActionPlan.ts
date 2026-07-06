@@ -1,4 +1,4 @@
-import type { PlannedAction } from "./ActionTypes"
+import type { PlannedAction } from "."
 
 export interface ActionPlan {
 

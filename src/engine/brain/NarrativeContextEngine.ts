@@ -4,9 +4,9 @@ import type {
 
   NarrativePrompt,
 
-} from "./NarrativePrompt"
-import type { BrainResult } from "./BrainResult"
-import type { PlanStep } from "./PlanningTypes"
+} from "./types/NarrativePrompt"
+import type { BrainResult } from "./types/BrainResult"
+import type { PlanStep } from "./types/Planning"
 
 
 export class NarrativeContextEngine {

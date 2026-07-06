@@ -1,4 +1,4 @@
-import type { Trust } from "./TrustTypes"
+import type { Trust } from "./types/Trust"
 
 export class TrustEngine {
 

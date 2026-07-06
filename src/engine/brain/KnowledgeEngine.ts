@@ -1,6 +1,6 @@
 import type {
   Knowledge,
-} from "./KnowledgeTypes"
+} from "./types/Knowledge"
 
 export class KnowledgeEngine {
 

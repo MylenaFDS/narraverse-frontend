@@ -1,6 +1,6 @@
 import type { BrainProfile } from "./BrainProfile"
 import type { Character } from "../../types/character"
-import type { SocialContext } from "./SocialReasoningTypes"
+import type { SocialContext } from "./types/SocialReasoning"
 
 export class SocialReasoningEngine {
 

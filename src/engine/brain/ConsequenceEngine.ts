@@ -1,6 +1,6 @@
-import type { Decision } from "./DecisionTypes"
+import type { Decision } from "./types/Decision"
 
-import type { Consequence } from "./ConsequenceTypes"
+import type { Consequence } from "./types/Consequence"
 
 export class ConsequenceEngine {
 

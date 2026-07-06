@@ -1,7 +1,7 @@
-import type { Personality } from "./PersonalityTypes"
-import type { Intent } from "./IntentTypes"
+import type { Personality } from "./types/Personality"
+import type { Intent } from "./types/Intent"
 
-import type { CharacterBehavior } from "./BehaviorTypes"
+import type { CharacterBehavior } from "./types/Behavior"
 
 export class CharacterBehaviorEngine {
 

@@ -1,4 +1,4 @@
-import type { Fear } from "./FearTypes"
+import type { Fear } from "./types/Fear"
 
 export class FearEngine {
 

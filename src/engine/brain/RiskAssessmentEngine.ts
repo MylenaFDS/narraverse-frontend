@@ -1,10 +1,10 @@
-import type { CharacterState } from "./CharacterState"
+import type { CharacterState } from "./types/CharacterState"
 
-import type { WorldKnowledge } from "./WorldKnowledge"
+import type { WorldKnowledge } from "./types/WorldKnowledge"
 
-import type { InventoryKnowledge } from "./InventoryKnowledge"
+import type { InventoryKnowledge } from "./types/InventoryKnowledge"
 
-import type { RiskAssessment } from "./RiskAssessmentTypes"
+import type { RiskAssessment } from "./types/RiskAssessment"
 
 export class RiskAssessmentEngine {
 

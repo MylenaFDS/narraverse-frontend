@@ -2,7 +2,7 @@ import type {
 
   Reputation,
 
-} from "./ReputationTypes"
+} from "./types/Reputation"
 
 export class ReputationEngine {
 

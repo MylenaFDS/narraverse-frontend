@@ -1,6 +1,5 @@
-import type { Decision } from "./DecisionTypes"
+import type { Decision, ActionSequence } from "./types"
 
-import type { ActionSequence } from "./ActionSequence"
 
 export class ActionGeneratorEngine {
 

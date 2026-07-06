@@ -1,5 +1,5 @@
 import type { BrainProfile } from "./BrainProfile"
-import type { DialogueLine } from "./DialogueTypes"
+import type { DialogueLine } from "./types"
 
 export class DialoguePlanner {
 

@@ -1,5 +1,5 @@
-import type { TacticalState } from "./TacticalTypes"
-import type { TacticalDecision } from "./TacticalDecision"
+import type { TacticalState } from "./types/Tactical"
+import type { TacticalDecision } from "./types/TacticalDecision"
 
 export class TacticalEngine {
 
