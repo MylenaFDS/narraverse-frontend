@@ -19,6 +19,7 @@ import { CharacterSheetAdapter } from "./CharacterSheetAdapter"
 import { ReasoningEngine } from "./ReasoningEngine"
 import { IntentEngine } from "./IntentEngine"
 import { CharacterBehaviorEngine } from "./CharacterBehaviorEngine"
+import { ConsequenceEngine } from "./ConsequenceEngine"
 
 import type { BrainProfile } from "./BrainProfile"
 
@@ -274,6 +275,11 @@ const prediction =
     decision,
   )
 
+  const consequence =
+  ConsequenceEngine.predict(
+    decision,
+  )
+
 // ==========================
 // Contexto narrativo
 // ==========================
@@ -342,6 +348,8 @@ return {
   actionSequence,
 
   prediction,
+
+  consequence,
 
   narrativeContext,
 
