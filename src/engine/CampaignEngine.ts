@@ -1,4 +1,4 @@
-import type { WorldContext } from "./ContextEngine"
+import type { WorldContext } from "./context/ContextEngine"
 
 import { MemoryEngine } from "./MemoryEngine"
 import { EventEngine } from "./EventEngine"

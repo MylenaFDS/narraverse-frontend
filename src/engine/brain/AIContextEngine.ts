@@ -2,7 +2,7 @@ import type { Character } from "../../types/character"
 
 import type { InventoryItem } from "../inventory/InventoryTypes"
 
-import type { WorldContext } from "../ContextEngine"
+import type { WorldContext } from "../context/ContextEngine"
 
 import type { BrainProfile } from "./BrainProfile"
 

@@ -1,6 +1,6 @@
 // src/engine/ContextEngine.ts
 
-import type { Character } from "../types/character"
+import type { Character } from "../../types/character"
 
 export interface WorldScene {
 

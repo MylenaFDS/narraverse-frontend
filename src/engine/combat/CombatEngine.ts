@@ -1,6 +1,6 @@
 import type { Character } from "../../types/character"
 
-import type { WorldContext } from "../ContextEngine"
+import type { WorldContext } from "../context/ContextEngine"
 
 import { CampaignEngine } from "../CampaignEngine"
 import { TerrainEngine } from "./TerrainEngine"

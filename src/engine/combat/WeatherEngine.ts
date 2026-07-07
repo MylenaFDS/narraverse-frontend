@@ -1,4 +1,4 @@
-import type { WorldContext } from "../ContextEngine"
+import type { WorldContext } from "../context/ContextEngine"
 
 export interface WeatherData {
 

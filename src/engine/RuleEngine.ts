@@ -1,6 +1,6 @@
 // src/engine/RuleEngine.ts
 
-import { ContextEngine, type WorldContext } from "./ContextEngine"
+import { ContextEngine, type WorldContext } from "./context/ContextEngine"
 
 export interface RuleResult {
   allowed: boolean
