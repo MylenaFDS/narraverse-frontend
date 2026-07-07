@@ -11,6 +11,7 @@ export * from "./Emotion"
 export * from "./Personality"
 export * from "./Motivation"
 export * from "./Desire"
+export * from "./Habit"
 
 // Brain
 export * from "./BrainResult"

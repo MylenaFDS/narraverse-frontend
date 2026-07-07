@@ -11,10 +11,23 @@ import type { Fear } from "./types/Fear"
 import type { Trust } from "./types/Trust"
 import type { Reputation } from "./types/Reputation"
 import type { InventoryItem } from "./types/Inventory"
+import type { Habit } from "./types/Habit"
 
 export interface BrainProfile {
 
   character: Character
+
+  // ==========================
+  // Progressão
+  // ==========================
+
+  level: number
+
+  experience: number
+
+  skillPoints: number
+
+  evolutionStage: number
 
   // ==========================
   // Identidade
@@ -53,8 +66,11 @@ export interface BrainProfile {
   knowledge: Knowledge[]
 
   memories: string[]
-  
+
   inventory: InventoryItem[]
+
+  habits: Habit[]
+
   // ==========================
   // Estado atual
   // ==========================

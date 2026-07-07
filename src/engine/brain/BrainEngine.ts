@@ -21,6 +21,9 @@ import { IntentEngine } from "./IntentEngine"
 import { CharacterBehaviorEngine } from "./CharacterBehaviorEngine"
 import { ConsequenceEngine } from "./ConsequenceEngine"
 import { ReflectionEngine } from "./ReflectionEngine"
+import { ExperienceEngine } from "./ExperienceEngine"
+import { TraitEvolutionEngine } from "./TraitEvolutionEngine"
+import { HabitEngine } from "./HabitEngine"
 
 import type { BrainProfile } from "./BrainProfile"
 
@@ -205,6 +208,24 @@ export class BrainEngine {
       )
 
     // ==========================
+    // Hábitos
+    // ==========================
+
+    HabitEngine.update(
+      profile.habits,
+      decision,
+    )
+
+    // ==========================
+    // Evolução dos traços
+    // ==========================
+
+    TraitEvolutionEngine.apply(
+      profile,
+      decision,
+    )
+
+    // ==========================
     // Intenção
     // ==========================
 
@@ -279,11 +300,26 @@ export class BrainEngine {
         },
       )
 
+    // ==========================
+    // Experiência
+    // ==========================
+
+    ExperienceEngine.apply(
+      profile,
+      consequence.success,
+    )
+
     return {
 
       context,
 
       character,
+
+      level: profile.level,
+
+      experience: profile.experience,
+
+      skillPoints: profile.skillPoints,
 
       personality,
 

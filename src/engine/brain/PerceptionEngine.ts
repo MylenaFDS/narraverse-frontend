@@ -7,42 +7,68 @@ import type {
 export class PerceptionEngine {
 
   static perceive(
-
     context: AIContext,
-
   ): PerceptionResult {
 
     return {
 
+      // ==========================
+      // Personagens
+      // ==========================
+
       visibleCharacters:
-
         context.nearbyCharacters.map(
-
           character => character.id,
-
         ),
 
       visibleNPCs:
-
         context.nearbyNPCs.map(
-
           npc => npc.id,
-
         ),
-
-      visibleLore: [],
-
-      visibleFactions: [],
 
       audibleCharacters:
-
         context.nearbyCharacters.map(
-
           character => character.id,
-
         ),
 
+      // ==========================
+      // Mundo
+      // ==========================
+
+      visibleLore:
+        context.nearbyLore.map(
+          lore => lore.id,
+        ),
+
+      visibleFactions:
+        context.nearbyFactions.map(
+          faction => faction.id,
+        ),
+
+      // ==========================
+      // Objetos
+      // ==========================
+
       nearbyObjects: [],
+
+      // ==========================
+      // Ambiente
+      // ==========================
+
+      weather:
+        typeof context.currentWeather === "string"
+          ? context.currentWeather
+          : undefined,
+
+      light: undefined,
+
+      terrain:
+        typeof context.currentTerrain === "string"
+          ? context.currentTerrain
+          : undefined,
+
+      time:
+        context.timeOfDay,
 
     }
 

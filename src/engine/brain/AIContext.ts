@@ -1,35 +1,98 @@
 import type { Character } from "../../types/character"
-
 import type { WorldContext } from "../ContextEngine"
 
 import type { BrainProfile } from "./BrainProfile"
 
 import type { InventoryItem } from "../inventory/InventoryTypes"
 
+import type { RPGTurn } from "../../types/turn"
+import type { Lore } from "../../types/lore"
+import type { Faction } from "../../types/faction"
+
 export interface AIContext {
+
+  // ==========================
+  // Mundo
+  // ==========================
 
   world: WorldContext
 
-  profile: BrainProfile
-
-  self: Character
-
-  nearbyCharacters: Character[]
-
-  nearbyNPCs: Character[]
-
-  nearbyFactions: unknown[]
-
-  nearbyLore: unknown[]
-
   currentScene?: unknown
-
-  currentTurn?: unknown
 
   currentWeather?: unknown
 
   currentTerrain?: unknown
 
+  currentTurn?: RPGTurn |null
+
+  // usado pelos Engines de percepção
+  scene?: {
+    objects?: {
+      id: number
+      name: string
+    }[]
+
+    weather?: string
+
+    light?: string
+
+    terrain?: string
+
+    time?: string
+  }
+
+  // ==========================
+  // Personagem
+  // ==========================
+
+  self: Character
+
+  profile: BrainProfile
+
   inventory: InventoryItem[]
 
+  // ==========================
+  // Pessoas próximas
+  // ==========================
+
+  nearbyCharacters: Character[]
+
+  nearbyNPCs: Character[]
+
+  // ==========================
+  // Conhecimento
+  // ==========================
+
+  nearbyLore: Lore[]
+
+  nearbyFactions: Faction[]
+
+  // aliases usados pelo PerceptionEngine
+  visibleLore?: Lore[]
+
+  visibleFactions?: Faction[]
+
+  // ==========================
+  // Histórico imediato
+  // ==========================
+
+  recentTurns: RPGTurn[]
+
+  // ==========================
+  // Linha do tempo
+  // ==========================
+
+  timelineEvents: unknown[]
+
+  // ==========================
+  // Estado do RPG
+  // ==========================
+
+  timeOfDay?: string
+
+  season?: string
+
+  temperature?: number
+
+  dangerLevel?: number
 }

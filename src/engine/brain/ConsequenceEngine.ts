@@ -1,6 +1,4 @@
-import type { Decision } from "./types/Decision"
-
-import type { Consequence } from "./types/Consequence"
+import type { Decision, Consequence } from "./types"
 
 export class ConsequenceEngine {
 
@@ -16,16 +14,15 @@ export class ConsequenceEngine {
 
         return {
 
-          immediate:
+          success: true,
 
+          immediate:
             "Combate iniciado.",
 
           shortTerm:
-
             "O inimigo reagirá.",
 
           longTerm:
-
             "A relação entre as partes pode mudar.",
 
         }
@@ -34,16 +31,15 @@ export class ConsequenceEngine {
 
         return {
 
-          immediate:
+          success: true,
 
+          immediate:
             "Conversa iniciada.",
 
           shortTerm:
-
             "O alvo responderá.",
 
           longTerm:
-
             "A confiança poderá aumentar ou diminuir.",
 
         }
@@ -52,16 +48,15 @@ export class ConsequenceEngine {
 
         return {
 
-          immediate:
+          success: true,
 
+          immediate:
             "Distância criada.",
 
           shortTerm:
-
             "Perseguição possível.",
 
           longTerm:
-
             "Sobrevivência aumentada.",
 
         }
@@ -70,16 +65,15 @@ export class ConsequenceEngine {
 
         return {
 
-          immediate:
+          success: false,
 
+          immediate:
             "Ação executada.",
 
           shortTerm:
-
             "Consequências desconhecidas.",
 
           longTerm:
-
             "Impacto imprevisível.",
 
         }
