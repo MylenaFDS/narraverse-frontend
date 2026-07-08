@@ -289,16 +289,21 @@ export class BrainEngine {
     // ==========================
 
     const narrativeContext =
-      NarrativeContextEngine.create(
-        profile,
-        {
-          goal,
-          strategy,
-          tactical,
-          decision,
-          plan,
-        },
-      )
+      NarrativeContextEngine.create({
+
+  profile,
+
+  goal,
+
+  strategy,
+
+  tactical,
+
+  decision,
+
+  plan,
+
+})
 
     // ==========================
     // Experiência

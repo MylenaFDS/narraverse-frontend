@@ -5,7 +5,7 @@ import type { BrainProfile } from "./BrainProfile"
 
 import type { InventoryItem } from "../inventory/InventoryTypes"
 
-import type { RPGTurn } from "../../types/turn"
+import type { CurrentTurn } from "./types/CurrentTurn"
 import type { Lore } from "../../types/lore"
 import type { Faction } from "../../types/faction"
 
@@ -23,7 +23,7 @@ export interface AIContext {
 
   currentTerrain?: unknown
 
-  currentTurn?: RPGTurn |null
+  currentTurn?: CurrentTurn | null
 
   // usado pelos Engines de percepção
   scene?: {
@@ -76,7 +76,7 @@ export interface AIContext {
   // Histórico imediato
   // ==========================
 
-  recentTurns: RPGTurn[]
+  recentTurns: CurrentTurn[]
 
   // ==========================
   // Linha do tempo

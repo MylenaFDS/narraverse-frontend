@@ -1,6 +1,7 @@
 // src/engine/ContextEngine.ts
 
 import type { Character } from "../../types/character"
+import type { CurrentTurn } from "../brain/types/CurrentTurn"
 
 export interface WorldScene {
 
@@ -50,6 +51,12 @@ export interface WorldContext {
 
   currentTurn?: WorldTurn
 
+  // Histórico recente do RPG
+recentTurns?: CurrentTurn[]
+
+// Eventos conhecidos da timeline
+timelineEvents?: unknown[]
+
 }
 
 export class ContextEngine {
@@ -60,23 +67,27 @@ export class ContextEngine {
 
     return {
 
-      world: context.world,
+  world: context.world,
 
-      factions: context.factions,
+  factions: context.factions,
 
-      lore: context.lore,
+  lore: context.lore,
 
-      timeline: context.timeline,
+  timeline: context.timeline,
 
-      characters: context.characters,
+  characters: context.characters,
 
-      npcs: context.npcs,
+  npcs: context.npcs,
 
-      scene: context.currentScene,
+  scene: context.currentScene,
 
-      turn: context.currentTurn,
+  turn: context.currentTurn,
 
-    }
+  recentTurns: context.recentTurns ?? [],
+
+  timelineEvents: context.timelineEvents ?? [],
+
+}
 
   }
 
