@@ -59,11 +59,11 @@ export class EmotionEngine {
 
   static current(
 
-    currentEmotion: string | null | undefined,
+    currentEmotion?: EmotionState | null,
 
-  ): string {
+  ): EmotionState {
 
-    return currentEmotion ?? "Neutro"
+    return currentEmotion ?? this.create()
 
   }
 

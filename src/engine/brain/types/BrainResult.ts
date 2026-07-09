@@ -1,54 +1,70 @@
 import type { Character } from "../../../types/character"
 
-import type {
-  Personality,
-  EmotionState,
-  Goal,
-  Strategy,
-  TacticalDecision,
-  Decision,
-  Plan,
-  Intent,
-  CharacterBehavior,
-  Prediction,
-  Consequence,
-  Reflection,
-  ReasoningResult,
-} from "."
+import type { Personality } from "./Personality"
+import type { EmotionState } from "./Emotion"
+
+import type { Goal } from "./Goal"
+import type { Strategy } from "./Strategy"
+import type { TacticalDecision } from "./TacticalDecision"
+import type { Decision } from "./Decision"
+import type { Plan } from "./Planning"
+
+import type { NarrativePrompt } from "./NarrativePrompt"
 
 export interface BrainResult {
 
-  // Personagem
+  context: unknown
+
   character: Character
 
-  // Estado mental
+  level: number
+
+  experience: number
+
+  skillPoints: number
+
   personality: Personality
+
   emotion: EmotionState
+
   dominantEmotion: EmotionState
 
-  // Objetivos
-  goal: Goal | null
+  memory: unknown
+
+  inventory: unknown
+
+  world: unknown
+
+  state: unknown
+
+  risk: unknown
+
+  reasoning: unknown
+
   immediateGoal: string | null
 
-  // Planejamento
+  goal: Goal | null
+
   strategy: Strategy | null
+
   plan: Plan | null
+
   tactical: TacticalDecision
 
-  // Decisão
   decision: Decision
-  intent: Intent
-  behavior: CharacterBehavior
 
-  // Raciocínio
-  reasoning: ReasoningResult
-  prediction: Prediction
-  consequence: Consequence
-  reflection: Reflection
+  intent: unknown
 
-  // Progressão
-  level: number
-  experience: number
-  skillPoints: number
+  behavior: unknown
+
+  actionSequence: unknown
+
+  prediction: unknown
+
+  consequence: unknown
+
+  reflection: unknown
+
+  narrativeContext: NarrativePrompt
 
 }

@@ -77,6 +77,6 @@ export interface BrainProfile {
 
   currentGoal?: Goal | null
 
-  currentEmotion?: string
+  currentEmotion?: EmotionState | null
 
 }

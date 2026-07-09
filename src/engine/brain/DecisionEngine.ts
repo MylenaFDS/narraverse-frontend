@@ -1,5 +1,6 @@
 import type { BrainProfile } from "./BrainProfile"
-import type { Decision } from "./DecisionTypes"
+import type { Decision } from "./types"
+import type { EmotionState } from "./types/Emotion"
 
 import { UtilityEngine } from "./UtilityEngine"
 
@@ -11,7 +12,7 @@ export class DecisionEngine {
 
     goal: string | null,
 
-    emotion: string,
+    emotion: EmotionState,
 
   ): Decision {
 
@@ -28,35 +29,38 @@ export class DecisionEngine {
       best.score,
     )
 
-    // ==========================
-    // Influência emocional
-    // ==========================
+    // emoção dominante
 
-    switch (
-      emotion.toLowerCase()
-    ) {
+    const dominant =
+      Object.entries(emotion)
+        .sort(
+          (a, b) =>
+            b[1] - a[1],
+        )[0][0]
 
-      case "raiva":
+    switch (dominant) {
+
+      case "anger":
 
         probability += 10
         break
 
-      case "medo":
+      case "fear":
 
         probability -= 15
         break
 
-      case "tristeza":
+      case "sadness":
 
         probability -= 5
         break
 
-      case "confiança":
+      case "trust":
 
         probability += 5
         break
 
-      case "felicidade":
+      case "happiness":
 
         probability += 3
         break
@@ -83,7 +87,7 @@ export class DecisionEngine {
           ? [`Objetivo: ${goal}`]
           : []),
 
-        `Emoção: ${emotion}`,
+        `Emoção dominante: ${dominant}`,
 
         ...best.reasons,
 

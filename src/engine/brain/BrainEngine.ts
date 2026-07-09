@@ -26,6 +26,7 @@ import { TraitEvolutionEngine } from "./TraitEvolutionEngine"
 import { HabitEngine } from "./HabitEngine"
 
 import type { BrainProfile } from "./BrainProfile"
+import type { BrainResult } from "./types/BrainResult"
 
 export class BrainEngine {
 
@@ -35,7 +36,7 @@ export class BrainEngine {
 
     profile: BrainProfile,
 
-  ) {
+  ): BrainResult {
 
     // ==========================
     // Personagem
@@ -58,9 +59,9 @@ export class BrainEngine {
     // ==========================
 
     const emotion =
-      EmotionEngine.current(
-        profile.currentEmotion,
-      )
+  EmotionEngine.current(
+    profile.currentEmotion,
+  ) 
 
     const dominantEmotion =
       emotion
@@ -316,61 +317,61 @@ export class BrainEngine {
 
     return {
 
-      context,
+  context,
 
-      character,
+  character,
 
-      level: profile.level,
+  level: profile.level,
 
-      experience: profile.experience,
+  experience: profile.experience,
 
-      skillPoints: profile.skillPoints,
+  skillPoints: profile.skillPoints,
 
-      personality,
+  personality,
 
-      emotion,
+  emotion,
 
-      dominantEmotion,
+  dominantEmotion,
 
-      memory,
+  memory,
 
-      inventory,
+  inventory,
 
-      world,
+  world,
 
-      state,
+  state,
 
-      risk,
+  risk,
 
-      reasoning,
+  reasoning,
 
-      immediateGoal,
+  immediateGoal,
 
-      goal,
+  goal,
 
-      strategy,
+  strategy,
 
-      plan,
+  plan,
 
-      tactical,
+  tactical,
 
-      decision,
+  decision,
 
-      intent,
+  intent,
 
-      behavior,
+  behavior,
 
-      actionSequence,
+  actionSequence,
 
-      prediction,
+  prediction,
 
-      consequence,
+  consequence,
 
-      reflection,
+  reflection,
 
-      narrativeContext,
+  narrativeContext,
 
-    }
+}
 
   }
 

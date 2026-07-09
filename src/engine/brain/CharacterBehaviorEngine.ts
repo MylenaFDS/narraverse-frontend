@@ -1,5 +1,6 @@
 import type { Personality } from "./types/Personality"
 import type { Intent } from "./types/Intent"
+import type { EmotionState } from "./types/Emotion"
 
 import type { CharacterBehavior } from "./types/Behavior"
 
@@ -9,7 +10,7 @@ export class CharacterBehaviorEngine {
 
     personality: Personality,
 
-    emotion: string,
+    emotion: EmotionState,
 
     intent: Intent,
 
@@ -26,6 +27,13 @@ export class CharacterBehaviorEngine {
       riskTaking: "moderado",
 
     }
+
+    const dominant =
+      Object.entries(emotion)
+        .sort(
+          (a, b) =>
+            b[1] - a[1],
+        )[0][0]
 
     if (personality.courage >= 70) {
 
@@ -45,13 +53,13 @@ export class CharacterBehaviorEngine {
 
     }
 
-    if (emotion === "Raiva") {
+    if (dominant === "anger") {
 
       behavior.posture = "hostil"
 
     }
 
-    if (emotion === "Medo") {
+    if (dominant === "fear") {
 
       behavior.posture = "defensiva"
 
