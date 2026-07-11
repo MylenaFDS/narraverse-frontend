@@ -1,94 +1,57 @@
-// src/engine/ContextEngine.ts
-
 import type { Character } from "../../types/character"
+import type { Lore } from "../../types/lore"
+import type { Faction } from "../../types/faction"
+
+import type { InventoryItem } from "../inventory/InventoryTypes"
+import type { BrainProfile } from "../brain/BrainProfile"
 import type { CurrentTurn } from "../brain/types/CurrentTurn"
 
-export interface WorldScene {
-
-  id: number
-
-  title: string
-
-  description?: string
-
-  terrain?: string
-
-  weather?: string
-
-  light?: string
-
-  time?: string
-
-}
-
-export interface WorldTurn {
-
-  id: number
-
-  title?: string
-
-  content?: string
-
-}
-
 export interface WorldContext {
-
-  rpgId: number
-
-  world: unknown[]
-
-  factions: unknown[]
-
-  lore: unknown[]
-
-  timeline: unknown[]
 
   characters: Character[]
 
   npcs: Character[]
 
-  currentScene?: WorldScene
+  lore: Lore[]
 
-  currentTurn?: WorldTurn
+  factions: Faction[]
 
-  // Histórico recente do RPG
-recentTurns?: CurrentTurn[]
+  profile: BrainProfile
 
-// Eventos conhecidos da timeline
-timelineEvents?: unknown[]
+  scene?: {
+  objects?: {
+    id: number
+    name: string
+  }[]
 
+  weather?: string
+
+  light?: string
+
+  terrain?: string
+
+  time?: string
 }
 
-export class ContextEngine {
+  inventory: InventoryItem[]
 
-  static build(
-    context: WorldContext,
-  ) {
+  currentScene?: unknown
 
-    return {
+  currentTurn?: CurrentTurn | null
 
-  world: context.world,
+  currentTerrain?: string
 
-  factions: context.factions,
+currentWeather?: string
 
-  lore: context.lore,
+  recentTurns: CurrentTurn[]
 
-  timeline: context.timeline,
+  timeline: unknown[]
 
-  characters: context.characters,
+  timeOfDay?: string
 
-  npcs: context.npcs,
+season?: string
 
-  scene: context.currentScene,
+temperature?: number
 
-  turn: context.currentTurn,
-
-  recentTurns: context.recentTurns ?? [],
-
-  timelineEvents: context.timelineEvents ?? [],
-
-}
-
-  }
-
+dangerLevel?: number
 }

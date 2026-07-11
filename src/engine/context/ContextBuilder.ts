@@ -1,94 +1,97 @@
 import type { Character } from "../../types/character"
 
-import type { CharacterContext } from "./CharacterContext"
-import type { SceneContext } from "./SceneContext"
-import type { TimelineContext } from "./TimelineContext"
-import type { WorldContext } from "./WorldContext"
-import type { FactionContext } from "./FactionContext"
+import type { WorldContext } from "./ContextEngine"
 
-export interface AIContext {
+import type { AIContext } from "../brain/AIContext"
 
-  world: WorldContext
+import { CharacterAdapter } from "../adapters/CharacterAdapter"
 
-  scene?: SceneContext
-
-  timeline?: TimelineContext
-
-  faction: FactionContext
-
-  character: CharacterContext
-
-}
+import { InventoryAdapter } from "../adapters/InventoryAdapter"
+import { LoreAdapter } from "../adapters/LoreAdapter"
+import { FactionAdapter } from "../adapters/FactionAdapter"
 
 export class ContextBuilder {
 
   static build(
 
-    self: Character,
+    character: Character,
 
-    context: {
-
-      rpgId: number
-
-      world: unknown[]
-
-      lore: unknown[]
-
-      factions: unknown[]
-
-      characters: Character[]
-
-      npcs: Character[]
-
-      currentScene?: SceneContext
-
-      currentTurn?: TimelineContext
-
-    },
+    world: WorldContext,
 
   ): AIContext {
 
     return {
 
-      world: {
+      world,
 
-        rpgId: context.rpgId,
+      self:
+        CharacterAdapter.toAI(
+          character,
+        ),
 
-        world: context.world,
+      profile:
+        world.profile,
 
-        lore: context.lore,
+      inventory:
+        InventoryAdapter.toAI(
+          world.inventory,
+        ),
 
-      },
+      nearbyCharacters:
+        world.characters,
+
+      nearbyNPCs:
+        world.npcs,
+
+      nearbyLore:
+        LoreAdapter.toAI(
+          world.lore,
+        ),
+
+      nearbyFactions:
+        FactionAdapter.toAI(
+          world.factions,
+        ),
+
+      visibleLore:
+        LoreAdapter.toAI(
+          world.lore,
+        ),
+
+      visibleFactions:
+        FactionAdapter.toAI(
+          world.factions,
+        ),
+
+      currentScene:
+        world.currentScene,
+
+      currentTerrain:
+        world.currentTerrain,
+
+      currentWeather:
+        world.currentWeather,
+
+      currentTurn: world.currentTurn ?? null,
+
+      recentTurns: world.recentTurns,
+      timelineEvents:
+        world.timeline,
 
       scene:
+        world.scene,
 
-        context.currentScene,
+      timeOfDay:
+        world.timeOfDay,
 
-      timeline:
+      season:
+        world.season,
 
-        context.currentTurn,
+      temperature:
+        world.temperature,
 
-      faction: {
-
-        factions:
-
-          context.factions,
-
-      },
-
-      character: {
-
-        self,
-
-        nearbyCharacters:
-
-          context.characters,
-
-        nearbyNPCs:
-
-          context.npcs,
-
-      },
+      dangerLevel:
+        world.dangerLevel,
 
     }
 

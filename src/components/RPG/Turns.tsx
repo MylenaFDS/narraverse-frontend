@@ -27,6 +27,8 @@ import type { Lore } from "../../types/lore"
 
 import { useLocation, useNavigate } from "react-router-dom"
 
+
+
 type Props = {
   rpgId: number
   rpgOwnerId: number
@@ -824,6 +826,10 @@ setTimelineCategoryId("")
     </div>
   )
 }
+
+
+
+
 
 
   return (
