@@ -829,37 +829,47 @@ setTimelineCategoryId("")
 }
 
 async function handleGenerateWithAI() {
-  if (!selectedCharacter) return
+
+  if (!selectedCharacterId) return
+
+  const character =
+    allCharacters.find(
+      c => c.id === selectedCharacterId,
+    )
+
+  if (!character) return
 
   const profile =
-  BrainProfileBuilder.fromCharacter(
-    selectedCharacter,
-  )
+    BrainProfileBuilder.fromCharacter(
+      character,
+    )
 
-const world = WorldContextBuilder.build({
+  const world =
+    WorldContextBuilder.build({
 
-  profile,
+      profile,
 
-  characters: allCharacters,
+      characters: allCharacters,
 
-  npcs: [],
+      npcs: [],
 
-  lore,
+      lore,
 
-  factions: [],
+      factions: [],
 
-  recentTurns:
-    TurnAdapter.toAI(turns),
+      recentTurns:
+        TurnAdapter.toAI(turns),
 
-})
+    })
 
   const text =
-  TurnBrainService.generate(
-    profile,
-    world,
-  )
+    TurnBrainService.generate(
+      profile,
+      world,
+    )
 
   setNewTurn(text)
+
 }
 
 
@@ -903,14 +913,7 @@ const world = WorldContextBuilder.build({
           <button onClick={handleSendTurn} className="rpg-btn">
             Enviar
           </button>
-          <button
-  type="button"
-  onClick={handleGenerateWithAI}
-  className="rpg-btn"
->
-  🧠 Gerar turno
-</button>
-
+          
           {showDropdown && filtered.length > 0 && (
             <div className="absolute top-full left-0 w-full bg-[#1f1f1f] border mt-1 rounded z-10">
               {filtered.map((char) => (
