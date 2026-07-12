@@ -24,9 +24,17 @@ export class WorldContextBuilder {
 
     return {
 
+      // ======================================
+      // Perfil
+      // ======================================
+
       profile: params.profile,
 
       inventory: params.profile.inventory,
+
+      // ======================================
+      // Mundo
+      // ======================================
 
       characters: params.characters,
 
@@ -36,10 +44,22 @@ export class WorldContextBuilder {
 
       factions: params.factions,
 
+      // ======================================
+      // Estado atual
+      // ======================================
+
       currentScene: undefined,
 
       currentTurn:
-        params.recentTurns.at(-1) ?? null,
+        params.recentTurns.length > 0
+          ? params.recentTurns[
+              params.recentTurns.length - 1
+            ]
+          : null,
+
+      // ======================================
+      // Histórico
+      // ======================================
 
       recentTurns: params.recentTurns,
 

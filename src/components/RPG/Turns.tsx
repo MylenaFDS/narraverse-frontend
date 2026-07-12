@@ -874,7 +874,6 @@ async function handleGenerateWithAI() {
 
 
 
-
   return (
     <>
       {loading ? (
@@ -897,37 +896,49 @@ async function handleGenerateWithAI() {
           ))}
         </select>
 
-        <div className="flex gap-2 relative">
-          <input
-            value={newTurn}
-            onChange={(e) => handleChange(e.target.value)}
-            className="rpg-input flex-1"
-          />
-        <button
-  type="button"
-  onClick={handleGenerateWithAI}
-  className="rpg-btn"
->
-  ✨ Gerar sugestão
-</button>
-          <button onClick={handleSendTurn} className="rpg-btn">
-            Enviar
-          </button>
-          
-          {showDropdown && filtered.length > 0 && (
-            <div className="absolute top-full left-0 w-full bg-[#1f1f1f] border mt-1 rounded z-10">
-              {filtered.map((char) => (
-                <div
-                  key={char.id}
-                  onClick={() => handleSelectMention(char)}
-                  className="p-2 cursor-pointer hover:bg-[#2b2d31]"
-                >
-                  @{char.name}
-                </div>
-              ))}
-            </div>
-          )}
+        <div className="flex flex-col gap-2 relative">
+
+  <textarea
+    value={newTurn}
+    onChange={(e) => handleChange(e.target.value)}
+    className="rpg-input min-h-[140px] resize-y"
+    placeholder="Escreva seu turno..."
+  />
+
+  <div className="flex gap-2">
+
+    <button
+      type="button"
+      onClick={handleGenerateWithAI}
+      className="rpg-btn"
+    >
+      ✨ Gerar com IA
+    </button>
+
+    <button
+      onClick={handleSendTurn}
+      className="rpg-btn"
+    >
+      Enviar
+    </button>
+
+  </div>
+
+  {showDropdown && filtered.length > 0 && (
+    <div className="absolute top-full left-0 w-full bg-[#1f1f1f] border mt-1 rounded z-10">
+      {filtered.map((char) => (
+        <div
+          key={char.id}
+          onClick={() => handleSelectMention(char)}
+          className="p-2 cursor-pointer hover:bg-[#2b2d31]"
+        >
+          @{char.name}
         </div>
+      ))}
+    </div>
+  )}
+
+</div>
       </div>
 
       {/* MODAL */}

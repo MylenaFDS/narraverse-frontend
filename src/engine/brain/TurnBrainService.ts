@@ -16,7 +16,11 @@ export class TurnBrainService {
 
     context: WorldContext,
 
-  ) {
+  ): string {
+
+    // ======================================
+    // Contexto utilizado pelo cérebro
+    // ======================================
 
     const aiContext =
       ContextBuilder.build(
@@ -24,20 +28,35 @@ export class TurnBrainService {
         context,
       )
 
+    // ======================================
+    // Processamento do cérebro
+    // ======================================
+
     const brain =
       BrainEngine.think(
         aiContext,
         profile,
       )
 
+    // ======================================
+    // Contexto utilizado pelo Writer
+    // ======================================
+
     const writer =
       WriterContextBuilder.build(
         brain,
       )
 
-    return NarraverseWriter.generate(
-      writer,
-    )
+    // ======================================
+    // Escrita do turno
+    // ======================================
+
+    const text =
+      NarraverseWriter.generate(
+        writer,
+      )
+
+    return text
 
   }
 
