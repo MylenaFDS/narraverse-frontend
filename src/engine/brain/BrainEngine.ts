@@ -1,4 +1,4 @@
-import type { AIContext } from "../context/ContextBuilder"
+import type { AIContext } from "../brain/AIContext"
 
 import { PersonalityEngine } from "./PersonalityEngine"
 import { EmotionEngine } from "./EmotionEngine"
@@ -43,7 +43,7 @@ export class BrainEngine {
     // ==========================
 
     const character =
-      context.character.self
+      context.self
 
     // ==========================
     // Personalidade

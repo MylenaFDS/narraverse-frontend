@@ -1,4 +1,4 @@
-import type { AIContext } from "../context/ContextBuilder"
+import type { AIContext } from "./AIContext"
 
 import type { WorldKnowledge } from "./types/WorldKnowledge"
 
@@ -88,15 +88,15 @@ export class WorldReasoningEngine {
 
       hasDanger:
 
-        context.character.nearbyNPCs.length > 0,
+        context.nearbyNPCs.length > 0,
 
       hasEnemiesNearby:
 
-        context.character.nearbyNPCs.length > 0,
+        context.nearbyNPCs.length > 0,
 
       hasAlliesNearby:
 
-        context.character.nearbyCharacters.length > 1,
+        context.nearbyCharacters.length > 1,
 
       locationType:
 
