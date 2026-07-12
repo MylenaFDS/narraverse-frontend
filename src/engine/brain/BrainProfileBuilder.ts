@@ -10,20 +10,19 @@ export class BrainProfileBuilder {
     character: Character,
   ): BrainProfile {
 
-    const emotions =
-      EmotionEngine.create()
+    const emotions = EmotionEngine.create()
 
     return {
 
-      // ======================================
+      // ==========================
       // Personagem
-      // ======================================
+      // ==========================
 
       character,
 
-      // ======================================
+      // ==========================
       // Progressão
-      // ======================================
+      // ==========================
 
       level: 1,
 
@@ -33,91 +32,74 @@ export class BrainProfileBuilder {
 
       evolutionStage: 0,
 
-      // ======================================
-      // Identidade
-      // ======================================
+      // ==========================
+      // Personalidade
+      // ==========================
 
       personality: {
 
         courage: 50,
-
         honor: 50,
-
         empathy: 50,
-
         greed: 0,
-
         curiosity: 50,
-
         patience: 50,
-
         cruelty: 0,
-
         ambition: 50,
-
         loyalty: 50,
-
         intelligence: 50,
 
       },
 
+      // ==========================
+      // Emoções
+      // ==========================
+
       emotions,
+
+      currentEmotion: emotions,
+
+      // ==========================
+      // Reputação
+      // ==========================
 
       reputation: {
 
         honor: 0,
-
         fear: 0,
-
         kindness: 0,
-
         cruelty: 0,
-
         wisdom: 0,
-
         leadership: 0,
 
       },
 
-      // ======================================
-      // Motivação
-      // ======================================
+      // ==========================
+      // Objetivos
+      // ==========================
 
       goals: [],
-
       desires: [],
-
       fears: [],
-
       beliefs: [],
-
-      // ======================================
-      // Relações
-      // ======================================
-
-      relationships: [],
-
-      trust: [],
-
-      // ======================================
-      // Conhecimento
-      // ======================================
-
-      knowledge: [],
-
-      memories: [],
-
-      inventory: [],
-
-      habits: [],
-
-      // ======================================
-      // Estado Atual
-      // ======================================
 
       currentGoal: null,
 
-      currentEmotion: emotions,
+      // ==========================
+      // Relações
+      // ==========================
+
+      relationships: [],
+      trust: [],
+
+      // ==========================
+      // Conhecimento
+      // ==========================
+
+      knowledge: [],
+      memories: [],
+      inventory: [],
+      habits: [],
 
     }
 

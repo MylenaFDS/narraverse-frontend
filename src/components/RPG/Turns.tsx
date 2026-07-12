@@ -16,7 +16,7 @@ import {
   getCharacterSheet,
   getMyCharacters
 } from "../../services/characters"
-
+import { TurnBrainService } from "../../engine/brain/TurnBrainService"
 import type { RPGTurn } from "../../types/turn"
 import type {
   Character,
@@ -26,8 +26,9 @@ import type {
 import type { Lore } from "../../types/lore"
 
 import { useLocation, useNavigate } from "react-router-dom"
-
-
+import { BrainProfileBuilder } from "../../engine/brain/BrainProfileBuilder"
+import { WorldContextBuilder } from "../../engine/context/WorldContextBuilder"
+import { TurnAdapter } from "../../engine/adapters/TurnAdapter"
 
 type Props = {
   rpgId: number
@@ -827,7 +828,39 @@ setTimelineCategoryId("")
   )
 }
 
+async function handleGenerateWithAI() {
+  if (!selectedCharacter) return
 
+  const profile =
+  BrainProfileBuilder.fromCharacter(
+    selectedCharacter,
+  )
+
+const world = WorldContextBuilder.build({
+
+  profile,
+
+  characters: allCharacters,
+
+  npcs: [],
+
+  lore,
+
+  factions: [],
+
+  recentTurns:
+    TurnAdapter.toAI(turns),
+
+})
+
+  const text =
+  TurnBrainService.generate(
+    profile,
+    world,
+  )
+
+  setNewTurn(text)
+}
 
 
 
@@ -860,10 +893,23 @@ setTimelineCategoryId("")
             onChange={(e) => handleChange(e.target.value)}
             className="rpg-input flex-1"
           />
-
+        <button
+  type="button"
+  onClick={handleGenerateWithAI}
+  className="rpg-btn"
+>
+  ✨ Gerar sugestão
+</button>
           <button onClick={handleSendTurn} className="rpg-btn">
             Enviar
           </button>
+          <button
+  type="button"
+  onClick={handleGenerateWithAI}
+  className="rpg-btn"
+>
+  🧠 Gerar turno
+</button>
 
           {showDropdown && filtered.length > 0 && (
             <div className="absolute top-full left-0 w-full bg-[#1f1f1f] border mt-1 rounded z-10">

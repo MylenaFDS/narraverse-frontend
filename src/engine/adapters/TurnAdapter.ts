@@ -11,23 +11,25 @@ export class TurnAdapter {
 
       id: turn.id,
 
-      summary:
-        turn.content,
+      summary: turn.content,
 
       participants:
-        turn.character_id
+        turn.character_id != null
           ? [turn.character_id]
           : [],
 
     }
 
   }
-  
+
   static toAI(
-  turns: RPGTurn[],
-): CurrentTurn[] {
-  return turns.map((turn) =>
-    this.toCurrent(turn),
-  )
-}
+    turns: RPGTurn[],
+  ): CurrentTurn[] {
+
+    return turns.map((turn) =>
+      this.toCurrent(turn),
+    )
+
+  }
+
 }
