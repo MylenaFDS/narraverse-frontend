@@ -1,5 +1,4 @@
 import type { Character } from "../../types/character"
-
 import type { BrainProfile } from "./BrainProfile"
 
 import { EmotionEngine } from "./EmotionEngine"
@@ -12,17 +11,29 @@ export class BrainProfileBuilder {
 
     const emotions = EmotionEngine.create()
 
+    const initialGoal = {
+
+      id: crypto.randomUUID(),
+
+      title: "Continuar interpretando o personagem",
+
+      priority: 100,
+
+      completed: false,
+
+    }
+
     return {
 
-      // ==========================
+      // ======================================
       // Personagem
-      // ==========================
+      // ======================================
 
       character,
 
-      // ==========================
+      // ======================================
       // Progressão
-      // ==========================
+      // ======================================
 
       level: 1,
 
@@ -32,9 +43,9 @@ export class BrainProfileBuilder {
 
       evolutionStage: 0,
 
-      // ==========================
+      // ======================================
       // Personalidade
-      // ==========================
+      // ======================================
 
       personality: {
 
@@ -51,17 +62,17 @@ export class BrainProfileBuilder {
 
       },
 
-      // ==========================
+      // ======================================
       // Emoções
-      // ==========================
+      // ======================================
 
       emotions,
 
       currentEmotion: emotions,
 
-      // ==========================
+      // ======================================
       // Reputação
-      // ==========================
+      // ======================================
 
       reputation: {
 
@@ -74,31 +85,40 @@ export class BrainProfileBuilder {
 
       },
 
-      // ==========================
+      // ======================================
       // Objetivos
-      // ==========================
+      // ======================================
 
-      goals: [],
+      goals: [
+        initialGoal,
+      ],
+
       desires: [],
+
       fears: [],
+
       beliefs: [],
 
-      currentGoal: null,
+      currentGoal: initialGoal,
 
-      // ==========================
+      // ======================================
       // Relações
-      // ==========================
+      // ======================================
 
       relationships: [],
+
       trust: [],
 
-      // ==========================
+      // ======================================
       // Conhecimento
-      // ==========================
+      // ======================================
 
       knowledge: [],
+
       memories: [],
+
       inventory: [],
+
       habits: [],
 
     }
