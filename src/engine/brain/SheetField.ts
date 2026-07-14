@@ -1,6 +1,10 @@
 export interface SheetField {
 
-  field_name: string
+  id: number
+
+  name: string
+
+  field_type: "text" | "number"
 
   value: string
 

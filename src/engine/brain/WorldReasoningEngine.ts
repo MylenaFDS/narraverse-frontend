@@ -1,37 +1,31 @@
-import type { AIContext } from "./AIContext"
+import type { WorldContext } from "../context/ContextEngine"
 
 import type { WorldKnowledge } from "./types/WorldKnowledge"
 
 export class WorldReasoningEngine {
 
   static analyze(
-
-    context: AIContext,
-
+    context: WorldContext,
   ): WorldKnowledge {
 
     const scene = context.scene
 
     const terrain =
-
       scene?.terrain
         ?.toLowerCase()
         .trim() ?? ""
 
     const weather =
-
       scene?.weather
         ?.toLowerCase()
         .trim() ?? ""
 
     const light =
-
       scene?.light
         ?.toLowerCase()
         .trim() ?? ""
 
     const time =
-
       scene?.time
         ?.toLowerCase()
         .trim() ?? ""
@@ -39,15 +33,12 @@ export class WorldReasoningEngine {
     return {
 
       isNight:
-
         time === "night",
 
       isRaining:
-
         weather.includes("chuva"),
 
       isSnowing:
-
         weather.includes("neve"),
 
       isFoggy:
@@ -83,20 +74,22 @@ export class WorldReasoningEngine {
       hasWater:
 
         terrain.includes("rio") ||
+
         terrain.includes("lago") ||
+
         terrain.includes("mar"),
 
       hasDanger:
 
-        context.nearbyNPCs.length > 0,
+        context.npcs.length > 0,
 
       hasEnemiesNearby:
 
-        context.nearbyNPCs.length > 0,
+        context.npcs.length > 0,
 
       hasAlliesNearby:
 
-        context.nearbyCharacters.length > 1,
+        context.characters.length > 1,
 
       locationType:
 

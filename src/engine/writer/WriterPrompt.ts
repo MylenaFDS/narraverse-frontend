@@ -1,17 +1,40 @@
+import type { Personality } from "../brain/types/Personality"
+import type { EmotionState } from "../brain/types/Emotion"
+import type { Decision } from "../brain/types/Decision"
+import type { Plan } from "../brain/types/Planning"
+
 export interface WriterPrompt {
 
-  narrator: string
+  // ======================================
+  // Personagem
+  // ======================================
 
-  objective: string
+  characterName: string
 
-  emotion: string
+  // ======================================
+  // Estado mental
+  // ======================================
 
-  tactical: string
+  personality: Personality
 
-  memories: string[]
+  emotion: EmotionState
 
-  strategy: string
+  // ======================================
+  // Objetivo
+  // ======================================
 
-  plan: string[]
+  goal: string | null
+
+  // ======================================
+  // Decisão
+  // ======================================
+
+  decision: Decision
+
+  // ======================================
+  // Plano
+  // ======================================
+
+  plan: Plan | null
 
 }

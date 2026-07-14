@@ -1,6 +1,24 @@
 export interface CharacterState {
 
+  // ==========================
+  // Estado universal
+  // ==========================
+
+  health: number
+
+  mana: number
+
+  stamina: number
+
   alive: boolean
+
+  unconscious: boolean
+
+  exhausted: boolean
+
+  // ==========================
+  // Compatibilidade
+  // ==========================
 
   conscious: boolean
 
@@ -13,7 +31,5 @@ export interface CharacterState {
   canCastMagic: boolean
 
   wounded: boolean
-
-  exhausted: boolean
 
 }

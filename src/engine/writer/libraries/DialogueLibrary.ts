@@ -1,31 +1,70 @@
-export const DialogueLibrary = {
+export class DialogueLibrary {
 
-  talk: [
+  private static readonly dialogues: Record<string, string[]> = {
 
-    "\"Ainda há esperança.\"",
+    talk: [
 
-    "\"Precisamos permanecer unidos.\"",
+      "\"Ainda há esperança.\"",
 
-    "\"Vamos resolver isso juntos.\"",
+      "\"Precisamos permanecer unidos.\"",
 
-    "\"Nem tudo está perdido.\"",
+      "\"Vamos resolver isso juntos.\"",
 
-  ],
+      "\"Nem tudo está perdido.\"",
 
-  attack: [
+    ],
 
-    "\"Agora!\"",
+    attack: [
 
-    "\"Não vou recuar!\"",
+      "\"Agora!\"",
 
-  ],
+      "\"Não vou recuar!\"",
 
-  retreat: [
+    ],
 
-    "\"Ainda não é o momento.\"",
+    retreat: [
 
-    "\"Precisamos reorganizar nossas forças.\"",
+      "\"Ainda não é o momento.\"",
 
-  ],
+      "\"Precisamos reorganizar nossas forças.\"",
+
+    ],
+
+  }
+
+  static get(
+    action: string,
+  ): string[] {
+
+    return (
+
+      this.dialogues[action] ??
+
+      []
+
+    )
+
+  }
+
+  static random(
+    action: string,
+  ): string {
+
+    const options =
+      this.get(action)
+
+    if (options.length === 0) {
+
+      return ""
+
+    }
+
+    return options[
+      Math.floor(
+        Math.random() * options.length,
+      )
+    ]
+
+  }
 
 }

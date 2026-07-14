@@ -1,55 +1,87 @@
-export const ActionLibrary = {
+export class ActionLibrary {
 
-  talk: [
+  private static readonly actions: Record<string, string[]> = {
 
-    "Resolvi expressar meus pensamentos.",
+    talk: [
 
-    "Dirigi minhas palavras aos presentes.",
+      "Resolvi expressar meus pensamentos.",
 
-    "Quebrei o silêncio.",
+      "Dirigi minhas palavras aos presentes.",
 
-    "Escolhi conversar antes de qualquer outra ação.",
+      "Quebrei o silêncio.",
 
-  ],
+      "Escolhi conversar antes de qualquer outra ação.",
 
-  attack: [
+    ],
 
-    "Avancei contra meu adversário.",
+    attack: [
 
-    "Parti para o ataque.",
+      "Avancei contra meu adversário.",
 
-    "Aproveitei a oportunidade para agir.",
+      "Parti para o ataque.",
 
-  ],
+      "Aproveitei a oportunidade para agir.",
 
-  defend: [
+    ],
 
-    "Mantive minha posição.",
+    defend: [
 
-    "Preparei-me para defender meus aliados.",
+      "Mantive minha posição.",
 
-    "Coloquei-me entre o perigo e aqueles que protegiam.",
+      "Preparei-me para defender meus aliados.",
 
-  ],
+      "Coloquei-me entre o perigo e aqueles que protegiam.",
 
-  retreat: [
+    ],
 
-    "Resolvi recuar alguns passos.",
+    retreat: [
 
-    "Preferi reorganizar minha estratégia.",
+      "Resolvi recuar alguns passos.",
 
-    "Afastei-me do confronto.",
+      "Preferi reorganizar minha estratégia.",
 
-  ],
+      "Afastei-me do confronto.",
 
-  explore: [
+    ],
 
-    "Passei a observar cuidadosamente os arredores.",
+    explore: [
 
-    "Resolvi explorar o ambiente.",
+      "Passei a observar cuidadosamente os arredores.",
 
-    "Segui investigando tudo ao meu redor.",
+      "Resolvi explorar o ambiente.",
 
-  ],
+      "Segui investigando tudo ao meu redor.",
+
+    ],
+
+  }
+
+  static get(
+    action: string,
+  ): string[] {
+
+    return (
+      this.actions[action] ??
+      [
+        "Segui com minha decisão.",
+      ]
+    )
+
+  }
+
+  static random(
+    action: string,
+  ): string {
+
+    const options =
+      this.get(action)
+
+    return options[
+      Math.floor(
+        Math.random() * options.length,
+      )
+    ]
+
+  }
 
 }

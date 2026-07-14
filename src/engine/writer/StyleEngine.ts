@@ -25,65 +25,265 @@ export class StyleEngine {
   ): StyleProfile {
 
     const emotion =
-      String(prompt.emotion).toLowerCase()
+      String(
+        prompt.emotion,
+      ).toLowerCase()
 
-    if (
-      emotion.includes("anger")
-    ) {
+    const personality =
+      prompt.personality
 
-      return {
+    const decision =
+      prompt.decision?.action ?? ""
 
-        sentenceSize: "short",
+    let sentenceSize:
+      | "short"
+      | "medium"
+      | "long" = "medium"
 
-        adjectiveLevel: 20,
+    let adjectiveLevel = 50
 
-        dialogueLevel: 30,
+    let dialogueLevel = 40
 
-        introspectionLevel: 5,
+    let introspectionLevel = 50
 
-        aggressionLevel: 100,
+    let aggressionLevel = 40
 
-        emotionLevel: 90,
+    let emotionLevel = 60
 
-      }
+    // =====================================
+    // Emoção dominante
+    // =====================================
+
+    switch (emotion) {
+
+      case "anger":
+
+        sentenceSize = "short"
+
+        aggressionLevel = 100
+
+        emotionLevel = 90
+
+        adjectiveLevel = 20
+
+        introspectionLevel = 5
+
+        dialogueLevel = 30
+
+        break
+
+      case "fear":
+
+        sentenceSize = "short"
+
+        aggressionLevel = 10
+
+        emotionLevel = 100
+
+        adjectiveLevel = 60
+
+        introspectionLevel = 95
+
+        dialogueLevel = 15
+
+        break
+
+      case "sadness":
+
+        sentenceSize = "long"
+
+        adjectiveLevel = 80
+
+        introspectionLevel = 95
+
+        dialogueLevel = 20
+
+        emotionLevel = 90
+
+        aggressionLevel = 0
+
+        break
+
+      case "trust":
+
+        sentenceSize = "medium"
+
+        adjectiveLevel = 60
+
+        dialogueLevel = 55
+
+        introspectionLevel = 60
+
+        aggressionLevel = 15
+
+        emotionLevel = 70
+
+        break
+
+      case "happiness":
+
+        sentenceSize = "medium"
+
+        adjectiveLevel = 55
+
+        dialogueLevel = 50
+
+        introspectionLevel = 40
+
+        aggressionLevel = 10
+
+        emotionLevel = 75
+
+        break
 
     }
 
-    if (
-      emotion.includes("fear")
-    ) {
+    // =====================================
+    // Personalidade
+    // =====================================
 
-      return {
+    if (personality.intelligence > 80) {
 
-        sentenceSize: "short",
+      adjectiveLevel += 20
 
-        adjectiveLevel: 60,
-
-        dialogueLevel: 15,
-
-        introspectionLevel: 95,
-
-        aggressionLevel: 10,
-
-        emotionLevel: 100,
-
-      }
+      sentenceSize = "long"
 
     }
+
+    if (personality.curiosity > 80) {
+
+      introspectionLevel += 15
+
+    }
+
+    if (personality.courage > 80) {
+
+      aggressionLevel += 20
+
+    }
+
+    if (personality.empathy > 80) {
+
+      dialogueLevel += 20
+
+    }
+
+    if (personality.patience > 80) {
+
+      sentenceSize = "long"
+
+    }
+
+    if (personality.cruelty > 80) {
+
+      aggressionLevel += 40
+
+    }
+
+    if (personality.greed > 80) {
+
+      introspectionLevel -= 15
+
+    }
+
+    if (personality.honor > 80) {
+
+      dialogueLevel += 10
+
+    }
+
+    if (personality.loyalty > 80) {
+
+      emotionLevel += 10
+
+    }
+
+    // =====================================
+    // Decisão
+    // =====================================
+
+    switch (decision) {
+
+      case "attack":
+
+        aggressionLevel += 25
+
+        sentenceSize = "short"
+
+        break
+
+      case "talk":
+
+        dialogueLevel += 25
+
+        break
+
+      case "explore":
+
+        adjectiveLevel += 15
+
+        introspectionLevel += 10
+
+        break
+
+      case "retreat":
+
+        introspectionLevel += 20
+
+        aggressionLevel -= 20
+
+        break
+
+      case "defend":
+
+        emotionLevel += 10
+
+        break
+
+    }
+
+    // =====================================
+    // Limites
+    // =====================================
+
+    adjectiveLevel = Math.max(
+      0,
+      Math.min(100, adjectiveLevel),
+    )
+
+    dialogueLevel = Math.max(
+      0,
+      Math.min(100, dialogueLevel),
+    )
+
+    introspectionLevel = Math.max(
+      0,
+      Math.min(100, introspectionLevel),
+    )
+
+    aggressionLevel = Math.max(
+      0,
+      Math.min(100, aggressionLevel),
+    )
+
+    emotionLevel = Math.max(
+      0,
+      Math.min(100, emotionLevel),
+    )
 
     return {
 
-      sentenceSize: "medium",
+      sentenceSize,
 
-      adjectiveLevel: 50,
+      adjectiveLevel,
 
-      dialogueLevel: 40,
+      dialogueLevel,
 
-      introspectionLevel: 50,
+      introspectionLevel,
 
-      aggressionLevel: 40,
+      aggressionLevel,
 
-      emotionLevel: 60,
+      emotionLevel,
 
     }
 

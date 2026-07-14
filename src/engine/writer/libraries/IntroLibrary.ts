@@ -1,23 +1,37 @@
-export const IntroLibrary = [
+export class IntroLibrary {
 
-  "Respirei lentamente.",
+  static readonly intros = [
 
-  "Observei atentamente o ambiente.",
+    "Respirei lentamente.",
 
-  "Mantive minha postura firme.",
+    "Observei atentamente o ambiente.",
 
-  "Ergui o olhar calmamente.",
+    "Mantive minha postura firme.",
 
-  "Permaneci alguns instantes em silêncio.",
+    "Ergui o olhar calmamente.",
 
-  "Meu olhar percorreu todo o cenário.",
+    "Permaneci alguns instantes em silêncio.",
 
-  "Fechei os olhos por um breve instante.",
+    "Meu olhar percorreu todo o cenário.",
 
-  "Analisei tudo antes de agir.",
+    "Fechei os olhos por um breve instante.",
 
-  "Permiti que meus pensamentos se organizassem.",
+    "Analisei tudo antes de agir.",
 
-  "Continuei atento ao que acontecia.",
+    "Permiti que meus pensamentos se organizassem.",
 
-]
+    "Continuei atento ao que acontecia.",
+
+  ]
+
+  static random(): string {
+
+    return this.intros[
+      Math.floor(
+        Math.random() * this.intros.length,
+      )
+    ]
+
+  }
+
+}

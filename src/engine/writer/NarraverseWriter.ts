@@ -10,14 +10,17 @@ export class NarraverseWriter {
     context: WriterContext,
   ): string {
 
-    const prompt =
+    const draft =
       NarrativeComposer.compose(
         context,
       )
 
     return TurnFormatter.format(
-      prompt,
+
+      draft.prompt,
+
       "",
+
     )
 
   }

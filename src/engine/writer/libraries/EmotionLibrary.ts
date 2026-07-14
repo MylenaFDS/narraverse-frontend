@@ -1,75 +1,110 @@
-export const EmotionLibrary = {
+export class EmotionLibrary {
 
-  happiness: [
+  private static readonly emotions: Record<string, string[]> = {
 
-    "Uma sensação de serenidade tomou conta de mim.",
+    happiness: [
 
-    "Senti confiança em minhas escolhas.",
+      "Uma sensação de serenidade tomou conta de mim.",
 
-    "Meu espírito estava leve.",
+      "Senti confiança em minhas escolhas.",
 
-  ],
+      "Meu espírito estava leve.",
 
-  anger: [
+    ],
 
-    "Controlei a raiva que crescia dentro de mim.",
+    anger: [
 
-    "Meu sangue parecia ferver.",
+      "Controlei a raiva que crescia dentro de mim.",
 
-    "Respirei profundamente antes de agir.",
+      "Meu sangue parecia ferver.",
 
-  ],
+      "Respirei profundamente antes de agir.",
 
-  fear: [
+    ],
 
-    "Meu instinto dizia para agir com cautela.",
+    fear: [
 
-    "O medo ainda permanecia presente.",
+      "Meu instinto dizia para agir com cautela.",
 
-    "Cada passo parecia exigir ainda mais atenção.",
+      "O medo ainda permanecia presente.",
 
-  ],
+      "Cada passo parecia exigir ainda mais atenção.",
 
-  sadness: [
+    ],
 
-    "O peso dos acontecimentos permanecia comigo.",
+    sadness: [
 
-    "Respirei fundo tentando afastar a tristeza.",
+      "O peso dos acontecimentos permanecia comigo.",
 
-    "Meu coração ainda carregava dúvidas.",
+      "Respirei fundo tentando afastar a tristeza.",
 
-  ],
+      "Meu coração ainda carregava dúvidas.",
 
-  trust: [
+    ],
 
-    "Sabia que podia confiar nos que estavam ao meu lado.",
+    trust: [
 
-    "A presença dos meus aliados fortalecia minha determinação.",
+      "Sabia que podia confiar nos que estavam ao meu lado.",
 
-  ],
+      "A presença dos meus aliados fortalecia minha determinação.",
 
-  curiosity: [
+    ],
 
-    "Minha curiosidade falou mais alto.",
+    curiosity: [
 
-    "Queria entender melhor aquela situação.",
+      "Minha curiosidade falou mais alto.",
 
-  ],
+      "Queria entender melhor aquela situação.",
 
-  surprise: [
+    ],
 
-    "Aquilo me surpreendeu completamente.",
+    surprise: [
 
-    "Levei alguns instantes para compreender o que via.",
+      "Aquilo me surpreendeu completamente.",
 
-  ],
+      "Levei alguns instantes para compreender o que via.",
 
-  disgust: [
+    ],
 
-    "Não consegui esconder meu desconforto.",
+    disgust: [
 
-    "A cena diante de mim provocava repulsa.",
+      "Não consegui esconder meu desconforto.",
 
-  ],
+      "A cena diante de mim provocava repulsa.",
+
+    ],
+
+  }
+
+  static get(
+    emotion: string,
+  ): string[] {
+
+    return (
+
+      this.emotions[emotion] ??
+
+      [
+        "Mantive a calma enquanto refletia sobre a situação.",
+      ]
+
+    )
+
+  }
+
+  static random(
+    emotion: string,
+  ): string {
+
+    const options =
+      this.get(emotion)
+
+    return options[
+      Math.floor(
+        Math.random() * options.length,
+      )
+    ]
+
+  }
 
 }

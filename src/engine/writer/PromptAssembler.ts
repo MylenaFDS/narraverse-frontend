@@ -4,33 +4,54 @@ import type { WriterPrompt } from "./WriterPrompt"
 export class PromptAssembler {
 
   static build(
-
     context: WriterContext,
-
   ): WriterPrompt {
 
     return {
 
-      narrator:
-        context.prompt.characterName,
+      // =====================================
+      // Personagem
+      // =====================================
 
-      objective:
-        context.prompt.objective,
+      characterName:
+        context.character.name,
+
+      // =====================================
+      // Personalidade
+      // =====================================
+
+      personality:
+        context.personality,
+
+      // =====================================
+      // Emoções
+      // =====================================
 
       emotion:
-        context.prompt.emotion,
+        context.emotion,
 
-      tactical:
-        context.prompt.tacticalDecision,
+      // =====================================
+      // Objetivo
+      // =====================================
 
-      memories:
-        context.prompt.recentMemories,
+      goal:
+        context.goal
+          ? context.goal.title
+          : null,
 
-      strategy:
-        context.prompt.strategy,
+      // =====================================
+      // Decisão
+      // =====================================
+
+      decision:
+        context.decision,
+
+      // =====================================
+      // Plano
+      // =====================================
 
       plan:
-        context.prompt.plan,
+        context.plan,
 
     }
 

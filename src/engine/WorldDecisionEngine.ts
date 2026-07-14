@@ -9,6 +9,7 @@ export interface Decision {
   priority: number
 
   reason: string
+
 }
 
 export class DecisionEngine {
@@ -19,78 +20,102 @@ export class DecisionEngine {
 
     const decisions: Decision[] = []
 
-    // -----------------------------
+    // =============================
     // Mundo vazio
-    // -----------------------------
+    // =============================
 
-    if (context.world.length === 0) {
+    if (context.lore.length === 0) {
 
       decisions.push({
+
         action: "generate_world",
+
         priority: 100,
-        reason: "O RPG ainda não possui regiões.",
+
+        reason: "O RPG ainda não possui nenhuma lore.",
+
       })
 
       return decisions
+
     }
 
-    // -----------------------------
-    // Sem personagens
-    // -----------------------------
+    // =============================
+    // Personagens
+    // =============================
 
     if (context.characters.length === 0) {
 
       decisions.push({
+
         action: "suggest_character",
+
         priority: 90,
+
         reason: "Não existem personagens ativos.",
+
       })
+
     }
 
-    // -----------------------------
-    // Sem NPCs
-    // -----------------------------
+    // =============================
+    // NPCs
+    // =============================
 
     if (context.npcs.length === 0) {
 
       decisions.push({
+
         action: "generate_npc",
+
         priority: 80,
+
         reason: "A cena não possui NPCs.",
+
       })
+
     }
 
-    // -----------------------------
-    // Sem facções
-    // -----------------------------
+    // =============================
+    // Facções
+    // =============================
 
     if (context.factions.length === 0) {
 
       decisions.push({
+
         action: "suggest_faction",
+
         priority: 70,
+
         reason: "Ainda não existem facções.",
+
       })
+
     }
 
-    // -----------------------------
-    // Sem eventos
-    // -----------------------------
+    // =============================
+    // Timeline
+    // =============================
 
     if (context.timeline.length === 0) {
 
       decisions.push({
+
         action: "generate_event",
+
         priority: 60,
+
         reason: "Nenhum evento histórico registrado.",
+
       })
+
     }
 
     return decisions.sort(
-      (
-        a,
-        b,
-      ) => b.priority - a.priority
+      (a, b) => b.priority - a.priority,
     )
+
   }
+
 }

@@ -1,127 +1,138 @@
-import type { SheetField } from "./SheetField"
+import type { Character } from "../../types/character"
 
+import type { SheetField } from "./SheetField"
 import type { CharacterState } from "./types/CharacterState"
 
 import { SheetInterpreterEngine } from "./SheetInterpreterEngine"
-
-import { ValueInterpreter }
-
-from "./ValueInterpreter"
+import { ValueInterpreter } from "./ValueInterpreter"
 
 export class CharacterStateEngine {
 
   static build(
-
-    fields: SheetField[],
-
+    character: Character,
   ): CharacterState {
 
-    const life =
+    const fields: SheetField[] =
 
+    character.sheet_values.map(value => ({
+
+      id: value.field.id,
+
+      name: value.field.name,
+
+      value: value.value,
+
+      field_type: value.field.field_type,
+
+    }))
+
+    const life =
       SheetInterpreterEngine.life(
         fields,
       )
 
     const mana =
-
       SheetInterpreterEngine.mana(
         fields,
       )
 
     const unconscious =
-
       SheetInterpreterEngine.unconscious(
         fields,
       )
 
     const mute =
-
       SheetInterpreterEngine.mute(
         fields,
       )
 
     const immobilized =
-
       SheetInterpreterEngine.immobilized(
         fields,
       )
 
-    const lifeValue =
+    const staminaField =
+      SheetInterpreterEngine.stamina?.(
+        fields,
+      ) ?? null
 
+    const health =
       ValueInterpreter.number(
-    life,
-  )
+        life,
+      ) ?? 100
 
     const manaValue =
-
       ValueInterpreter.number(
-    mana,
-  )
+        mana,
+      ) ?? 100
 
-    const hasLife =
-  lifeValue !== null
+    const stamina =
+      ValueInterpreter.number(
+        staminaField,
+      ) ?? 100
 
-const hasMana =
-  manaValue !== null
+    const unconsciousValue =
+      ValueInterpreter.isTrue(
+        unconscious,
+      )
+
+    const muted =
+      ValueInterpreter.isTrue(
+        mute,
+      )
+
+    const immobilizedValue =
+      ValueInterpreter.isTrue(
+        immobilized,
+      )
 
     return {
 
+      // ==========================
+      // Estado universal
+      // ==========================
+
+      health,
+
+      mana: manaValue,
+
+      stamina,
+
       alive:
+        health > 0,
 
-  hasLife
+      unconscious:
+        unconsciousValue,
 
-    ? (lifeValue! > 0)
+      exhausted:
+        stamina <= 10,
 
-    : true,
+      // ==========================
+      // Compatibilidade
+      // ==========================
 
       conscious:
-
-        !ValueInterpreter.isTrue(
-  unconscious,
-),
+        !unconsciousValue,
 
       canSpeak:
-
-        mute !== "Sim",
+        !muted,
 
       canMove:
-
-        immobilized !== "Sim",
+        !immobilizedValue,
 
       canFight:
 
-  (hasLife
+        health > 0 &&
 
-    ? (lifeValue! > 0)
+        !unconsciousValue &&
 
-    : true)
-
-  &&
-
-  !ValueInterpreter.isTrue(unconscious)
-
-  &&
-
-  !ValueInterpreter.isTrue(immobilized),
+        !immobilizedValue,
 
       canCastMagic:
-
-  hasMana
-
-    ? (manaValue! > 0)
-
-    : true,
+        manaValue > 0,
 
       wounded:
-
-  hasLife
-
-    ? (lifeValue! <= 2)
-
-    : false,
-
-    exhausted: false,
-
+        health <= 20,
 
     }
 

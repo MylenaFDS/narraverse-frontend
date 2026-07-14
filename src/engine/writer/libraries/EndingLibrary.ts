@@ -1,15 +1,29 @@
-export const EndingLibrary = [
+export class EndingLibrary {
 
-  "Continuei atento ao que acontecia ao meu redor.",
+  static readonly endings = [
 
-  "Esperei pela reação dos demais.",
+    "Continuei atento ao que acontecia ao meu redor.",
 
-  "Mantive minha posição.",
+    "Esperei pela reação dos demais.",
 
-  "Não baixei a guarda.",
+    "Mantive minha posição.",
 
-  "Observei atentamente as consequências daquela decisão.",
+    "Não baixei a guarda.",
 
-  "Permaneci preparado para agir novamente.",
+    "Observei atentamente as consequências daquela decisão.",
 
-]
+    "Permaneci preparado para agir novamente.",
+
+  ]
+
+  static random(): string {
+
+    return this.endings[
+      Math.floor(
+        Math.random() * this.endings.length,
+      )
+    ]
+
+  }
+
+}
