@@ -1,5 +1,5 @@
 import type { WriterPrompt } from "./WriterPrompt"
-
+import { EmotionInterpreterEngine } from "../emotion/EmotionInterpreterEngine"
 
 export class DescriptionEngine {
 
@@ -65,9 +65,9 @@ if (prompt.plan) {
 
     if (prompt.emotion) {
 
-      const emotion = this.getDominantEmotion(
-        prompt.emotion
-      )
+      const emotion = EmotionInterpreterEngine.describe(
+  prompt.emotion
+)
 
       parts.push(
         `Meu estado emocional é marcado por ${emotion}.`
@@ -81,66 +81,6 @@ if (prompt.plan) {
   }
 
 
-  // ======================================
-  // Interpretação emocional
-  // ======================================
-
-  private static getDominantEmotion(
-    emotion: WriterPrompt["emotion"],
-  ): string {
-
-    const values = [
-
-      {
-        name: "felicidade",
-        value: emotion.happiness,
-      },
-
-      {
-        name: "tristeza",
-        value: emotion.sadness,
-      },
-
-      {
-        name: "raiva",
-        value: emotion.anger,
-      },
-
-      {
-        name: "medo",
-        value: emotion.fear,
-      },
-
-      {
-        name: "confiança",
-        value: emotion.trust,
-      },
-
-      {
-        name: "curiosidade",
-        value: emotion.curiosity,
-      },
-
-      {
-        name: "surpresa",
-        value: emotion.surprise,
-      },
-
-      {
-        name: "repulsa",
-        value: emotion.disgust,
-      },
-
-    ]
-
-
-    const dominant = values.sort(
-      (a, b) => b.value - a.value
-    )[0]
-
-
-    return dominant.name
-
-  }
+  
 
 }

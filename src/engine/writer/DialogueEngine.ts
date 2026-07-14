@@ -1,5 +1,5 @@
 import type { WriterPrompt } from "./WriterPrompt"
-
+import { EmotionInterpreterEngine } from "../emotion/EmotionInterpreterEngine"
 
 export class DialogueEngine {
 
@@ -7,9 +7,9 @@ export class DialogueEngine {
     prompt: WriterPrompt,
   ): string {
 
-    const emotion = this.getDominantEmotion(
-      prompt.emotion
-    )
+    const emotion = EmotionInterpreterEngine.getDominantEmotion(
+  prompt.emotion
+)
 
 
     if (emotion === "anger") {
@@ -52,59 +52,6 @@ export class DialogueEngine {
   }
 
 
-  private static getDominantEmotion(
-    emotion: WriterPrompt["emotion"],
-  ): string {
-
-    const values = [
-
-      {
-        name: "happiness",
-        value: emotion.happiness,
-      },
-
-      {
-        name: "sadness",
-        value: emotion.sadness,
-      },
-
-      {
-        name: "anger",
-        value: emotion.anger,
-      },
-
-      {
-        name: "fear",
-        value: emotion.fear,
-      },
-
-      {
-        name: "trust",
-        value: emotion.trust,
-      },
-
-      {
-        name: "curiosity",
-        value: emotion.curiosity,
-      },
-
-      {
-        name: "surprise",
-        value: emotion.surprise,
-      },
-
-      {
-        name: "disgust",
-        value: emotion.disgust,
-      },
-
-    ]
-
-
-    return values.sort(
-      (a, b) => b.value - a.value
-    )[0].name
-
-  }
+  
 
 }

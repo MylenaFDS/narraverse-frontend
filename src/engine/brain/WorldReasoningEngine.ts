@@ -2,44 +2,64 @@ import type { WorldContext } from "../context/ContextEngine"
 
 import type { WorldKnowledge } from "./types/WorldKnowledge"
 
+
 export class WorldReasoningEngine {
 
   static analyze(
     context: WorldContext,
   ): WorldKnowledge {
 
+
     const scene = context.scene
+
+    const characters =
+      context.characters ?? []
+
+    const npcs =
+      context.npcs ?? []
+
 
     const terrain =
       scene?.terrain
         ?.toLowerCase()
         .trim() ?? ""
 
+
     const weather =
       scene?.weather
         ?.toLowerCase()
         .trim() ?? ""
+
 
     const light =
       scene?.light
         ?.toLowerCase()
         .trim() ?? ""
 
+
     const time =
       scene?.time
         ?.toLowerCase()
         .trim() ?? ""
 
+
     return {
 
+
       isNight:
+
         time === "night",
 
+
       isRaining:
+
         weather.includes("chuva"),
 
+
       isSnowing:
+
         weather.includes("neve"),
+
 
       isFoggy:
 
@@ -47,9 +67,11 @@ export class WorldReasoningEngine {
 
         weather.includes("neblina"),
 
+
       isDark:
 
         light === "dark",
+
 
       isIndoor:
 
@@ -59,6 +81,7 @@ export class WorldReasoningEngine {
 
         terrain.includes("caverna"),
 
+
       isOutdoor:
 
         !(
@@ -67,9 +90,11 @@ export class WorldReasoningEngine {
           terrain.includes("caverna")
         ),
 
+
       hasFire:
 
         terrain.includes("fogo"),
+
 
       hasWater:
 
@@ -79,17 +104,21 @@ export class WorldReasoningEngine {
 
         terrain.includes("mar"),
 
+
       hasDanger:
 
-        context.npcs.length > 0,
+        npcs.length > 0,
+
 
       hasEnemiesNearby:
 
-        context.npcs.length > 0,
+        npcs.length > 0,
+
 
       hasAlliesNearby:
 
-        context.characters.length > 1,
+        characters.length > 1,
+
 
       locationType:
 

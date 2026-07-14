@@ -14,7 +14,7 @@ export class CharacterStateEngine {
 
     const fields: SheetField[] =
 
-    character.sheet_values.map(value => ({
+(character.sheet_values ?? []).map(value => ({
 
       id: value.field.id,
 
