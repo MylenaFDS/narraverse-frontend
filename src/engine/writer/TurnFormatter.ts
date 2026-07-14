@@ -1,26 +1,27 @@
+import type { NarrativeDraft } from "./NarrativeDraft"
+
+import { StyleTransformerEngine } from "./StyleTransformerEngine"
+
 
 export class TurnFormatter {
 
+
   static format(
-
-    description: string,
-
-    dialogue: string,
+    draft: NarrativeDraft,
+  ): string {
 
 
-  ) {
+    const styledText =
+      StyleTransformerEngine.transform(
 
-    return [
+        draft.prompt,
 
-      description,
+        draft.style,
 
-      dialogue,
+      )
 
-    ]
 
-      .filter(Boolean)
-
-      .join("\n\n")
+    return styledText
 
   }
 

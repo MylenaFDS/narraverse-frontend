@@ -12,9 +12,14 @@ export class CharacterStateEngine {
     character: Character,
   ): CharacterState {
 
+
+    const sheetValues =
+      character.sheet_values ?? []
+
+
     const fields: SheetField[] =
 
-(character.sheet_values ?? []).map(value => ({
+    sheetValues.map(value => ({
 
       id: value.field.id,
 
