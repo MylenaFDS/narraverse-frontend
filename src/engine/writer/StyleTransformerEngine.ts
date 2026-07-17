@@ -1,14 +1,28 @@
 import type { StyleProfile } from "./StyleProfile"
 
+
 export class StyleTransformerEngine {
+
 
   static apply(
     text: string,
     style: StyleProfile,
   ): string {
 
+
+    if (
+      !text.trim()
+    ) {
+
+      return ""
+
+    }
+
+
     let result =
       text.trim()
+
+
 
     // =====================================
     // Frases curtas
@@ -25,8 +39,10 @@ export class StyleTransformerEngine {
 
     }
 
+
+
     // =====================================
-    // Frases longas
+    // Frases reflexivas
     // =====================================
 
     if (
@@ -40,27 +56,31 @@ export class StyleTransformerEngine {
 
     }
 
+
+
     // =====================================
     // Emoção
     // =====================================
 
     if (
-      style.emotionLevel > 80
+      style.emotionLevel >= 90
     ) {
 
       result =
-        this.increaseEmotion(
+        this.enhanceEmotion(
           result,
         )
 
     }
+
+
 
     // =====================================
     // Introspecção
     // =====================================
 
     if (
-      style.introspectionLevel > 80
+      style.introspectionLevel >= 90
     ) {
 
       result =
@@ -70,12 +90,14 @@ export class StyleTransformerEngine {
 
     }
 
+
+
     // =====================================
     // Agressividade
     // =====================================
 
     if (
-      style.aggressionLevel > 80
+      style.aggressionLevel >= 90
     ) {
 
       result =
@@ -85,72 +107,153 @@ export class StyleTransformerEngine {
 
     }
 
-    return result
+
+
+    return this.normalize(
+      result,
+    )
 
   }
+
+
+
+
 
   private static makeShortSentences(
     text: string,
   ): string {
 
+
     return text
-      .split(",")
-      .join(".")
       .replace(
-        /\s+/g,
-        " ",
+        /,\s/g,
+        ". ",
       )
 
+
   }
+
+
+
+
 
   private static makeReflective(
     text: string,
   ): string {
 
+
+    if (
+      !text
+    ) {
+
+      return text
+
+    }
+
+
     return (
+
       "Por um instante, "
+
       +
+
       text.charAt(0).toLowerCase()
+
       +
+
       text.slice(1)
+
     )
 
   }
 
-  private static increaseEmotion(
+
+
+
+
+  private static enhanceEmotion(
     text: string,
   ): string {
 
+
     return (
+
       text
+
       +
-      " O peso daquele momento parecia impossível de ignorar."
+
+      " Aquela sensação permaneceu comigo."
+
     )
 
   }
+
+
+
+
 
   private static addReflection(
     text: string,
   ): string {
 
+
     return (
+
       text
+
       +
-      " Me perguntei quais consequências minhas escolhas trariam."
+
+      " Pensei nas consequências daquela escolha."
+
     )
 
   }
+
+
+
+
 
   private static addIntensity(
     text: string,
   ): string {
 
+
     return (
+
       text
+
       +
+
       " Não havia espaço para hesitação."
+
     )
 
   }
+
+
+
+
+
+  private static normalize(
+    text: string,
+  ): string {
+
+
+    return text
+
+      .replace(
+        /\s+/g,
+        " ",
+      )
+
+      .replace(
+        /\s+([,.!?;:])/g,
+        "$1",
+      )
+
+      .trim()
+
+  }
+
 
 }

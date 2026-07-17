@@ -1,114 +1,135 @@
+import type { NarrativeFragment } from "./NarrativeFragment"
+
+
 export class SentencePlanner {
 
+
   static compose(
-    fragments: string[],
+    fragments: NarrativeFragment[],
   ): string {
 
-    const sentences =
-      fragments
-        .map(
-          fragment =>
-            fragment.trim(),
-        )
-        .filter(
-          fragment =>
-            fragment.length > 0,
-        )
 
     if (
-      sentences.length === 0
+      fragments.length === 0
     ) {
 
       return ""
 
     }
 
-    const narrative: string[] = []
 
-    for (
-      let i = 0;
-      i < sentences.length;
-      i++
-    ) {
-
-      const sentence =
-        this.normalizeSentence(
-          sentences[i],
-        )
-
-      if (!sentence) {
-
-        continue
-
-      }
-
-      narrative.push(
-        sentence,
+    const ordered =
+      this.applyNarrativeRhythm(
+        fragments,
       )
+
+
+    return ordered
+      .map(
+        fragment =>
+          this.normalizeSentence(
+            fragment,
+          ),
+      )
+      .filter(Boolean)
+      .join(" ")
+
+  }
+
+
+
+
+
+  private static applyNarrativeRhythm(
+    fragments: NarrativeFragment[],
+  ): NarrativeFragment[] {
+
+
+    const priority = {
+
+      observation: 1,
+
+      emotion: 2,
+
+      action: 3,
+
+      dialogue: 4,
+
+      ending: 5,
 
     }
 
-    return this.normalizeText(
-      narrative.join(" "),
+
+    return [
+      ...fragments,
+    ]
+    .sort(
+      (a,b) =>
+        priority[a.type] -
+        priority[b.type],
     )
 
   }
 
+
+
+
+
   private static normalizeSentence(
-    sentence: string,
+    fragment: NarrativeFragment,
   ): string {
 
-    let result =
-      sentence.trim()
+
+    let text =
+      fragment.text.trim()
+
+
 
     if (
-      result.length === 0
+      text.length === 0
     ) {
 
       return ""
 
     }
 
-    result =
-      result.charAt(0)
-      .toUpperCase()
-      +
-      result.slice(1)
 
-    if (
-      !/[.!?]$/.test(result)
-    ) {
 
-      result += "."
+    // diálogo
+
+    if(
+      fragment.type === "dialogue"
+    ){
+
+      text =
+        text.replace(
+          /[.!?]+$/,
+          "",
+        )
+
+      return text + "."
 
     }
 
-    return result
 
-  }
 
-  private static normalizeText(
-    text: string,
-  ): string {
 
-    return text
+    text =
+      text.charAt(0)
+      .toUpperCase()
+      +
+      text.slice(1)
 
-      .replace(
-        /\s+/g,
-        " ",
+
+
+    text =
+      text.replace(
+        /[.!?]+$/,
+        "",
       )
 
-      .replace(
-        /\s+([,.!?;:])/g,
-        "$1",
-      )
 
-      .replace(
-        /([.!?])([A-ZÀ-Ú])/g,
-        "$1 $2",
-      )
-
-      .trim()
+    return text + "."
 
   }
 

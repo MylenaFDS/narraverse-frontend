@@ -30,6 +30,22 @@ export class DialogueLibrary {
 
     ],
 
+    defend: [
+
+  "\"Fiquem atrás de mim.\"",
+
+  "\"Eu protegerei vocês.\"",
+
+],
+
+explore: [
+
+  "\"Precisamos descobrir o que aconteceu.\"",
+
+  "\"Vamos investigar antes de agir.\"",
+
+],
+
   }
 
   static get(

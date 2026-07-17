@@ -18,9 +18,13 @@ export class NarraverseWriter {
       )
 
 
-    return TurnFormatter.format(
-      draft,
-    )
+    const formatted =
+      TurnFormatter.format(
+        draft,
+      )
+
+
+    return formatted
 
   }
 

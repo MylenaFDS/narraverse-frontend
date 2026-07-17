@@ -1,4 +1,5 @@
 import type { NarrativeEvent } from "./planner/NarrativeEvent"
+import type { NarrativeFragment } from "./planner/NarrativeFragment"
 
 import { ActionLibrary } from "./libraries/ActionLibrary"
 import { ConnectorLibrary } from "./libraries/ConnectorLibrary"
@@ -6,87 +7,109 @@ import { DialogueLibrary } from "./libraries/DialogueLibrary"
 import { EmotionLibrary } from "./libraries/EmotionLibrary"
 import { EndingLibrary } from "./libraries/EndingLibrary"
 
+
 export class LibraryManager {
+
 
   static compose(
     events: NarrativeEvent[],
-  ): string[] {
+  ): NarrativeFragment[] {
 
-    const fragments: string[] = []
+
+    const fragments: NarrativeFragment[] = []
+
 
     for (const event of events) {
 
-      switch (event.type) {
 
-        case "observation": {
+      switch(event.type) {
 
-          fragments.push(
-            ConnectorLibrary.randomObservation(),
-          )
 
-          break
+        case "observation":
 
-        }
+          fragments.push({
 
-        case "emotion": {
+            type: "observation",
 
-          fragments.push(
-            EmotionLibrary.random(
-              String(event.payload),
-            ),
-          )
+            text:
+              ConnectorLibrary.randomObservation(),
+
+          })
 
           break
 
-        }
 
-        case "action": {
 
-          fragments.push(
-            ActionLibrary.random(
-              String(event.payload),
-            ),
-          )
+        case "emotion":
 
-          break
+          fragments.push({
 
-        }
+            type: "emotion",
 
-        case "dialogue": {
+            text:
+              EmotionLibrary.random(
+                String(event.payload),
+              ),
 
-          fragments.push(
-            DialogueLibrary.random(
-              String(event.payload),
-            ),
-          )
+          })
 
           break
 
-        }
 
-        case "ending": {
 
-          fragments.push(
-            EndingLibrary.random(),
-          )
+        case "action":
+
+          fragments.push({
+
+            type: "action",
+
+            text:
+              ActionLibrary.random(
+                String(event.payload),
+              ),
+
+          })
 
           break
 
-        }
 
-        default: {
+
+        case "dialogue":
+
+          fragments.push({
+
+            type: "dialogue",
+
+            text:
+              DialogueLibrary.random(
+                String(event.payload),
+              ),
+
+          })
 
           break
 
-        }
+
+
+        case "ending":
+
+          fragments.push({
+
+            type: "ending",
+
+            text:
+              EndingLibrary.random(),
+
+          })
+
+          break
 
       }
 
     }
 
-    return fragments.filter(
-      Boolean,
-    )
+
+    return fragments
 
   }
 

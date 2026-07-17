@@ -5,13 +5,15 @@ import { StyleEngine } from "./StyleEngine"
 import { LibraryManager } from "./LibraryManager"
 import { NarrativeEventPlanner } from "./planner/NarrativeEventPlanner"
 import { SentencePlanner } from "./planner/SentencePlanner"
-import { StyleTransformerEngine } from "./StyleTransformerEngine"
+
 
 export class NarrativeComposer {
+
 
   static compose(
     context: WriterContext,
   ): NarrativeDraft {
+
 
     const style =
       StyleEngine.apply({
@@ -36,12 +38,17 @@ export class NarrativeComposer {
 
       })
 
+
+
     const dominantEmotion =
       Object.entries(
         context.emotion,
-      ).sort(
+      )
+      .sort(
         (a, b) => b[1] - a[1],
       )[0]?.[0] ?? "trust"
+
+
 
     // ============================
     // Planejamento narrativo
@@ -52,6 +59,8 @@ export class NarrativeComposer {
         context,
       )
 
+
+
     // ============================
     // Bibliotecas
     // ============================
@@ -60,6 +69,8 @@ export class NarrativeComposer {
       LibraryManager.compose(
         events,
       )
+
+
 
     // ============================
     // Construção das frases
@@ -70,31 +81,29 @@ export class NarrativeComposer {
         fragments,
       )
 
-    // ============================
-    // Aplicação do estilo
-    // ============================
 
-    const prompt =
-      StyleTransformerEngine.apply(
-        text,
-        style,
-      )
 
     return {
 
-      prompt,
+      prompt:
+        text,
+
 
       dominantEmotion,
 
+
       style,
+
 
       writerHints: {
 
         firstPerson:
           context.firstPerson,
 
+
         allowDialogue:
           context.allowDialogue,
+
 
         maxWords:
           context.maxWords,

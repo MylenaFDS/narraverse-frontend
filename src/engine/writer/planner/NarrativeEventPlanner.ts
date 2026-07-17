@@ -4,21 +4,28 @@ import type { NarrativeEvent } from "./NarrativeEvent"
 import { EventFactory } from "./EventFactory"
 import { NarrativePriority } from "./NarrativePriority"
 
+
 export class NarrativeEventPlanner {
+
 
   static plan(
     context: WriterContext,
   ): NarrativeEvent[] {
 
+
     const events: NarrativeEvent[] = []
+
+
 
     const dominantEmotion =
       Object.entries(
-        context.emotion,
+        context.emotion ?? {},
       )
-        .sort(
-          (a, b) => b[1] - a[1],
-        )[0]?.[0] ?? "trust"
+      .sort(
+        (a, b) => b[1] - a[1],
+      )[0]?.[0] ?? "trust"
+
+
 
     // ======================================
     // Observação inicial
@@ -34,6 +41,8 @@ export class NarrativeEventPlanner {
 
     )
 
+
+
     // ======================================
     // Estado emocional
     // ======================================
@@ -48,11 +57,15 @@ export class NarrativeEventPlanner {
 
     )
 
+
+
     // ======================================
     // Ação principal
     // ======================================
 
-    if (context.decision.action) {
+    if (
+      context.decision.action
+    ) {
 
       events.push(
 
@@ -66,11 +79,16 @@ export class NarrativeEventPlanner {
 
     }
 
+
+
     // ======================================
-    // Diálogo (apenas se permitido)
+    // Diálogo
     // ======================================
 
-    if (context.allowDialogue) {
+    if (
+      context.allowDialogue &&
+      context.decision.action
+    ) {
 
       events.push(
 
@@ -83,6 +101,8 @@ export class NarrativeEventPlanner {
       )
 
     }
+
+
 
     // ======================================
     // Encerramento
@@ -98,11 +118,17 @@ export class NarrativeEventPlanner {
 
     )
 
+
+
     return events.sort(
+
       (a, b) =>
         a.priority - b.priority,
+
     )
 
+
   }
+
 
 }
