@@ -4,47 +4,47 @@ export class DialogueLibrary {
 
     talk: [
 
-      "\"Ainda há esperança.\"",
+      "Ainda há esperança.",
 
-      "\"Precisamos permanecer unidos.\"",
+      "Precisamos permanecer unidos.",
 
-      "\"Vamos resolver isso juntos.\"",
+      "Vamos resolver isso juntos.",
 
-      "\"Nem tudo está perdido.\"",
+      "Nem tudo está perdido.",
 
     ],
 
     attack: [
 
-      "\"Agora!\"",
+      "Agora!",
 
-      "\"Não vou recuar!\"",
+      "Não vou recuar!",
 
     ],
 
     retreat: [
 
-      "\"Ainda não é o momento.\"",
+      "Ainda não é o momento.",
 
-      "\"Precisamos reorganizar nossas forças.\"",
+      "Precisamos reorganizar nossas forças.",
 
     ],
 
     defend: [
 
-  "\"Fiquem atrás de mim.\"",
+      "Fiquem atrás de mim.",
 
-  "\"Eu protegerei vocês.\"",
+      "Eu protegerei vocês.",
 
-],
+    ],
 
-explore: [
+    explore: [
 
-  "\"Precisamos descobrir o que aconteceu.\"",
+      "Precisamos descobrir o que aconteceu.",
 
-  "\"Vamos investigar antes de agir.\"",
+      "Vamos investigar antes de agir.",
 
-],
+    ],
 
   }
 
@@ -66,7 +66,9 @@ explore: [
     const options =
       this.get(action)
 
-    if (options.length === 0) {
+    if (
+      options.length === 0
+    ) {
 
       return ""
 

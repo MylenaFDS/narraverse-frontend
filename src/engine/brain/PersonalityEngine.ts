@@ -1,6 +1,4 @@
-import type {
-  Personality,
-} from "./types/Personality"
+import type { Personality } from "./types/Personality"
 
 import {
   PersonalityPresets,
@@ -31,7 +29,7 @@ export class PersonalityEngine {
 
   static fromPreset(
     preset: keyof typeof PersonalityPresets,
-  ) {
+  ): Personality {
 
     return structuredClone(
       PersonalityPresets[preset],
@@ -39,15 +37,99 @@ export class PersonalityEngine {
 
   }
 
-  // =============================
-  // NOVO
-  // =============================
-
   static build(
     profile: BrainProfile,
-  ) {
+  ): Personality {
 
     return profile.personality
+
+  }
+
+  // =====================================
+  // Interpretação da personalidade
+  // =====================================
+
+  static isCautious(
+    personality: Personality,
+  ): boolean {
+
+    return (
+      personality.patience >= 70
+    )
+
+  }
+
+  static isIntrospective(
+    personality: Personality,
+  ): boolean {
+
+    return (
+      personality.intelligence >= 70
+      &&
+      personality.empathy >= 50
+    )
+
+  }
+
+  static isSociable(
+    personality: Personality,
+  ): boolean {
+
+    return (
+      personality.empathy >= 40
+    )
+
+  }
+
+  static isImpulsive(
+    personality: Personality,
+  ): boolean {
+
+    return (
+      personality.courage >= 80
+      &&
+      personality.patience <= 30
+    )
+
+  }
+
+  static isAggressive(
+    personality: Personality,
+  ): boolean {
+
+    return (
+      personality.cruelty >= 70
+    )
+
+  }
+
+  static isCurious(
+    personality: Personality,
+  ): boolean {
+
+    return (
+      personality.curiosity >= 70
+    )
+
+  }
+
+  static isHonorable(
+    personality: Personality,
+  ): boolean {
+
+    return (
+      personality.honor >= 70
+    )
+
+  }
+
+  static isEmpathetic(
+    personality: Personality,
+  ): boolean {
+
+    return (
+      personality.empathy >= 70
+    )
 
   }
 

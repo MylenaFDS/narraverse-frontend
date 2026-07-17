@@ -5,6 +5,7 @@ import { StyleEngine } from "./StyleEngine"
 import { LibraryManager } from "./LibraryManager"
 import { NarrativeEventPlanner } from "./planner/NarrativeEventPlanner"
 import { SentencePlanner } from "./planner/SentencePlanner"
+import { StyleTransformerEngine } from "./StyleTransformerEngine"
 
 
 export class NarrativeComposer {
@@ -42,16 +43,17 @@ export class NarrativeComposer {
 
     const dominantEmotion =
       Object.entries(
-        context.emotion,
+        context.emotion ?? {},
       )
       .sort(
-        (a, b) => b[1] - a[1],
+        (a,b) =>
+          b[1] - a[1],
       )[0]?.[0] ?? "trust"
 
 
 
     // ============================
-    // Planejamento narrativo
+    // Planejamento
     // ============================
 
     const events =
@@ -73,7 +75,7 @@ export class NarrativeComposer {
 
 
     // ============================
-    // Construção das frases
+    // Montagem narrativa
     // ============================
 
     const text =
@@ -83,14 +85,23 @@ export class NarrativeComposer {
 
 
 
+    // ============================
+    // Estilo
+    // ============================
+
+    const prompt =
+      StyleTransformerEngine.apply(
+        text,
+        style,
+      )
+
+
+
     return {
 
-      prompt:
-        text,
-
+      prompt,
 
       dominantEmotion,
-
 
       style,
 
@@ -100,10 +111,8 @@ export class NarrativeComposer {
         firstPerson:
           context.firstPerson,
 
-
         allowDialogue:
           context.allowDialogue,
-
 
         maxWords:
           context.maxWords,

@@ -108,7 +108,8 @@ export class LibraryManager {
 
     }
 
-
+    console.log("FRAGMENTS", fragments)
+    
     return fragments
 
   }
