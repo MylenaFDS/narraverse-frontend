@@ -1,6 +1,6 @@
 export class ConnectorLibrary {
 
-  static readonly introductions = [
+  private static readonly observations = [
 
     "Respirei lentamente antes de agir.",
 
@@ -18,9 +18,13 @@ export class ConnectorLibrary {
 
     "Meu olhar percorreu cuidadosamente o ambiente.",
 
+    "Analisei cada detalhe antes de tomar uma decisão.",
+
+    "Esperei alguns instantes antes de reagir.",
+
   ]
 
-  static readonly connectors = [
+  private static readonly transitions = [
 
     "Enquanto isso,",
 
@@ -36,25 +40,65 @@ export class ConnectorLibrary {
 
     "Sem hesitar,",
 
+    "Ainda assim,",
+
+    "Naquele instante,",
+
     "Por fim,",
 
   ]
 
-  static randomIntroduction(): string {
+  static getObservation(): string[] {
 
-    return this.introductions[
-      Math.floor(
-        Math.random() * this.introductions.length,
-      )
-    ]
+    return this.observations
 
   }
 
-  static randomConnector(): string {
+  static getTransition(): string[] {
 
-    return this.connectors[
+    return this.transitions
+
+  }
+
+  static randomObservation(): string {
+
+    return this.random(
+      this.observations,
+    )
+
+  }
+
+  static randomTransition(): string {
+
+    return this.random(
+      this.transitions,
+    )
+
+  }
+
+  static randomIntroduction(): string {
+
+    // Compatibilidade com versões antigas
+    return this.randomObservation()
+
+  }
+
+  private static random(
+    options: string[],
+  ): string {
+
+    if (
+      options.length === 0
+    ) {
+
+      return ""
+
+    }
+
+    return options[
       Math.floor(
-        Math.random() * this.connectors.length,
+        Math.random() *
+        options.length,
       )
     ]
 

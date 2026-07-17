@@ -16,11 +16,20 @@ export class EndingLibrary {
 
   ]
 
+  static get(): string[] {
+
+    return this.endings
+
+  }
+
   static random(): string {
 
-    return this.endings[
+    const options =
+      this.get()
+
+    return options[
       Math.floor(
-        Math.random() * this.endings.length,
+        Math.random() * options.length,
       )
     ]
 

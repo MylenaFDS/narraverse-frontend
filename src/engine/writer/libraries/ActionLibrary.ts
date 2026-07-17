@@ -4,13 +4,21 @@ export class ActionLibrary {
 
     talk: [
 
-      "Resolvi expressar meus pensamentos.",
-
       "Dirigi minhas palavras aos presentes.",
 
-      "Quebrei o silêncio.",
+      "Quebrei o silêncio com calma.",
 
-      "Escolhi conversar antes de qualquer outra ação.",
+      "Resolvi expressar aquilo que pensava.",
+
+      "Expliquei meu ponto de vista.",
+
+      "Procurei estabelecer um diálogo.",
+
+      "Escolhi conversar antes de agir.",
+
+      "Tentei acalmar os ânimos através da conversa.",
+
+      "Falei de forma firme, mas respeitosa.",
 
     ],
 
@@ -20,7 +28,17 @@ export class ActionLibrary {
 
       "Parti para o ataque.",
 
-      "Aproveitei a oportunidade para agir.",
+      "Desferi um golpe preciso.",
+
+      "Investi sem hesitação.",
+
+      "Aproveitei a abertura do inimigo.",
+
+      "Ataquei antes que pudesse reagir.",
+
+      "Canalizei minha força para um único golpe.",
+
+      "Lancei-me ao combate.",
 
     ],
 
@@ -30,7 +48,17 @@ export class ActionLibrary {
 
       "Preparei-me para defender meus aliados.",
 
-      "Coloquei-me entre o perigo e aqueles que protegiam.",
+      "Ergui minha guarda.",
+
+      "Bloqueei qualquer tentativa de avanço.",
+
+      "Protegi aqueles que estavam atrás de mim.",
+
+      "Assumi uma postura defensiva.",
+
+      "Mantive-me firme diante da ameaça.",
+
+      "Interpus meu corpo entre o perigo e meus companheiros.",
 
     ],
 
@@ -38,9 +66,19 @@ export class ActionLibrary {
 
       "Resolvi recuar alguns passos.",
 
-      "Preferi reorganizar minha estratégia.",
-
       "Afastei-me do confronto.",
+
+      "Reorganizei minha estratégia.",
+
+      "Busquei uma posição mais segura.",
+
+      "Ganhei distância para avaliar a situação.",
+
+      "Preferi preservar minhas forças.",
+
+      "Abandonei temporariamente a linha de frente.",
+
+      "Recuei sem perder o foco no inimigo.",
 
     ],
 
@@ -50,7 +88,81 @@ export class ActionLibrary {
 
       "Resolvi explorar o ambiente.",
 
-      "Segui investigando tudo ao meu redor.",
+      "Examinei cada detalhe ao meu redor.",
+
+      "Investiguei o local com atenção.",
+
+      "Analisei tudo o que parecia incomum.",
+
+      "Procurei pistas que pudessem ajudar.",
+
+      "Segui explorando a região.",
+
+      "Observei o ambiente em busca de qualquer sinal importante.",
+
+    ],
+
+    investigate: [
+
+      "Passei a reunir informações.",
+
+      "Examinei cuidadosamente cada detalhe.",
+
+      "Analisei os vestígios encontrados.",
+
+      "Procurei compreender o que realmente havia acontecido.",
+
+      "Busquei evidências antes de tirar conclusões.",
+
+      "Observei atentamente tudo ao meu redor.",
+
+    ],
+
+    negotiate: [
+
+      "Procurei encontrar uma solução pacífica.",
+
+      "Busquei um entendimento entre todos.",
+
+      "Preferi negociar antes de recorrer à força.",
+
+      "Tentei convencer os presentes.",
+
+      "Acreditei que o diálogo ainda era possível.",
+
+      "Fiz uma proposta para encerrar o conflito.",
+
+    ],
+
+    help: [
+
+      "Corri para ajudar quem precisava.",
+
+      "Ofereci meu apoio imediatamente.",
+
+      "Estendi a mão aos meus aliados.",
+
+      "Fiz tudo ao meu alcance para auxiliar.",
+
+      "Priorizei proteger aqueles que dependiam de mim.",
+
+      "Atendi ao chamado sem hesitar.",
+
+    ],
+
+    wait: [
+
+      "Preferi aguardar antes de agir.",
+
+      "Mantive-me observando a situação.",
+
+      "Esperei pelo momento mais adequado.",
+
+      "Permaneci atento.",
+
+      "Decidi não agir precipitadamente.",
+
+      "Continuei acompanhando os acontecimentos.",
 
     ],
 
@@ -61,10 +173,13 @@ export class ActionLibrary {
   ): string[] {
 
     return (
+
       this.actions[action] ??
+
       [
         "Segui com minha decisão.",
       ]
+
     )
 
   }
@@ -78,7 +193,7 @@ export class ActionLibrary {
 
     return options[
       Math.floor(
-        Math.random() * options.length,
+        Math.random() * options.length
       )
     ]
 

@@ -1,4 +1,4 @@
-import type { WriterPrompt } from "./WriterPrompt"
+import type { NarrativeEvent } from "./planner/NarrativeEvent"
 
 import { ActionLibrary } from "./libraries/ActionLibrary"
 import { ConnectorLibrary } from "./libraries/ConnectorLibrary"
@@ -6,181 +6,87 @@ import { DialogueLibrary } from "./libraries/DialogueLibrary"
 import { EmotionLibrary } from "./libraries/EmotionLibrary"
 import { EndingLibrary } from "./libraries/EndingLibrary"
 
-
 export class LibraryManager {
 
-
-  private static random<T>(
-    items: T[],
-  ): T {
-
-    return items[
-      Math.floor(
-        Math.random() * items.length,
-      )
-    ]
-
-  }
-
-
-
   static compose(
-    prompt: WriterPrompt,
-    fragments: string[] = [],
-  ): string {
+    events: NarrativeEvent[],
+  ): string[] {
 
+    const fragments: string[] = []
 
-    const parts: string[] = []
+    for (const event of events) {
 
+      switch (event.type) {
 
+        case "observation": {
 
-    // ======================================
-    // Emoção dominante
-    // ======================================
+          fragments.push(
+            ConnectorLibrary.randomObservation(),
+          )
 
-    const dominantEmotion =
-      Object.entries(
-        prompt.emotion,
-      ).sort(
-        (a, b) => b[1] - a[1],
-      )[0]?.[0] ?? "trust"
+          break
 
+        }
 
+        case "emotion": {
 
-    // ======================================
-    // Conector
-    // ======================================
+          fragments.push(
+            EmotionLibrary.random(
+              String(event.payload),
+            ),
+          )
 
-    const connector =
-      this.random(
-        ConnectorLibrary.introductions,
-      )
+          break
 
+        }
 
-    if (connector) {
+        case "action": {
 
-      parts.push(
-        connector,
-      )
+          fragments.push(
+            ActionLibrary.random(
+              String(event.payload),
+            ),
+          )
 
-    }
+          break
 
+        }
 
+        case "dialogue": {
 
-    // ======================================
-    // Emoção
-    // ======================================
+          fragments.push(
+            DialogueLibrary.random(
+              String(event.payload),
+            ),
+          )
 
-    const emotions =
-      EmotionLibrary.get(
-        dominantEmotion,
-      )
+          break
 
+        }
 
-    if (
-      emotions &&
-      emotions.length > 0
-    ) {
+        case "ending": {
 
-      parts.push(
-        this.random(
-          emotions,
-        ),
-      )
+          fragments.push(
+            EndingLibrary.random(),
+          )
 
-    }
+          break
 
+        }
 
+        default: {
 
-    // ======================================
-    // Ação
-    // ======================================
+          break
 
-    const actions =
-      ActionLibrary.get(
-        prompt.decision.action,
-      )
+        }
 
-
-    if (
-      actions &&
-      actions.length > 0
-    ) {
-
-      parts.push(
-        this.random(
-          actions,
-        ),
-      )
+      }
 
     }
 
-
-
-    // ======================================
-    // Fragmentos extras
-    // ======================================
-
-    if (
-      fragments.length > 0
-    ) {
-
-      parts.push(
-        ...fragments,
-      )
-
-    }
-
-
-
-    // ======================================
-    // Diálogo
-    // ======================================
-
-    const dialogues =
-      DialogueLibrary.get(
-        dominantEmotion,
-      )
-
-
-    if (
-      dialogues &&
-      dialogues.length > 0
-    ) {
-
-      parts.push(
-        this.random(
-          dialogues,
-        ),
-      )
-
-    }
-
-
-
-    // ======================================
-    // Final
-    // ======================================
-
-    const ending =
-      this.random(
-        EndingLibrary.endings,
-      )
-
-
-    if (ending) {
-
-      parts.push(
-        ending,
-      )
-
-    }
-
-
-
-    return parts
-      .filter(Boolean)
-      .join(" ")
+    return fragments.filter(
+      Boolean,
+    )
 
   }
 

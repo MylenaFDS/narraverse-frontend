@@ -1,19 +1,14 @@
 import type { StyleProfile } from "./StyleProfile"
 
-
 export class StyleTransformerEngine {
 
-
-  static transform(
+  static apply(
     text: string,
     style: StyleProfile,
   ): string {
 
-
     let result =
       text.trim()
-
-
 
     // =====================================
     // Frases curtas
@@ -30,8 +25,6 @@ export class StyleTransformerEngine {
 
     }
 
-
-
     // =====================================
     // Frases longas
     // =====================================
@@ -46,8 +39,6 @@ export class StyleTransformerEngine {
         )
 
     }
-
-
 
     // =====================================
     // Emoção
@@ -64,8 +55,6 @@ export class StyleTransformerEngine {
 
     }
 
-
-
     // =====================================
     // Introspecção
     // =====================================
@@ -80,8 +69,6 @@ export class StyleTransformerEngine {
         )
 
     }
-
-
 
     // =====================================
     // Agressividade
@@ -98,20 +85,13 @@ export class StyleTransformerEngine {
 
     }
 
-
-
     return result
 
   }
 
-
-
-
-
   private static makeShortSentences(
     text: string,
   ): string {
-
 
     return text
       .split(",")
@@ -123,93 +103,54 @@ export class StyleTransformerEngine {
 
   }
 
-
-
-
-
   private static makeReflective(
     text: string,
   ): string {
 
-
     return (
-
       "Por um instante, "
-
       +
-
       text.charAt(0).toLowerCase()
-
       +
-
       text.slice(1)
-
     )
 
   }
-
-
-
-
 
   private static increaseEmotion(
     text: string,
   ): string {
 
-
     return (
-
       text
-
       +
-
       " O peso daquele momento parecia impossível de ignorar."
-
     )
 
   }
-
-
-
-
 
   private static addReflection(
     text: string,
   ): string {
 
-
     return (
-
       text
-
       +
-
       " Me perguntei quais consequências minhas escolhas trariam."
-
     )
 
   }
-
-
-
-
 
   private static addIntensity(
     text: string,
   ): string {
 
-
     return (
-
       text
-
       +
-
       " Não havia espaço para hesitação."
-
     )
 
   }
-
 
 }

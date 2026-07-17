@@ -37,11 +37,8 @@ export class DialogueLibrary {
   ): string[] {
 
     return (
-
       this.dialogues[action] ??
-
       []
-
     )
 
   }
