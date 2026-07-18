@@ -5,46 +5,54 @@ import { EventFactory } from "./EventFactory"
 import { NarrativePriority } from "./NarrativePriority"
 import { PersonalityEngine } from "../../brain/PersonalityEngine"
 
+
 export class NarrativeEventPlanner {
+
 
   static plan(
     context: WriterContext,
   ): NarrativeEvent[] {
 
+
     const events: NarrativeEvent[] = []
+
 
     const dominantEmotion =
       Object.entries(
         context.emotion ?? {},
       )
-        .sort(
-          (a, b) => b[1] - a[1],
-        )[0]?.[0] ?? "trust"
+      .sort(
+        (a,b) =>
+          b[1] - a[1],
+      )[0]?.[0] ?? "trust"
+
+
 
     const emotionValue =
       context.emotion?.[
         dominantEmotion as keyof typeof context.emotion
       ] ?? 0
 
+
+
     const action =
       context.decision.action
 
+
+
     // ======================================
-    // Observação
+    // CONTEXTO DA HISTÓRIA
     // ======================================
 
     if (
-      this.shouldObserve(
-        context,
-        emotionValue,
-      )
+      context.story.currentSituation
     ) {
 
       events.push(
 
         EventFactory.create(
           "observation",
-          null,
+          context.story.currentSituation,
           NarrativePriority.Observation,
         ),
 
@@ -52,8 +60,56 @@ export class NarrativeEventPlanner {
 
     }
 
+
+
     // ======================================
-    // Emoção
+    // EVENTOS PENDENTES
+    // ======================================
+
+    if (
+      context.story.activeEvents.length > 0
+    ) {
+
+      events.push(
+
+        EventFactory.create(
+          "thought",
+          context.story.activeEvents.join(
+            ". ",
+          ),
+          15,
+        ),
+
+      )
+
+    }
+
+
+
+    // ======================================
+    // DIÁLOGOS ANTERIORES
+    // ======================================
+
+    if (
+      context.story.lastDialogues.length > 0
+    ) {
+
+      events.push(
+
+        EventFactory.create(
+          "memory",
+          context.story.lastDialogues.at(-1),
+          18,
+        ),
+
+      )
+
+    }
+
+
+
+    // ======================================
+    // EMOÇÃO
     // ======================================
 
     if (
@@ -75,13 +131,14 @@ export class NarrativeEventPlanner {
 
     }
 
+
+
     // ======================================
-    // Ação
+    // AÇÃO
     // ======================================
 
-    if (
-      action
-    ) {
+    if(action)
+    {
 
       events.push(
 
@@ -95,15 +152,17 @@ export class NarrativeEventPlanner {
 
     }
 
+
+
     // ======================================
-    // Diálogo
+    // DIÁLOGO NOVO
     // ======================================
 
-    if (
+    if(
       this.shouldSpeak(
         context,
       )
-    ) {
+    ){
 
       events.push(
 
@@ -117,15 +176,17 @@ export class NarrativeEventPlanner {
 
     }
 
+
+
     // ======================================
-    // Encerramento
+    // FINAL
     // ======================================
 
-    if (
+    if(
       this.shouldEnd(
         context,
       )
-    ) {
+    ){
 
       events.push(
 
@@ -138,83 +199,74 @@ export class NarrativeEventPlanner {
       )
 
     }
-    
-    console.log("EVENTS", events)
+
+
+
+    console.log(
+      "EVENTS",
+      events,
+    )
+
+
 
     return events.sort(
 
-      (a, b) =>
+      (a,b)=>
         a.priority - b.priority,
 
     )
 
   }
 
-  private static shouldObserve(
-    context: WriterContext,
-    emotion: number,
-  ): boolean {
 
-    if (
-      context.decision.action === "explore"
-    ) {
 
-      return true
 
-    }
-
-    if (
-      PersonalityEngine.isCautious(
-        context.personality,
-      )
-    ) {
-
-      return true
-
-    }
-
-    return emotion < 80
-
-  }
 
   private static shouldDescribeEmotion(
     context: WriterContext,
-    emotion: number,
-  ): boolean {
+    emotion:number,
+  ){
 
-    if (
+    if(
       PersonalityEngine.isIntrospective(
         context.personality,
       )
-    ) {
+    ){
 
       return true
 
     }
+
 
     return emotion >= 20
 
   }
 
+
+
+
+
   private static shouldSpeak(
-    context: WriterContext,
-  ): boolean {
+    context:WriterContext,
+  ){
 
-    if (
+    if(
       !context.allowDialogue
-    ) {
+    ){
 
       return false
 
     }
 
-    if (
+
+    if(
       context.decision.action !== "talk"
-    ) {
+    ){
 
       return false
 
     }
+
 
     return PersonalityEngine.isSociable(
       context.personality,
@@ -222,27 +274,33 @@ export class NarrativeEventPlanner {
 
   }
 
-  private static shouldEnd(
-    context: WriterContext,
-  ): boolean {
 
-    if (
+
+
+
+  private static shouldEnd(
+    context:WriterContext,
+  ){
+
+    if(
       context.decision.action === "attack"
-    ) {
+    ){
 
       return false
 
     }
 
-    if (
+
+    if(
       PersonalityEngine.isImpulsive(
         context.personality,
       )
-    ) {
+    ){
 
       return false
 
     }
+
 
     return true
 

@@ -866,6 +866,7 @@ async function handleGenerateWithAI() {
     TurnBrainService.generate(
       profile,
       world,
+      turns,
     )
 
   setNewTurn(text)

@@ -10,7 +10,11 @@ import type { Plan } from "../brain/types/Planning"
 import type { Decision } from "../brain/types/Decision"
 import type { CharacterBehavior } from "../brain/types/Behavior"
 
+import type { StoryContext } from "./story/types/StoryContext"
+
+
 export interface WriterContext {
+
 
   // ======================================
   // Prompt base
@@ -18,11 +22,23 @@ export interface WriterContext {
 
   prompt: NarrativePrompt
 
+
+
+  // ======================================
+  // História atual
+  // ======================================
+
+  story: StoryContext
+
+
+
   // ======================================
   // Personagem
   // ======================================
 
   character: Character
+
+
 
   // ======================================
   // Estado mental
@@ -42,8 +58,10 @@ export interface WriterContext {
 
   behavior: CharacterBehavior
 
+
+
   // ======================================
-  // Configuração da escrita
+  // Escrita
   // ======================================
 
   maxWords: number
@@ -51,5 +69,6 @@ export interface WriterContext {
   firstPerson: boolean
 
   allowDialogue: boolean
+
 
 }

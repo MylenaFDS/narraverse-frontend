@@ -7,6 +7,7 @@ import { WriterContextBuilder } from "../writer/WriterContextBuilder"
 
 import type { BrainProfile } from "./BrainProfile"
 import type { WorldContext } from "../context/ContextEngine"
+import type { RPGTurn } from "../../types/turn"
 
 export class TurnBrainService {
 
@@ -15,6 +16,8 @@ export class TurnBrainService {
     profile: BrainProfile,
 
     context: WorldContext,
+
+    turns: RPGTurn[],
 
   ): string {
 
@@ -45,6 +48,7 @@ export class TurnBrainService {
     const writer =
       WriterContextBuilder.build(
         brain,
+        turns,
       )
 
     // ======================================
