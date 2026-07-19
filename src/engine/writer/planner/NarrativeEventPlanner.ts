@@ -17,21 +17,27 @@ export class NarrativeEventPlanner {
     const events: NarrativeEvent[] = []
 
 
+
     const dominantEmotion =
       Object.entries(
         context.emotion ?? {},
       )
       .sort(
         (a,b) =>
-          b[1] - a[1],
-      )[0]?.[0] ?? "trust"
+          Number(b[1]) -
+          Number(a[1]),
+      )[0]?.[0]
+      ??
+      "trust"
 
 
 
     const emotionValue =
       context.emotion?.[
         dominantEmotion as keyof typeof context.emotion
-      ] ?? 0
+      ]
+      ??
+      0
 
 
 
@@ -41,18 +47,67 @@ export class NarrativeEventPlanner {
 
 
     // ======================================
-    // CONTEXTO DA HISTÓRIA
+    // História anterior
     // ======================================
 
-    if (
+    if(
       context.story.currentSituation
-    ) {
+    ){
+
+      events.push(
+
+        EventFactory.create(
+          "thought",
+          context.story.currentSituation,
+          NarrativePriority.Thought,
+        ),
+
+      )
+
+    }
+
+
+
+    // ======================================
+    // Eventos ativos
+    // ======================================
+
+    if(
+      context.story.activeEvents.length > 0
+    ){
+
+      events.push(
+
+        EventFactory.create(
+          "description",
+          context.story.activeEvents.join(
+            ". "
+          ),
+          NarrativePriority.Description,
+        ),
+
+      )
+
+    }
+
+
+
+    // ======================================
+    // Observação
+    // ======================================
+
+    if(
+      this.shouldObserve(
+        context,
+        emotionValue,
+      )
+    ){
 
       events.push(
 
         EventFactory.create(
           "observation",
-          context.story.currentSituation,
+          null,
           NarrativePriority.Observation,
         ),
 
@@ -63,61 +118,15 @@ export class NarrativeEventPlanner {
 
 
     // ======================================
-    // EVENTOS PENDENTES
+    // Emoção
     // ======================================
 
-    if (
-      context.story.activeEvents.length > 0
-    ) {
-
-      events.push(
-
-        EventFactory.create(
-          "thought",
-          context.story.activeEvents.join(
-            ". ",
-          ),
-          15,
-        ),
-
-      )
-
-    }
-
-
-
-    // ======================================
-    // DIÁLOGOS ANTERIORES
-    // ======================================
-
-    if (
-      context.story.lastDialogues.length > 0
-    ) {
-
-      events.push(
-
-        EventFactory.create(
-          "memory",
-          context.story.lastDialogues.at(-1),
-          18,
-        ),
-
-      )
-
-    }
-
-
-
-    // ======================================
-    // EMOÇÃO
-    // ======================================
-
-    if (
+    if(
       this.shouldDescribeEmotion(
         context,
         emotionValue,
       )
-    ) {
+    ){
 
       events.push(
 
@@ -134,11 +143,10 @@ export class NarrativeEventPlanner {
 
 
     // ======================================
-    // AÇÃO
+    // Ação
     // ======================================
 
-    if(action)
-    {
+    if(action){
 
       events.push(
 
@@ -155,13 +163,11 @@ export class NarrativeEventPlanner {
 
 
     // ======================================
-    // DIÁLOGO NOVO
+    // Diálogo
     // ======================================
 
     if(
-      this.shouldSpeak(
-        context,
-      )
+      this.shouldSpeak(context)
     ){
 
       events.push(
@@ -179,13 +185,11 @@ export class NarrativeEventPlanner {
 
 
     // ======================================
-    // FINAL
+    // Final
     // ======================================
 
     if(
-      this.shouldEnd(
-        context,
-      )
+      this.shouldEnd(context)
     ){
 
       events.push(
@@ -203,20 +207,51 @@ export class NarrativeEventPlanner {
 
 
     console.log(
-      "EVENTS",
+      "NARRATIVE EVENTS",
       events,
     )
 
 
-
     return events.sort(
-
       (a,b)=>
-        a.priority - b.priority,
-
+        a.priority -
+        b.priority,
     )
 
   }
+
+
+
+
+
+
+
+  private static shouldObserve(
+    context: WriterContext,
+    emotion:number,
+  ){
+
+    if(
+      context.decision.action === "explore"
+    ){
+      return true
+    }
+
+
+    if(
+      PersonalityEngine.isCautious(
+        context.personality,
+      )
+    ){
+      return true
+    }
+
+
+    return emotion < 80
+
+  }
+
+
 
 
 
@@ -232,15 +267,15 @@ export class NarrativeEventPlanner {
         context.personality,
       )
     ){
-
       return true
-
     }
 
 
     return emotion >= 20
 
   }
+
+
 
 
 
@@ -253,18 +288,14 @@ export class NarrativeEventPlanner {
     if(
       !context.allowDialogue
     ){
-
       return false
-
     }
 
 
     if(
       context.decision.action !== "talk"
     ){
-
       return false
-
     }
 
 
@@ -278,6 +309,8 @@ export class NarrativeEventPlanner {
 
 
 
+
+
   private static shouldEnd(
     context:WriterContext,
   ){
@@ -285,9 +318,7 @@ export class NarrativeEventPlanner {
     if(
       context.decision.action === "attack"
     ){
-
       return false
-
     }
 
 
@@ -296,14 +327,13 @@ export class NarrativeEventPlanner {
         context.personality,
       )
     ){
-
       return false
-
     }
 
 
     return true
 
   }
+
 
 }

@@ -70,6 +70,7 @@ export class NarrativeComposer {
     const fragments =
       LibraryManager.compose(
         events,
+        context.story,
       )
 
 

@@ -5,6 +5,9 @@ export interface NarrativeFragment {
     | "emotion"
     | "action"
     | "dialogue"
+    | "thought"
+    | "movement"
+    | "description"
     | "ending"
 
   text: string
