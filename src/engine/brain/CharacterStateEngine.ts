@@ -1,5 +1,3 @@
-import type { Character } from "../../types/character"
-
 import type { SheetField } from "./SheetField"
 import type { CharacterState } from "./types/CharacterState"
 
@@ -9,27 +7,8 @@ import { ValueInterpreter } from "./ValueInterpreter"
 export class CharacterStateEngine {
 
   static build(
-    character: Character,
+    fields: SheetField[],
   ): CharacterState {
-
-
-    const sheetValues =
-      character.sheet_values ?? []
-
-
-    const fields: SheetField[] =
-
-    sheetValues.map(value => ({
-
-      id: value.field.id,
-
-      name: value.field.name,
-
-      value: value.value,
-
-      field_type: value.field.field_type,
-
-    }))
 
     const life =
       SheetInterpreterEngine.life(
@@ -126,11 +105,8 @@ export class CharacterStateEngine {
         !immobilizedValue,
 
       canFight:
-
         health > 0 &&
-
         !unconsciousValue &&
-
         !immobilizedValue,
 
       canCastMagic:

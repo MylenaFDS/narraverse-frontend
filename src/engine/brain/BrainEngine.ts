@@ -1,5 +1,7 @@
-import type { AIContext } from "../brain/AIContext"
 
+import type {
+  WorldContext,
+} from "../context/ContextEngine"
 import { PersonalityEngine } from "./PersonalityEngine"
 import { EmotionEngine } from "./EmotionEngine"
 import { GoalEngine } from "./GoalEngine"
@@ -32,7 +34,7 @@ export class BrainEngine {
 
   static think(
 
-    context: AIContext,
+    context: WorldContext,
 
     profile: BrainProfile,
 
@@ -43,7 +45,7 @@ export class BrainEngine {
     // ==========================
 
     const character =
-      context.self
+      profile.character
 
     // ==========================
     // Personalidade
@@ -64,7 +66,10 @@ export class BrainEngine {
   ) 
 
     const dominantEmotion =
-      emotion
+  Object.entries(emotion)
+    .sort(
+      (a, b) => b[1] - a[1],
+    )[0][0] as keyof typeof emotion
 
     // ==========================
     // Memórias

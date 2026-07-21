@@ -9,11 +9,15 @@ export class CharacterSheetAdapter {
 
     return character.sheet_values.map(item => ({
 
-      field_name: item.field.name,
+  id: item.field.id,
 
-      value: item.value,
+  name: item.field.name,
 
-    }))
+  field_type: item.field.field_type,
+
+  value: item.value,
+
+}))
 
   }
 

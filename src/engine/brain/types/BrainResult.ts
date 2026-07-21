@@ -20,8 +20,11 @@ import type { Reflection } from "./Reflection"
 import type { Prediction } from "./Prediction"
 import type { Intent } from "./Intent"
 import type { RiskAssessment } from "./RiskAssessment"
-
-import type { AIContext } from "../AIContext"
+import type { MemoryReasoningResult } from "./MemoryReasoning"
+import type { ReasoningResult } from "./Reasoning"
+import type {
+  WorldContext,
+} from "../../context/ContextEngine"
 
 export interface BrainResult {
 
@@ -29,7 +32,7 @@ export interface BrainResult {
   // Contexto
   // ======================================
 
-  context: AIContext
+  context: WorldContext
 
   character: Character
 
@@ -63,7 +66,7 @@ export interface BrainResult {
 
   inventory: InventoryKnowledge
 
-  memory: string[]
+  memory: MemoryReasoningResult
 
   // ======================================
   // Objetivos
@@ -107,7 +110,7 @@ export interface BrainResult {
   // Escrita
   // ======================================
 
-  reasoning: string[]
+  reasoning: ReasoningResult
 
   narrativeContext: NarrativePrompt
 

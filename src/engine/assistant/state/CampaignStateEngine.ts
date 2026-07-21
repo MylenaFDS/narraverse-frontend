@@ -1,6 +1,10 @@
-import type { CampaignState } from "./CampaignState"
+import type {
+  CampaignState,
+} from "./CampaignState"
 
-import type { StoryEvent } from "./StoryEvent"
+import type {
+  StoryEvent,
+} from "./events/StoryEvent"
 
 export class CampaignStateEngine {
 
@@ -12,7 +16,7 @@ export class CampaignStateEngine {
 
   ): CampaignState {
 
-    const next: CampaignState = {
+    const next = {
 
       ...state,
 
@@ -38,7 +42,7 @@ export class CampaignStateEngine {
         case "attack":
 
           next.activeEvents.push(
-            "Conflito em andamento",
+            "Combate em andamento",
           )
 
           break
@@ -54,7 +58,7 @@ export class CampaignStateEngine {
         case "movement":
 
           next.activeEvents.push(
-            "Mudança de localização",
+            "Personagem mudou de local",
           )
 
           break
@@ -63,6 +67,14 @@ export class CampaignStateEngine {
 
           next.activeEvents.push(
             "Diálogo importante",
+          )
+
+          break
+
+        case "quest":
+
+          next.activeEvents.push(
+            event.description,
           )
 
           break

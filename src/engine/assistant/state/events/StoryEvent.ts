@@ -10,6 +10,8 @@ export interface StoryEvent {
 
   location?: string
 
+  emotion?: string
+
   description: string
 
 }
