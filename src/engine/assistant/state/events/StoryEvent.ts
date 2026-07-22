@@ -4,14 +4,27 @@ export interface StoryEvent {
 
   type: EventType
 
-  actor?: number
+  // Personagem principal do evento
+  character?: string
 
-  target?: number
+  // Personagem alvo (quando existir)
+  target?: string
 
+  // IDs opcionais
+  actorId?: number
+
+  targetId?: number
+
+  // Local onde ocorreu
   location?: string
 
+  // Emoção predominante
   emotion?: string
 
+  // Momento do evento
+  turn?: number
+
+  // Texto original
   description: string
 
 }

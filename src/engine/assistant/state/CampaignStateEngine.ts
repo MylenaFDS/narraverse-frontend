@@ -16,7 +16,7 @@ export class CampaignStateEngine {
 
   ): CampaignState {
 
-    const next = {
+    const next: CampaignState = {
 
       ...state,
 
@@ -24,9 +24,19 @@ export class CampaignStateEngine {
         state.turn + 1,
 
       activeEvents: [
-
         ...state.activeEvents,
+      ],
 
+      history: [
+        ...state.history,
+      ],
+
+      aliveCharacters: [
+        ...state.aliveCharacters,
+      ],
+
+      deadCharacters: [
+        ...state.deadCharacters,
       ],
 
     }
@@ -35,13 +45,18 @@ export class CampaignStateEngine {
       const event of events
     ) {
 
+      next.history.push(
+        event,
+      )
+
       switch (
         event.type
       ) {
 
         case "attack":
 
-          next.activeEvents.push(
+          this.addEvent(
+            next,
             "Combate em andamento",
           )
 
@@ -49,15 +64,41 @@ export class CampaignStateEngine {
 
         case "death":
 
-          next.activeEvents.push(
+          this.addEvent(
+            next,
             "Uma morte ocorreu",
           )
+
+          if (
+            event.character
+          ) {
+
+            next.aliveCharacters =
+              next.aliveCharacters.filter(
+                name =>
+                  name !== event.character,
+              )
+
+            if (
+              !next.deadCharacters.includes(
+                event.character,
+              )
+            ) {
+
+              next.deadCharacters.push(
+                event.character,
+              )
+
+            }
+
+          }
 
           break
 
         case "movement":
 
-          next.activeEvents.push(
+          this.addEvent(
+            next,
             "Personagem mudou de local",
           )
 
@@ -65,7 +106,8 @@ export class CampaignStateEngine {
 
         case "dialogue":
 
-          next.activeEvents.push(
+          this.addEvent(
+            next,
             "Diálogo importante",
           )
 
@@ -73,7 +115,8 @@ export class CampaignStateEngine {
 
         case "quest":
 
-          next.activeEvents.push(
+          this.addEvent(
+            next,
             event.description,
           )
 
@@ -84,6 +127,30 @@ export class CampaignStateEngine {
     }
 
     return next
+
+  }
+
+  private static addEvent(
+
+    state: CampaignState,
+
+    description: string,
+
+  ): void {
+
+    if (
+
+      !state.activeEvents.includes(
+        description,
+      )
+
+    ) {
+
+      state.activeEvents.push(
+        description,
+      )
+
+    }
 
   }
 

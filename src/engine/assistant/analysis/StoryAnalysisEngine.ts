@@ -4,9 +4,15 @@ export interface StoryAnalysis {
 
   activeConflicts: string[]
 
-  currentTopic: string | null
+  currentSituation: string
 
   activeCharacters: string[]
+
+  deadCharacters: string[]
+
+  recentEvents: string[]
+
+  unresolvedThreads: string[]
 
 }
 
@@ -18,11 +24,17 @@ export class StoryAnalysisEngine {
 
     return {
 
+      // Eventos ainda em andamento
+
       activeConflicts:
         context.story.activeEvents,
 
-      currentTopic:
+      // Situação atual da campanha
+
+      currentSituation:
         context.story.currentSituation,
+
+      // Personagens presentes
 
       activeCharacters:
 
@@ -30,6 +42,20 @@ export class StoryAnalysisEngine {
           character =>
             character.name,
         ),
+
+      // Ainda será alimentado pelo CampaignStateEngine
+
+      deadCharacters: [],
+
+      // Últimos acontecimentos
+
+      recentEvents:
+        context.story.recentTurns,
+
+      // Pontas soltas da narrativa
+
+      unresolvedThreads:
+        context.story.unresolvedThreads,
 
     }
 

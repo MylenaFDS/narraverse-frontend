@@ -8,13 +8,19 @@ export class CharacterStatusEngine {
     analysis: StoryAnalysis,
   ): string[] {
 
-    return analysis.activeCharacters
+    return [
+      ...analysis.activeCharacters,
+    ]
 
   }
 
-  static dead(): string[] {
+  static dead(
+    analysis: StoryAnalysis,
+  ): string[] {
 
-    return []
+    return [
+      ...analysis.deadCharacters,
+    ]
 
   }
 
