@@ -1,30 +1,58 @@
-import type { EventType } from "./EventType"
+import type {
+  EventType,
+} from "./EventType"
+
 
 export interface StoryEvent {
 
+
+  /**
+   * Tipo do acontecimento
+   */
   type: EventType
 
-  // Personagem principal do evento
-  character?: string
 
-  // Personagem alvo (quando existir)
-  target?: string
 
-  // IDs opcionais
+  /**
+   * Personagem que causou o evento
+   */
   actorId?: number
 
+
+
+  /**
+   * Personagem afetado
+   */
   targetId?: number
 
-  // Local onde ocorreu
+
+
+  /**
+   * Local onde ocorreu
+   */
   location?: string
 
-  // Emoção predominante
+
+
+  /**
+   * Emoção associada
+   */
   emotion?: string
 
-  // Momento do evento
-  turn?: number
 
-  // Texto original
+
+  /**
+   * Descrição original extraída do turno
+   */
   description: string
+
+
+
+  /**
+   * Momento em que ocorreu
+   * útil para histórico
+   */
+  turnId?: number
+
 
 }

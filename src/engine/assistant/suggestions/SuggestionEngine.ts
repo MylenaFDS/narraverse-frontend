@@ -1,46 +1,59 @@
-import type {
-  StoryAnalysis,
-} from "../analysis/StoryAnalysisEngine"
+import type { StoryAnalysis } from "../analysis/StoryAnalysisEngine"
+
+import type { AssistantSuggestion } from "../types/AssistantSuggestion"
+
 
 export class SuggestionEngine {
 
+
   static build(
     analysis: StoryAnalysis,
-  ): string[] {
+  ): AssistantSuggestion[] {
 
-    const suggestions: string[] = []
 
-    if (
-      analysis.activeConflicts.length
-    ) {
+    const suggestions:
+      AssistantSuggestion[] = []
 
-      suggestions.push(
-        "Atacar o inimigo",
-      )
 
-      suggestions.push(
-        "Proteger um aliado",
-      )
+    if(
+      analysis.activeConflicts.length > 0
+    ){
 
-      suggestions.push(
-        "Recuar estrategicamente",
-      )
+      suggestions.push({
 
-    } else {
+        title:
+          "Situação perigosa",
 
-      suggestions.push(
-        "Conversar com outro personagem",
-      )
+        description:
+          "Considere uma ação defensiva ou estratégica antes de avançar.",
 
-      suggestions.push(
-        "Explorar o ambiente",
-      )
+        type:
+          "warning",
 
-      suggestions.push(
-        "Refletir sobre os acontecimentos",
-      )
+      })
 
     }
+
+
+    if(
+      analysis.activeCharacters.length > 1
+    ){
+
+      suggestions.push({
+
+        title:
+          "Interação entre personagens",
+
+        description:
+          "Um personagem pode ajudar, conversar ou reagir aos acontecimentos.",
+
+        type:
+          "strategy",
+
+      })
+
+    }
+
 
     return suggestions
 

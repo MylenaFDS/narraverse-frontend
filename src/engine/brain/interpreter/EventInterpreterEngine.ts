@@ -1,95 +1,182 @@
 import type {
-  BrainResult,
-} from "../types/BrainResult"
+  RPGTurn,
+} from "../../../types/turn"
+
 
 import type {
   StoryEvent,
 } from "../../assistant/state/events/StoryEvent"
 
+
+
 export class EventInterpreterEngine {
 
+
   static interpret(
-    brain: BrainResult,
+
+    turn: RPGTurn,
+
   ): StoryEvent[] {
+
 
     const events: StoryEvent[] = []
 
-    // ======================================
-    // Ação principal
-    // ======================================
 
-    events.push({
+    const text =
+      turn.content.toLowerCase()
 
-      type:
-        brain.decision.action as StoryEvent["type"],
 
-      actor:
-        brain.character.id,
-
-      description:
-        brain.decision.action,
-
-    })
 
     // ======================================
-    // Emoção dominante
-    // ======================================
-
-    const dominantEmotion =
-      Object.entries(
-        brain.emotion,
-      ).sort(
-        (a, b) =>
-          b[1] - a[1],
-      )[0]?.[0]
-
-    if (
-      dominantEmotion
-    ) {
-
-      events.push({
-
-        type:
-          "emotion",
-
-        actor:
-          brain.character.id,
-
-        emotion:
-          dominantEmotion,
-
-        description:
-          dominantEmotion,
-
-      })
-
-    }
-
-    // ======================================
-    // Objetivo
+    // Ataque
     // ======================================
 
     if (
-      brain.goal
+
+      text.includes("ataque") ||
+
+      text.includes("atac")
+
     ) {
+
 
       events.push({
 
-        type:
-          "quest",
+        type: "attack",
 
-        actor:
-          brain.character.id,
+        actorId:
+  turn.character_id ?? undefined,
 
         description:
-          brain.goal.title,
+          turn.content,
+
+        turnId:
+          turn.id,
 
       })
 
+
     }
+
+
+
+
+
+    // ======================================
+    // Morte
+    // ======================================
+
+    if (
+
+      text.includes("morreu") ||
+
+      text.includes("morte") ||
+
+      text.includes("caiu")
+
+    ) {
+
+
+      events.push({
+
+        type: "death",
+
+        actorId:
+  turn.character_id ?? undefined,
+
+        description:
+          turn.content,
+
+        turnId:
+          turn.id,
+
+      })
+
+
+    }
+
+
+
+
+
+    // ======================================
+    // Movimento
+    // ======================================
+
+    if (
+
+      text.includes("entrei") ||
+
+      text.includes("fui") ||
+
+      text.includes("viajei") ||
+
+      text.includes("cheguei") ||
+
+      text.includes("parti")
+
+    ) {
+
+
+      events.push({
+
+        type: "movement",
+
+        actorId:
+  turn.character_id ?? undefined,
+
+        description:
+          turn.content,
+
+        turnId:
+          turn.id,
+
+      })
+
+
+    }
+
+
+
+
+
+    // ======================================
+    // Diálogo
+    // ======================================
+
+    if (
+
+      turn.content.includes("—")
+
+    ) {
+
+
+      events.push({
+
+        type: "dialogue",
+
+        actorId:
+  turn.character_id ?? undefined,
+
+        description:
+          turn.content,
+
+        turnId:
+          turn.id,
+
+      })
+
+
+    }
+
+
+
+
 
     return events
 
+
   }
+
 
 }

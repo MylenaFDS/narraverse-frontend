@@ -1,15 +1,30 @@
+import type { AssistantSuggestion } from "./types/AssistantSuggestion"
+
+
 export interface AssistantResult {
+
 
   summary: string
 
-  suggestions: string[]
 
-  possibleEvents: string[]
+  suggestions:
+    AssistantSuggestion[]
 
-  aliveCharacters: string[]
 
-  deadCharacters: string[]
+  possibleEvents:
+    AssistantSuggestion[]
 
-  activeConflicts: string[]
+
+  aliveCharacters:
+    string[]
+
+
+  deadCharacters:
+    string[]
+
+
+  activeConflicts:
+    string[]
+
 
 }
