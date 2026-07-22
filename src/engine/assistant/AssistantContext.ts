@@ -1,19 +1,53 @@
-import type { StoryContext } from "../writer/story/types/StoryContext"
+import type {
+  RPGTurn,
+} from "../../types/turn"
 
-import type { Character } from "../../types/character"
+import type {
+  Character,
+} from "../../types/character"
 
-import type { WorldContext } from "../context/ContextEngine"
+import type {
+  StoryContext,
+} from "../writer/story/types/StoryContext"
 
-import type { BrainProfile } from "../brain/BrainProfile"
+import type {
+  CampaignState,
+} from "./state/CampaignState"
+
+
 
 export interface AssistantContext {
 
-  profile: BrainProfile
 
-  world: WorldContext
+  // ==================================
+  // Turno atual
+  // ==================================
+
+  turn?: RPGTurn
+
+
+
+  // ==================================
+  // Estado da campanha
+  // ==================================
+
+  campaignState: CampaignState
+
+
+
+  // ==================================
+  // História
+  // ==================================
 
   story: StoryContext
 
+
+
+  // ==================================
+  // Personagens
+  // ==================================
+
   characters: Character[]
+
 
 }

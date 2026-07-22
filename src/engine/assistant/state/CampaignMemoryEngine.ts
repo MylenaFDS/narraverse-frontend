@@ -10,7 +10,7 @@ import type {
 
 import {
   EventInterpreterEngine,
-} from "../../brain/interpreter/EventInterpreterEngine"
+} from "./events/EventInterpreterEngine"
 
 
 import {

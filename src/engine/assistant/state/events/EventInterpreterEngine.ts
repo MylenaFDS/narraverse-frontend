@@ -1,11 +1,11 @@
 import type {
   RPGTurn,
-} from "../../../types/turn"
+} from "../../../../types/turn"
 
 
 import type {
   StoryEvent,
-} from "../../assistant/state/events/StoryEvent"
+} from "./StoryEvent"
 
 
 

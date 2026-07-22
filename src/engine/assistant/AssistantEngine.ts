@@ -1,21 +1,150 @@
 import type {
-  StoryAnalysis,
-} from "./analysis/StoryAnalysisEngine"
+  AssistantContext,
+} from "./AssistantContext"
 
-export class CharacterStatusEngine {
+import type {
+  AssistantResult,
+} from "./AssistantResult"
 
-  static alive(
-    analysis: StoryAnalysis,
-  ): string[] {
 
-    return analysis.activeCharacters
+import { SummaryEngine } from "./summary/SummaryEngine"
+
+import { SuggestionEngine } from "./suggestions/SuggestionEngine"
+
+import { EventSuggestionEngine } from "./suggestions/EventSuggestionEngine"
+
+import { CharacterStatusEngine } from "./CharacterStatusEngine"
+
+import { StoryAnalysisEngine } from "./analysis/StoryAnalysisEngine"
+
+import { CampaignStateEngine } from "./state/CampaignStateEngine"
+
+import { EventInterpreterEngine } from "./state/events/EventInterpreterEngine"
+
+
+
+export class AssistantEngine {
+
+
+
+  static assist(
+
+    context: AssistantContext,
+
+  ): AssistantResult {
+
+
+
+    // ==================================
+    // Analisa o turno atual
+    // ==================================
+
+    const events =
+      context.turn
+
+        ? EventInterpreterEngine.interpret(
+            context.turn,
+          )
+
+        : []
+
+
+
+    // ==================================
+    // Atualiza estado da campanha
+    // ==================================
+
+    const campaignState =
+      CampaignStateEngine.update(
+        context.campaignState,
+        events,
+      )
+
+
+
+    // ==================================
+    // Analisa história
+    // ==================================
+
+    const analysis =
+      StoryAnalysisEngine.analyze({
+
+        ...context,
+
+        campaignState,
+
+      })
+
+
+
+    // ==================================
+    // Retorna assistência
+    // ==================================
+
+    return {
+
+
+
+      summary:
+
+        SummaryEngine.build(
+          analysis,
+        ),
+
+
+
+      suggestions:
+
+        SuggestionEngine.build(
+          analysis,
+        ),
+
+
+
+      possibleEvents:
+
+  EventSuggestionEngine.build(
+    analysis,
+  )
+  .map(
+    event => ({
+
+      type: "event",
+
+      title: event,
+
+      description:
+        "Evento possível durante a narrativa.",
+
+    }),
+  ),
+
+
+
+      aliveCharacters:
+
+        CharacterStatusEngine.alive(
+          analysis,
+        ),
+
+
+
+      deadCharacters:
+
+        CharacterStatusEngine.dead(
+          analysis,
+        ),
+
+
+
+      activeConflicts:
+
+        analysis.activeConflicts,
+
+    }
+
 
   }
 
-  static dead(): string[] {
-
-    return []
-
-  }
 
 }
