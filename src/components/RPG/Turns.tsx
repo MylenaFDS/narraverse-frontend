@@ -16,7 +16,7 @@ import {
   getCharacterSheet,
   getMyCharacters
 } from "../../services/characters"
-import { TurnBrainService } from "../../engine/brain/TurnBrainService"
+
 import type { RPGTurn } from "../../types/turn"
 import type {
   Character,
@@ -26,9 +26,9 @@ import type {
 import type { Lore } from "../../types/lore"
 
 import { useLocation, useNavigate } from "react-router-dom"
-import { BrainProfileBuilder } from "../../engine/brain/BrainProfileBuilder"
-import { WorldContextBuilder } from "../../engine/context/WorldContextBuilder"
-import { TurnAdapter } from "../../engine/adapters/TurnAdapter"
+
+import { GenerateAssistantService } from "../../engine/assistant/GenerateAssistantService"
+import type { AssistantResult } from "../../engine/assistant/AssistantResult"
 
 type Props = {
   rpgId: number
@@ -106,6 +106,13 @@ const [timelineLoreId, setTimelineLoreId] =
 
 const [timelineCategoryId, setTimelineCategoryId] =
   useState<number | "">("")
+  const [assistantResult, setAssistantResult] =
+  useState<AssistantResult | null>(
+    null,
+  )
+
+const [showAIModal, setShowAIModal] =
+  useState(false)
   
   const wsRef = useRef<WebSocket | null>(null)
   const location = useLocation()
@@ -830,46 +837,24 @@ setTimelineCategoryId("")
 
 async function handleGenerateWithAI() {
 
-  if (!selectedCharacterId) return
+  const result =
+    GenerateAssistantService.generate(
 
-  const character =
-    allCharacters.find(
-      c => c.id === selectedCharacterId,
-    )
-
-  if (!character) return
-
-  const profile =
-    BrainProfileBuilder.fromCharacter(
-      character,
-    )
-
-  const world =
-    WorldContextBuilder.build({
-
-      profile,
-
-      characters: allCharacters,
-
-      npcs: [],
-
-      lore,
-
-      factions: [],
-
-      recentTurns:
-        TurnAdapter.toAI(turns),
-
-    })
-
-  const text =
-    TurnBrainService.generate(
-      profile,
-      world,
       turns,
+
+      allCharacters,
+
     )
 
-  setNewTurn(text)
+
+  setAssistantResult(
+    result,
+  )
+
+
+  setShowAIModal(
+    true,
+  )
 
 }
 
@@ -1104,10 +1089,210 @@ async function handleGenerateWithAI() {
         </button>
       </div>
     </div>
+    
   </div>
-)}
+  
+)}{
+showAIModal &&
+assistantResult && (
+
+<div
+className="
+fixed inset-0
+bg-black/70
+flex
+items-center
+justify-center
+z-50
+"
+>
+
+<div
+className="
+bg-[#18181b]
+border
+border-[#4a2f2f]
+rounded-2xl
+p-6
+w-[500px]
+max-h-[80vh]
+overflow-y-auto
+"
+>
+
+<h2
+className="
+text-2xl
+text-[#e0a96d]
+mb-4
+"
+>
+✨ Assistente Narrativo
+</h2>
+
+
+<section>
+
+<h3 className="text-yellow-400">
+Resumo
+</h3>
+
+<p>
+{assistantResult.summary}
+</p>
+
+</section>
+
+
+
+<section className="mt-4">
+
+<h3 className="text-yellow-400">
+Sugestões
+</h3>
+
+<ul>
+
+{
+  assistantResult.suggestions.map(
+    (item, index) => (
+
+      <li
+        key={index}
+        className="mb-2"
+      >
+
+        <strong>
+          {item.title}
+        </strong>
+
+        <p>
+          {item.description}
+        </p>
+
+      </li>
+
+    )
+  )
+}
+
+</ul>
+
+</section>
+
+
+
+<section className="mt-4">
+
+<h3 className="text-yellow-400">
+Eventos possíveis
+</h3>
+
+
+<ul>
+
+{
+assistantResult.suggestions.map(
+(item,index)=>(
+
+<li
+key={index}
+className="mb-2"
+>
+
+  • {
+    typeof item === "string"
+      ? item
+      : JSON.stringify(item)
+  }
+
+</li>
+
+)
+)
+}
+
+</ul>
+
+
+</section>
+
+
+
+<section className="mt-4">
+
+<h3 className="text-yellow-400">
+Personagens vivos
+</h3>
+
+
+<p>
+
+{
+assistantResult.aliveCharacters.join(
+", "
+)
+}
+
+</p>
+
+
+</section>
+
+
+
+<section className="mt-4">
+
+<h3 className="text-yellow-400">
+Conflitos ativos
+</h3>
+
+
+{
+assistantResult.activeConflicts.map(
+(item,index)=>(
+
+<p key={index}>
+• {item}
+</p>
+
+)
+)
+}
+
+
+</section>
+
+
+
+<button
+
+onClick={()=>{
+setShowAIModal(false)
+}}
+
+className="
+rpg-btn
+w-full
+mt-6
+"
+
+>
+
+Fechar
+
+</button>
+
+
+</div>
+
+</div>
+
+)
+}
     </>
   )
+  
   
 }
   

@@ -3,40 +3,85 @@ import type { StoryContext } from "../../writer/story/types/StoryContext"
 
 export class StoryContextAdapter {
 
-  static toStoryContext(
-    state: CampaignState,
-  ): StoryContext {
 
-    return {
+static toStoryContext(
+ state: CampaignState,
+): StoryContext {
 
-      recentTurns: [],
 
-      lastActions: [],
+return {
 
-      lastDialogues: [],
 
-      unresolvedThreads: [],
+recentTurns: [],
 
-      currentSituation:
-        state.activeEvents.join(", "),
 
-      activeEvents:
-        [...state.activeEvents],
+lastActions:
+state.history
+.filter(
+event =>
+event.type === "attack"
+||
+event.type === "movement"
+)
+.map(
+event =>
+event.description
+),
 
-      aliveCharacters:
-        [...state.aliveCharacters],
 
-      deadCharacters:
-        [...state.deadCharacters],
+lastDialogues:
+state.history
+.filter(
+event =>
+event.type === "dialogue"
+)
+.map(
+event =>
+event.description
+),
 
-      activeQuests:
-        [...state.activeQuests],
 
-      discoveredLocations:
-        [...state.discoveredLocations],
+activeEvents:
+state.activeEvents,
 
-    }
 
-  }
+unresolvedThreads:
+[],
+
+
+currentSituation:
+state.activeEvents.join(
+". "
+),
+
+
+recentFacts:
+state.history.map(
+event =>
+event.description
+),
+
+
+mentionedCharacters:
+[
+...state.aliveCharacters,
+...state.deadCharacters,
+],
+
+
+topics:
+state.activeEvents,
+
+
+sceneMood:
+"unknown",
+
+
+unansweredQuestions: [],
+
+
+}
+
+}
 
 }
