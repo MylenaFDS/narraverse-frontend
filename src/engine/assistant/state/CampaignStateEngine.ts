@@ -6,9 +6,7 @@ import type {
   StoryEvent,
 } from "./events/StoryEvent"
 
-
 export class CampaignStateEngine {
-
 
   static update(
 
@@ -18,64 +16,50 @@ export class CampaignStateEngine {
 
   ): CampaignState {
 
-
     const next: CampaignState = {
-
 
       ...state,
 
-
       turn:
         state.turn + 1,
-
 
       activeEvents: [
         ...state.activeEvents,
       ],
 
-
       history: [
         ...state.history,
       ],
-
 
       aliveCharacters: [
         ...state.aliveCharacters,
       ],
 
-
       deadCharacters: [
         ...state.deadCharacters,
       ],
-
 
       activeQuests: [
         ...state.activeQuests,
       ],
 
-
       discoveredLocations: [
         ...state.discoveredLocations,
       ],
 
-
     }
 
-
-
-    for(
+    for (
       const event of events
-    ){
-
+    ) {
 
       next.history.push(
         event,
       )
 
-
-
-      switch(event.type){
-
+      switch (
+        event.type
+      ) {
 
         case "attack":
 
@@ -86,28 +70,21 @@ export class CampaignStateEngine {
 
           break
 
-
-
         case "death":
-
 
           this.addEvent(
             next,
-            "Uma morte ocorreu",
+            event.description,
           )
 
-
-
-          if(
-            event.actorId
-          ){
-
+          if (
+            event.actorId !== undefined
+          ) {
 
             const characterId =
               String(
                 event.actorId,
               )
-
 
             next.aliveCharacters =
               next.aliveCharacters.filter(
@@ -115,13 +92,11 @@ export class CampaignStateEngine {
                   name !== characterId,
               )
 
-
-
-            if(
+            if (
               !next.deadCharacters.includes(
                 characterId,
               )
-            ){
+            ) {
 
               next.deadCharacters.push(
                 characterId,
@@ -129,37 +104,33 @@ export class CampaignStateEngine {
 
             }
 
-
           }
 
-
           break
-
-
 
         case "movement":
 
           this.addEvent(
             next,
-            "Personagem mudou de local",
+            event.description,
           )
 
+          if (
+            event.location &&
+            !next.discoveredLocations.includes(
+              event.location,
+            )
+          ) {
+
+            next.discoveredLocations.push(
+              event.location,
+            )
+
+          }
+
           break
-
-
 
         case "dialogue":
-
-          this.addEvent(
-            next,
-            "Diálogo importante",
-          )
-
-          break
-
-
-
-        case "quest":
 
           this.addEvent(
             next,
@@ -168,36 +139,52 @@ export class CampaignStateEngine {
 
           break
 
+        case "quest":
+
+          this.addEvent(
+            next,
+            event.description,
+          )
+
+          if (
+            !next.activeQuests.includes(
+              event.description,
+            )
+          ) {
+
+            next.activeQuests.push(
+              event.description,
+            )
+
+          }
+
+          break
 
       }
 
-
     }
-
-
 
     return next
 
-
   }
-
-
-
 
   private static addEvent(
 
     state: CampaignState,
 
-    description:string,
+    description: string,
 
-  ):void{
+  ): void {
 
+    if (
 
-    if(
+      description.trim() !== "" &&
+
       !state.activeEvents.includes(
         description,
       )
-    ){
+
+    ) {
 
       state.activeEvents.push(
         description,
@@ -205,8 +192,6 @@ export class CampaignStateEngine {
 
     }
 
-
   }
-
 
 }

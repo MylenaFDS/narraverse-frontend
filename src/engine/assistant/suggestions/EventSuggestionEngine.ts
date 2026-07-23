@@ -2,25 +2,18 @@ import type {
   StoryAnalysis,
 } from "../analysis/StoryAnalysis"
 
-
 import type {
   AssistantSuggestion,
 } from "../types/AssistantSuggestion"
 
-
-
 export class EventSuggestionEngine {
-
 
   static build(
     analysis: StoryAnalysis,
   ): AssistantSuggestion[] {
 
-
     const events:
       AssistantSuggestion[] = []
-
-
 
     // ==================================
     // Conflitos ativos
@@ -29,7 +22,6 @@ export class EventSuggestionEngine {
     if (
       analysis.activeConflicts.length > 0
     ) {
-
 
       events.push({
 
@@ -44,7 +36,6 @@ export class EventSuggestionEngine {
 
       })
 
-
       events.push({
 
         title:
@@ -57,7 +48,6 @@ export class EventSuggestionEngine {
           "event",
 
       })
-
 
       events.push({
 
@@ -72,17 +62,13 @@ export class EventSuggestionEngine {
 
       })
 
-
     }
-
-
 
     // ==================================
     // Sem conflito
     // ==================================
 
     else {
-
 
       events.push({
 
@@ -97,24 +83,20 @@ export class EventSuggestionEngine {
 
       })
 
-
       events.push({
 
         title:
           "Nova descoberta",
 
         description:
-          "O personagem pode encontrar uma pista, local secreto ou informação importante.",
+          "O personagem pode encontrar uma pista, um local secreto ou uma informação importante.",
 
         type:
           "event",
 
       })
 
-
     }
-
-
 
     // ==================================
     // Personagens presentes
@@ -123,7 +105,6 @@ export class EventSuggestionEngine {
     if (
       analysis.activeCharacters.length > 1
     ) {
-
 
       events.push({
 
@@ -138,10 +119,7 @@ export class EventSuggestionEngine {
 
       })
 
-
     }
-
-
 
     // ==================================
     // Pontas soltas
@@ -150,7 +128,6 @@ export class EventSuggestionEngine {
     if (
       analysis.unresolvedThreads.length > 0
     ) {
-
 
       events.push({
 
@@ -165,15 +142,10 @@ export class EventSuggestionEngine {
 
       })
 
-
     }
-
-
 
     return events
 
-
   }
-
 
 }

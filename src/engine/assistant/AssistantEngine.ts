@@ -6,22 +6,13 @@ import type {
   AssistantResult,
 } from "./AssistantResult"
 
-
 import { SummaryEngine } from "./summary/SummaryEngine"
-
 import { SuggestionEngine } from "./suggestions/SuggestionEngine"
-
 import { EventSuggestionEngine } from "./suggestions/EventSuggestionEngine"
-
 import { CharacterStatusEngine } from "./CharacterStatusEngine"
-
 import { StoryAnalysisEngine } from "./analysis/StoryAnalysisEngine"
-
 import { CampaignStateEngine } from "./state/CampaignStateEngine"
-
 import { EventInterpreterEngine } from "./state/events/EventInterpreterEngine"
-
-
 
 export class AssistantEngine {
 
@@ -67,9 +58,9 @@ export class AssistantEngine {
 
       possibleEvents:
 
-  EventSuggestionEngine.build(
-    analysis,
-  ),
+        EventSuggestionEngine.build(
+          analysis,
+        ),
 
       aliveCharacters:
 
