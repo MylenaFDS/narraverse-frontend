@@ -25,46 +25,22 @@ import { EventInterpreterEngine } from "./state/events/EventInterpreterEngine"
 
 export class AssistantEngine {
 
-
-
   static assist(
-
     context: AssistantContext,
-
   ): AssistantResult {
-
-
-
-    // ==================================
-    // Analisa o turno atual
-    // ==================================
 
     const events =
       context.turn
-
         ? EventInterpreterEngine.interpret(
             context.turn,
           )
-
         : []
-
-
-
-    // ==================================
-    // Atualiza estado da campanha
-    // ==================================
 
     const campaignState =
       CampaignStateEngine.update(
         context.campaignState,
         events,
       )
-
-
-
-    // ==================================
-    // Analisa história
-    // ==================================
 
     const analysis =
       StoryAnalysisEngine.analyze({
@@ -75,15 +51,7 @@ export class AssistantEngine {
 
       })
 
-
-
-    // ==================================
-    // Retorna assistência
-    // ==================================
-
     return {
-
-
 
       summary:
 
@@ -91,35 +59,26 @@ export class AssistantEngine {
           analysis,
         ),
 
-
-
       suggestions:
 
         SuggestionEngine.build(
           analysis,
         ),
 
-
-
       possibleEvents:
 
-  EventSuggestionEngine.build(
-    analysis,
-  )
-  .map(
-    event => ({
+        EventSuggestionEngine.build(
+          analysis,
+        ).map(event => ({
 
-      type: "event",
+          type: "event",
 
-      title: event,
+          title: event,
 
-      description:
-        "Evento possível durante a narrativa.",
+          description:
+            "Um possível desdobramento da narrativa.",
 
-    }),
-  ),
-
-
+        })),
 
       aliveCharacters:
 
@@ -127,24 +86,30 @@ export class AssistantEngine {
           analysis,
         ),
 
-
-
       deadCharacters:
 
         CharacterStatusEngine.dead(
           analysis,
         ),
 
-
-
       activeConflicts:
 
         analysis.activeConflicts,
 
+      unresolvedThreads:
+
+        analysis.unresolvedThreads,
+
+      currentSituation:
+
+        analysis.currentSituation,
+
+      sceneMood:
+
+        analysis.sceneMood,
+
     }
 
-
   }
-
 
 }

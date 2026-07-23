@@ -2,60 +2,109 @@ import type { AssistantContext } from "../AssistantContext"
 
 export interface StoryAnalysis {
 
-  activeConflicts: string[]
+  // História
 
   currentSituation: string
+
+  currentLocation?: string
+
+  sceneMood: string
+
+  topics: string[]
+
+  recentEvents: string[]
+
+  // Conflitos
+
+  activeConflicts: string[]
+
+  unresolvedThreads: string[]
+
+  unansweredQuestions: string[]
+
+  // Personagens
 
   activeCharacters: string[]
 
   deadCharacters: string[]
 
-  recentEvents: string[]
+  focusedCharacter?: string
 
-  unresolvedThreads: string[]
+  // Objetivos
+
+  activeObjectives: string[]
+
+  activeQuests: string[]
+
+  // Estado
+
+  tensionLevel:
+    "low"
+    | "medium"
+    | "high"
 
 }
-
 export class StoryAnalysisEngine {
 
   static analyze(
     context: AssistantContext,
   ): StoryAnalysis {
 
+    const tensionLevel =
+
+      context.story.activeEvents.length > 3
+        ? "high"
+
+        : context.story.activeEvents.length > 0
+          ? "medium"
+          : "low"
+
     return {
-
-      // Eventos ainda em andamento
-
-      activeConflicts:
-        context.story.activeEvents,
-
-      // Situação atual da campanha
 
       currentSituation:
         context.story.currentSituation,
 
-      // Personagens presentes
+      currentLocation:
+        context.story.currentLocation,
 
-      activeCharacters:
+      sceneMood:
+        context.story.sceneMood,
 
-        context.characters.map(
-          character =>
-            character.name,
-        ),
-
-      // Ainda será alimentado pelo CampaignStateEngine
-
-      deadCharacters: [],
-
-      // Últimos acontecimentos
+      topics:
+        context.story.topics,
 
       recentEvents:
         context.story.recentTurns,
 
-      // Pontas soltas da narrativa
+      activeConflicts:
+        context.story.activeEvents,
 
       unresolvedThreads:
         context.story.unresolvedThreads,
+
+      unansweredQuestions:
+        context.story.unansweredQuestions,
+
+      activeCharacters:
+
+        context.characters.map(
+          character => character.name,
+        ),
+
+      deadCharacters:
+
+        context.campaignState.deadCharacters,
+
+      focusedCharacter:
+        context.story.focusedCharacter,
+
+      activeObjectives:
+        context.story.activeObjectives,
+
+      activeQuests:
+        context.story.activeQuests,
+
+      tensionLevel,
 
     }
 

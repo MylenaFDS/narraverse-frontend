@@ -19,20 +19,27 @@ export class StoryContextBuilder {
 
     return {
 
+      // ======================================
+      // Histórico
+      // ======================================
+
       recentTurns:
 
         turns
           .slice(-5)
-          .map(turn => turn.content),
+          .map(
+            turn => turn.content,
+          ),
+
+      recentFacts: [],
 
       lastActions: [],
 
       lastDialogues: [],
 
-      activeEvents:
-        [...campaign.activeEvents],
-
-      unresolvedThreads: [],
+      // ======================================
+      // Situação atual
+      // ======================================
 
       currentSituation:
 
@@ -42,7 +49,27 @@ export class StoryContextBuilder {
 
           : "Nenhum evento importante.",
 
-      recentFacts: [],
+      currentLocation: undefined,
+
+      sceneMood: "neutral",
+
+      activeEvents: [
+        ...campaign.activeEvents,
+      ],
+
+      // ======================================
+      // Narrativa
+      // ======================================
+
+      unresolvedThreads: [],
+
+      unansweredQuestions: [],
+
+      topics: [],
+
+      // ======================================
+      // Personagens
+      // ======================================
 
       mentionedCharacters:
 
@@ -50,13 +77,19 @@ export class StoryContextBuilder {
           character => character.name,
         ),
 
-      topics: [],
-
-      sceneMood: "neutral",
-
-      unansweredQuestions: [],
+      focusedCharacter: undefined,
 
       lastDialogue: undefined,
+
+      // ======================================
+      // Objetivos
+      // ======================================
+
+      activeObjectives: [],
+
+      discoveredLocations: [],
+
+      activeQuests: [],
 
     }
 
