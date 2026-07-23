@@ -48,6 +48,10 @@ export class StoryAnalysisEngine {
 
         context.story.unresolvedThreads,
 
+      sceneMood:
+
+        context.story.sceneMood,
+
 
     }
 
