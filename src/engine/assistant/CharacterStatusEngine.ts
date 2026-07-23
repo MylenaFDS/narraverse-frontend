@@ -1,6 +1,6 @@
 import type {
   StoryAnalysis,
-} from "./analysis/StoryAnalysisEngine"
+} from "./analysis/StoryAnalysis"
 
 export class CharacterStatusEngine {
 

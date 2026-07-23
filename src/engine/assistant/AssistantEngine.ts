@@ -67,18 +67,9 @@ export class AssistantEngine {
 
       possibleEvents:
 
-        EventSuggestionEngine.build(
-          analysis,
-        ).map(event => ({
-
-          type: "event",
-
-          title: event,
-
-          description:
-            "Um possível desdobramento da narrativa.",
-
-        })),
+  EventSuggestionEngine.build(
+    analysis,
+  ),
 
       aliveCharacters:
 
