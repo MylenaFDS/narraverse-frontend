@@ -2,25 +2,62 @@ import type { StoryEvent } from "./events/StoryEvent"
 
 export interface CampaignState {
 
-  // Turno atual
+  // ======================================
+  // Controle da campanha
+  // ======================================
+
   turn: number
 
-  // Histórico completo de acontecimentos
+  // ======================================
+  // Histórico completo
+  // ======================================
+
   history: StoryEvent[]
 
-  // Eventos que ainda influenciam a história
+  // ======================================
+  // Eventos ativos
+  // ======================================
+
   activeEvents: string[]
 
-  // Personagens vivos
+  // ======================================
+  // Personagens
+  // ======================================
+
   aliveCharacters: string[]
 
-  // Personagens mortos
   deadCharacters: string[]
 
-  // Missões em andamento
+  knownCharacters: string[]
+
+  // ======================================
+  // Mundo
+  // ======================================
+
+  discoveredLocations: string[]
+
+  knownLocations: string[]
+
+  // ======================================
+  // Missões
+  // ======================================
+
   activeQuests: string[]
 
-  // Locais conhecidos
-  discoveredLocations: string[]
+  completedQuests: string[]
+
+  activeObjectives: string[]
+
+  // ======================================
+  // Contexto narrativo
+  // ======================================
+
+  recentDialogues: string[]
+
+  recentActions: string[]
+
+  recentFacts: string[]
+
+  unresolvedThreads: string[]
 
 }

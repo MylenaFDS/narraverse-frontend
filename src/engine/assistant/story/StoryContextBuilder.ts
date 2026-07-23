@@ -17,6 +17,31 @@ export class StoryContextBuilder {
 
   ): StoryContext {
 
+    const recentTurns =
+
+      turns
+        .slice(-5)
+
+    const recentTexts =
+
+      recentTurns.map(
+        turn => turn.content,
+      )
+
+    const lastDialogues =
+
+      recentTurns
+
+        .filter(
+          turn =>
+            turn.content.includes("—") ||
+            turn.content.includes("\""),
+        )
+
+        .map(
+          turn => turn.content,
+        )
+
     return {
 
       // ======================================
@@ -24,18 +49,34 @@ export class StoryContextBuilder {
       // ======================================
 
       recentTurns:
+        recentTexts,
 
-        turns
-          .slice(-5)
+      recentFacts:
+
+        campaign.history
+
+          .slice(-10)
+
           .map(
-            turn => turn.content,
+            event => event.description,
           ),
 
-      recentFacts: [],
+      lastActions:
 
-      lastActions: [],
+        campaign.history
 
-      lastDialogues: [],
+          .slice(-10)
+
+          .filter(
+            event =>
+              event.type !== "dialogue",
+          )
+
+          .map(
+            event => event.description,
+          ),
+
+      lastDialogues,
 
       // ======================================
       // Situação atual
@@ -49,9 +90,17 @@ export class StoryContextBuilder {
 
           : "Nenhum evento importante.",
 
-      currentLocation: undefined,
+      currentLocation:
 
-      sceneMood: "neutral",
+        campaign.discoveredLocations.at(-1),
+
+      sceneMood:
+
+        campaign.activeEvents.length > 2
+
+          ? "tense"
+
+          : "neutral",
 
       activeEvents: [
         ...campaign.activeEvents,
@@ -65,7 +114,9 @@ export class StoryContextBuilder {
 
       unansweredQuestions: [],
 
-      topics: [],
+      topics: [
+        ...campaign.activeEvents,
+      ],
 
       // ======================================
       // Personagens
@@ -77,19 +128,33 @@ export class StoryContextBuilder {
           character => character.name,
         ),
 
-      focusedCharacter: undefined,
+      focusedCharacter:
 
-      lastDialogue: undefined,
+        characters.length > 0
+
+          ? characters[0].name
+
+          : undefined,
+
+      lastDialogue:
+
+        lastDialogues.at(-1),
 
       // ======================================
       // Objetivos
       // ======================================
 
-      activeObjectives: [],
+      activeObjectives: [
+        ...campaign.activeQuests,
+      ],
 
-      discoveredLocations: [],
+      discoveredLocations: [
+        ...campaign.discoveredLocations,
+      ],
 
-      activeQuests: [],
+      activeQuests: [
+        ...campaign.activeQuests,
+      ],
 
     }
 
