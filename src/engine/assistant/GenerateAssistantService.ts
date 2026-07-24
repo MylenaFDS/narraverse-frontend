@@ -12,15 +12,21 @@ import { AssistantService } from "./AssistantService"
 export class GenerateAssistantService {
 
   static generate(
-
     turns: RPGTurn[],
-
     characters: Character[],
-
   ) {
+
+    // ======================================
+    // Estado inicial da campanha
+    // ======================================
 
     let campaign =
       CampaignStateFactory.create()
+
+    // ======================================
+    // Reconstrói toda a campanha
+    // a partir dos turnos
+    // ======================================
 
     for (
       const turn of turns
@@ -39,25 +45,49 @@ export class GenerateAssistantService {
 
     }
 
-    return AssistantService.generate({
+    // ======================================
+    // Constrói o contexto narrativo
+    // ======================================
+
+    const story =
+      AssistantStoryContextEngine.create(
+        campaign,
+        turns,
+        characters,
+      )
+
+    // ======================================
+    // Último turno da campanha
+    // ======================================
+
+    const currentTurn =
+      turns.at(-1)
+
+    // ======================================
+    // Contexto completo para o assistente
+    // ======================================
+
+    const context = {
+
+      turn:
+        currentTurn,
 
       campaignState:
         campaign,
 
-      story:
-        AssistantStoryContextEngine.create(
-
-          campaign,
-
-          turns,
-
-          characters,
-
-        ),
+      story,
 
       characters,
 
-    })
+    }
+
+    // ======================================
+    // Gera as sugestões
+    // ======================================
+
+    return AssistantService.generate(
+      context,
+    )
 
   }
 
