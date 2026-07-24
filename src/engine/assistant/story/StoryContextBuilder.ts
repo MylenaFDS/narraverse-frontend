@@ -115,8 +115,12 @@ export class StoryContextBuilder {
           campaign,
         ),
 
-      activeEvents:
-        [...campaign.activeEvents],
+      activeEvents: [
+  ...campaign.activeEvents,
+  ...campaign.history.map(
+    event => event.description,
+  ),
+],
 
       // ======================================
       // Narrativa
