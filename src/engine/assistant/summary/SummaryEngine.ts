@@ -1,6 +1,6 @@
 import type {
   StoryAnalysis,
-} from "../analysis/StoryAnalysisEngine"
+} from "../analysis/StoryAnalysis"
 
 export class SummaryEngine {
 
@@ -9,10 +9,10 @@ export class SummaryEngine {
   ): string {
 
     if (
-      analysis.currentTopic
+      analysis.currentSituation
     ) {
 
-      return analysis.currentTopic
+      return analysis.currentSituation
 
     }
 

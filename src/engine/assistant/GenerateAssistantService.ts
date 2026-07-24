@@ -5,7 +5,7 @@ import { CampaignStateFactory } from "./state/CampaignStateFactory"
 import { CampaignStateEngine } from "./state/CampaignStateEngine"
 import { EventInterpreterEngine } from "./state/events/EventInterpreterEngine"
 
-import { StoryContextEngine } from "./story/StoryContextEngine"
+import { AssistantStoryContextEngine } from "./story/AssistantStoryContextEngine"
 
 import { AssistantService } from "./AssistantService"
 
@@ -45,7 +45,7 @@ export class GenerateAssistantService {
         campaign,
 
       story:
-        StoryContextEngine.create(
+        AssistantStoryContextEngine.create(
 
           campaign,
 

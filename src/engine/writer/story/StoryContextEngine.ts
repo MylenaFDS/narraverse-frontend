@@ -97,7 +97,7 @@ export class StoryContextEngine {
 
 
       // ======================================
-      // Novo contexto narrativo
+      // Contexto narrativo
       // ======================================
 
       recentFacts:
@@ -145,6 +145,42 @@ export class StoryContextEngine {
         dialogues.at(-1),
 
 
+
+      // ======================================
+      // Objetivos narrativos
+      // ======================================
+
+      activeObjectives:
+
+        this.detectObjectives(
+          contents,
+        ),
+
+
+
+      // ======================================
+      // Locais conhecidos
+      // ======================================
+
+      discoveredLocations:
+
+        this.detectLocations(
+          contents,
+        ),
+
+
+
+      // ======================================
+      // Missões
+      // ======================================
+
+      activeQuests:
+
+        this.detectQuests(
+          contents,
+        ),
+
+
     }
 
   }
@@ -158,8 +194,8 @@ export class StoryContextEngine {
   // ======================================
 
   private static detectEvents(
-    turns: RPGTurn[],
-  ): string[] {
+    turns:RPGTurn[],
+  ):string[] {
 
 
     const events:string[] = []
@@ -169,7 +205,6 @@ export class StoryContextEngine {
     for(
       const turn of turns
     ){
-
 
       const text =
         turn.content.toLowerCase()
@@ -207,11 +242,11 @@ export class StoryContextEngine {
 
 
       if(
-        text.includes("promessa")
+        text.includes("profecia")
       ){
 
         events.push(
-          "Existe uma promessa pendente",
+          "Uma profecia influencia a situação",
         )
 
       }
@@ -219,11 +254,11 @@ export class StoryContextEngine {
 
 
       if(
-        text.includes("profecia")
+        text.includes("promessa")
       ){
 
         events.push(
-          "Uma profecia influencia a situação",
+          "Existe uma promessa pendente",
         )
 
       }
@@ -243,6 +278,7 @@ export class StoryContextEngine {
     }
 
 
+
     return [
       ...new Set(events),
     ]
@@ -258,8 +294,8 @@ export class StoryContextEngine {
   // ======================================
 
   private static detectThreads(
-    turns: RPGTurn[],
-  ): string[] {
+    turns:RPGTurn[],
+  ):string[] {
 
 
     return turns
@@ -276,44 +312,26 @@ export class StoryContextEngine {
 
 
   // ======================================
-  // Fatos importantes
+  // Fatos
   // ======================================
 
   private static extractFacts(
     texts:string[],
-  ): string[] {
+  ):string[] {
 
 
     return texts.filter(
       text =>
 
-        text.includes(
-          "disse",
-        )
-
+        text.includes("disse")
         ||
-
-        text.includes(
-          "anunciou",
-        )
-
+        text.includes("anunciou")
         ||
-
-        text.includes(
-          "revelou",
-        )
-
+        text.includes("revelou")
         ||
-
-        text.includes(
-          "prometeu",
-        )
-
+        text.includes("prometeu")
         ||
-
-        text.includes(
-          "descobriu",
-        )
+        text.includes("descobriu")
 
     )
 
@@ -324,32 +342,24 @@ export class StoryContextEngine {
 
 
   // ======================================
-  // Personagens citados
+  // Personagens
   // ======================================
 
   private static extractCharacters(
     texts:string[],
-  ): string[] {
+  ):string[] {
 
 
     const names = [
 
       "Aragorn",
-
       "Arwen",
-
       "Galadriel",
-
       "Legolas",
-
       "Gimli",
-
       "Gandalf",
-
       "Frodo",
-
       "Cersei",
-
       "Jon Snow",
 
     ]
@@ -371,32 +381,24 @@ export class StoryContextEngine {
 
 
   // ======================================
-  // Assuntos da cena
+  // Tópicos
   // ======================================
 
   private static extractTopics(
     texts:string[],
-  ): string[] {
+  ):string[] {
 
 
     const topics = [
 
       "profecia",
-
       "guerra",
-
       "casamento",
-
       "trono",
-
       "família",
-
       "aliança",
-
       "vingança",
-
       "perigo",
-
       "esperança",
 
     ]
@@ -420,18 +422,17 @@ export class StoryContextEngine {
 
 
   // ======================================
-  // Clima emocional
+  // Humor da cena
   // ======================================
 
   private static detectMood(
     texts:string[],
-  ): string {
+  ):string {
 
 
     const text =
-      texts
-        .join(" ")
-        .toLowerCase()
+      texts.join(" ")
+      .toLowerCase()
 
 
 
@@ -485,7 +486,7 @@ export class StoryContextEngine {
 
   private static detectQuestions(
     texts:string[],
-  ): string[] {
+  ):string[] {
 
 
     const questions:string[] = []
@@ -494,7 +495,7 @@ export class StoryContextEngine {
 
     const text =
       texts.join(" ")
-        .toLowerCase()
+      .toLowerCase()
 
 
 
@@ -531,12 +532,132 @@ export class StoryContextEngine {
 
 
   // ======================================
+  // Objetivos
+  // ======================================
+
+  private static detectObjectives(
+    texts:string[],
+  ):string[] {
+
+
+    const objectives:string[] = []
+
+
+
+    const text =
+      texts.join(" ")
+      .toLowerCase()
+
+
+
+    if(
+      text.includes("buscar")
+      ||
+      text.includes("encontrar")
+    ){
+
+      objectives.push(
+        "Encontrar uma solução para a situação atual",
+      )
+
+    }
+
+
+
+    return objectives
+
+  }
+
+
+
+
+
+  // ======================================
+  // Locais
+  // ======================================
+
+  private static detectLocations(
+    texts:string[],
+  ):string[] {
+
+
+    const locations = [
+
+      "Valfenda",
+      "Mordor",
+      "Gondor",
+      "Floresta",
+      "Castelo",
+      "Cidade",
+
+    ]
+
+
+
+    return locations.filter(
+      location =>
+        texts.some(
+          text =>
+            text.includes(location),
+        ),
+    )
+
+  }
+
+
+
+
+
+  // ======================================
+  // Missões
+  // ======================================
+
+  private static detectQuests(
+    texts:string[],
+  ):string[] {
+
+
+    const quests:string[] = []
+
+
+
+    const text =
+      texts.join(" ")
+      .toLowerCase()
+
+
+
+    if(
+      text.includes("missão")
+      ||
+      text.includes("objetivo")
+      ||
+      text.includes("proteger")
+    ){
+
+      quests.push(
+        "Continuar o objetivo principal",
+      )
+
+    }
+
+
+
+    return quests
+
+  }
+
+
+
+
+
+  // ======================================
   // Situação atual
   // ======================================
 
   private static buildSituation(
     turns:RPGTurn[],
-  ): string {
+  ):string {
 
 
     const last =
