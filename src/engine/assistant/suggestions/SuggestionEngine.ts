@@ -6,22 +6,28 @@ import type {
   AssistantSuggestion,
 } from "../types/AssistantSuggestion"
 
+import type {NarrativeState} from "../state/NarrativeState"
 export class SuggestionEngine {
 
   static build(
     analysis: StoryAnalysis,
-  ): AssistantSuggestion[] {
+
+   state: NarrativeState,
+
+): AssistantSuggestion[] {
 
     const suggestions:
       AssistantSuggestion[] = []
 
     this.buildConflictSuggestions(
       analysis,
+      state,
       suggestions,
     )
 
     this.buildCharacterSuggestions(
       analysis,
+      state,
       suggestions,
     )
 
@@ -59,58 +65,53 @@ export class SuggestionEngine {
 
   private static buildConflictSuggestions(
 
-    analysis: StoryAnalysis,
+  analysis: StoryAnalysis,
 
-    suggestions: AssistantSuggestion[],
+  state: NarrativeState,
 
-  ) {
+  suggestions: AssistantSuggestion[],
 
-    if (
-      analysis.activeConflicts.length === 0
-    ) {
-      return
-    }
+) {
 
-    suggestions.push({
 
-      title:
-        "Buscar vantagem tática",
+  if(
+    state.situation !== "combat"
+  ){
 
-      description:
-        "Use cobertura, terreno e aliados antes de agir.",
-
-      type:
-        "strategy",
-
-    })
-
-    suggestions.push({
-
-      title:
-        "Proteger um aliado",
-
-      description:
-        "Alguém pode precisar de ajuda imediatamente.",
-
-      type:
-        "action",
-
-    })
-
-    suggestions.push({
-
-      title:
-        "Mudar a estratégia",
-
-      description:
-        "Recuar, negociar ou criar uma distração pode alterar completamente o combate.",
-
-      type:
-        "strategy",
-
-    })
+    return
 
   }
+
+
+  suggestions.push({
+
+    title:
+      "Buscar vantagem tática",
+
+    description:
+      "Use terreno, aliados ou recursos disponíveis antes de agir.",
+
+    type:
+      "strategy",
+
+  })
+
+
+  suggestions.push({
+
+    title:
+      "Proteger um aliado",
+
+    description:
+      "Um personagem vulnerável pode alterar o rumo do conflito.",
+
+    type:
+      "action",
+
+  })
+
+
+}
 
   // ==================================
   // Personagens
@@ -119,6 +120,8 @@ export class SuggestionEngine {
   private static buildCharacterSuggestions(
 
     analysis: StoryAnalysis,
+
+    state: NarrativeState,
 
     suggestions: AssistantSuggestion[],
 
