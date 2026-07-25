@@ -6,21 +6,20 @@ import type {
   AssistantSuggestion,
 } from "../types/AssistantSuggestion"
 
-import type {NarrativeState} from "../state/NarrativeState"
+import type {
+  NarrativeState,
+} from "../state/NarrativeState"
+
 export class SuggestionEngine {
 
   static build(
     analysis: StoryAnalysis,
+    state: NarrativeState,
+  ): AssistantSuggestion[] {
 
-   state: NarrativeState,
-
-): AssistantSuggestion[] {
-
-    const suggestions:
-      AssistantSuggestion[] = []
+    const suggestions: AssistantSuggestion[] = []
 
     this.buildConflictSuggestions(
-      analysis,
       state,
       suggestions,
     )
@@ -33,6 +32,7 @@ export class SuggestionEngine {
 
     this.buildObjectiveSuggestions(
       analysis,
+      state,
       suggestions,
     )
 
@@ -43,11 +43,13 @@ export class SuggestionEngine {
 
     this.buildExplorationSuggestions(
       analysis,
+      state,
       suggestions,
     )
 
     this.buildStorySuggestions(
       analysis,
+      state,
       suggestions,
     )
 
@@ -60,12 +62,10 @@ export class SuggestionEngine {
   }
 
   // ==================================
-  // Combates
+  // Combate
   // ==================================
 
   private static buildConflictSuggestions(
-
-  analysis: StoryAnalysis,
 
   state: NarrativeState,
 
@@ -73,43 +73,36 @@ export class SuggestionEngine {
 
 ) {
 
-
-  if(
+  if (
     state.situation !== "combat"
-  ){
-
+  ) {
     return
-
   }
 
-
   suggestions.push({
-
-    title:
-      "Buscar vantagem tática",
-
+    title: "Buscar vantagem tática",
     description:
       "Use terreno, aliados ou recursos disponíveis antes de agir.",
-
-    type:
-      "strategy",
-
+    type: "strategy",
   })
-
 
   suggestions.push({
-
-    title:
-      "Proteger um aliado",
-
+    title: "Proteger um aliado",
     description:
       "Um personagem vulnerável pode alterar o rumo do conflito.",
-
-    type:
-      "action",
-
+    type: "action",
   })
 
+  if (
+    state.isDangerous
+  ) {
+    suggestions.push({
+      title: "Recuar temporariamente",
+      description:
+        "A tensão é alta. Sobreviver pode ser mais importante do que vencer agora.",
+      type: "strategy",
+    })
+  }
 
 }
 
@@ -128,7 +121,15 @@ export class SuggestionEngine {
   ) {
 
     if (
-      analysis.deadCharacters.length > 0
+      !state.canInteract
+    ) {
+
+      return
+
+    }
+
+    if (
+      state.hasDeath
     ) {
 
       suggestions.push({
@@ -137,7 +138,7 @@ export class SuggestionEngine {
           "Reagir à perda",
 
         description:
-          "A morte recente pode mudar a motivação dos personagens.",
+          "A morte recente pode mudar completamente a motivação dos personagens.",
 
         type:
           "character",
@@ -147,7 +148,7 @@ export class SuggestionEngine {
     }
 
     if (
-      analysis.recentDialogue.length > 0
+      state.hasDialogue
     ) {
 
       suggestions.push({
@@ -175,7 +176,7 @@ export class SuggestionEngine {
           "Criar interação",
 
         description:
-          "Outro personagem pode agir por conta própria.",
+          "Outro personagem pode agir, interromper a conversa ou revelar algo importante.",
 
         type:
           "character",
@@ -194,6 +195,8 @@ export class SuggestionEngine {
 
     analysis: StoryAnalysis,
 
+    state: NarrativeState,
+
     suggestions: AssistantSuggestion[],
 
   ) {
@@ -201,13 +204,17 @@ export class SuggestionEngine {
     if (
       analysis.activeObjectives.length === 0
     ) {
+
       return
+
     }
 
     suggestions.push({
 
       title:
-        "Avançar o objetivo",
+        state.situation === "combat"
+          ? "Cumprir o objetivo durante o combate"
+          : "Avançar o objetivo",
 
       description:
         analysis.activeObjectives[0],
@@ -227,6 +234,7 @@ export class SuggestionEngine {
 
     analysis: StoryAnalysis,
 
+
     suggestions: AssistantSuggestion[],
 
   ) {
@@ -234,7 +242,9 @@ export class SuggestionEngine {
     if (
       analysis.activeQuests.length === 0
     ) {
+
       return
+
     }
 
     suggestions.push({
@@ -260,35 +270,35 @@ export class SuggestionEngine {
 
     analysis: StoryAnalysis,
 
+    state: NarrativeState,
+
     suggestions: AssistantSuggestion[],
 
   ) {
 
     if (
-
-      analysis.activeConflicts.length === 0
-
+      !state.canExplore
     ) {
 
-      suggestions.push({
-
-        title:
-          "Explorar o cenário",
-
-        description:
-          "O ambiente pode esconder novas pistas.",
-
-        type:
-          "action",
-
-      })
+      return
 
     }
 
+    suggestions.push({
+
+      title:
+        "Explorar o cenário",
+
+      description:
+        "O ambiente pode esconder pistas, objetos ou novos caminhos.",
+
+      type:
+        "action",
+
+    })
+
     if (
-
       analysis.discoveredLocations.length > 0
-
     ) {
 
       suggestions.push({
@@ -316,14 +326,14 @@ export class SuggestionEngine {
 
     analysis: StoryAnalysis,
 
+    state: NarrativeState,
+
     suggestions: AssistantSuggestion[],
 
   ) {
 
     if (
-
       analysis.unansweredQuestions.length > 0
-
     ) {
 
       suggestions.push({
@@ -342,9 +352,7 @@ export class SuggestionEngine {
     }
 
     if (
-
-      analysis.unresolvedThreads.length > 0
-
+      state.hasOpenThreads
     ) {
 
       suggestions.push({
@@ -354,6 +362,25 @@ export class SuggestionEngine {
 
         description:
           analysis.unresolvedThreads[0],
+
+        type:
+          "event",
+
+      })
+
+    }
+
+    if (
+      state.canCreateEvent
+    ) {
+
+      suggestions.push({
+
+        title:
+          "Introduzir um novo acontecimento",
+
+        description:
+          "Um evento inesperado pode movimentar a narrativa.",
 
         type:
           "event",
@@ -377,7 +404,9 @@ export class SuggestionEngine {
     if (
       suggestions.length > 0
     ) {
+
       return
+
     }
 
     suggestions.push({
