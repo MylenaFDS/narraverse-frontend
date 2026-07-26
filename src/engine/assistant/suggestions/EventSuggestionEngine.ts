@@ -1,50 +1,62 @@
 import type {
-  StoryAnalysis,
-} from "../analysis/StoryAnalysis"
-
-import type {
-  NarrativeState,
-} from "../state/NarrativeState"
-
-import type {
   AssistantSuggestion,
 } from "../types/AssistantSuggestion"
 
+import type {
+  SuggestionContext,
+} from "./SuggestionContext"
+
+
 export class EventSuggestionEngine {
 
+
   static build(
-    analysis: StoryAnalysis,
-    state: NarrativeState,
+
+    context: SuggestionContext,
+
   ): AssistantSuggestion[] {
 
-    const events: AssistantSuggestion[] = []
+
+    const events:
+      AssistantSuggestion[] = []
+
+
 
     this.buildConflictEvents(
-      state,
+      context,
       events,
     )
+
+
 
     this.buildExplorationEvents(
-      state,
-      analysis,
+      context,
       events,
     )
+
+
 
     this.buildCharacterEvents(
-      state,
-      analysis,
+      context,
       events,
     )
 
+
+
     this.buildStoryEvents(
-      state,
-      analysis,
+      context,
       events,
     )
+
+
 
     return events
 
   }
+
+
+
+
 
   // ==================================
   // Combate
@@ -52,107 +64,70 @@ export class EventSuggestionEngine {
 
   private static buildConflictEvents(
 
-    state: NarrativeState,
+    context: SuggestionContext,
 
     events: AssistantSuggestion[],
 
   ) {
 
-    if (
-      state.situation !== "combat"
-    ) {
+
+    if(
+      context.focus !== "combat"
+    ){
 
       return
 
     }
+
+
 
     events.push({
 
       title:
         "Reforços chegam",
 
+
       description:
         "Um novo aliado ou inimigo pode entrar no conflito.",
+
 
       type:
         "event",
 
     })
+
+
 
     events.push({
 
       title:
         "Mudança no campo de batalha",
 
+
       description:
         "O ambiente pode alterar completamente o combate.",
 
-      type:
-        "event",
-
-    })
-
-    events.push({
-
-      title:
-        "O inimigo muda de estratégia",
-
-      description:
-        "O adversário pode surpreender o grupo com uma nova abordagem.",
 
       type:
         "event",
 
     })
 
-  }
 
-  // ==================================
-  // Exploração
-  // ==================================
 
-  private static buildExplorationEvents(
-
-    state: NarrativeState,
-
-    analysis: StoryAnalysis,
-
-    events: AssistantSuggestion[],
-
-  ) {
-
-    if (
-      !state.canExplore
-    ) {
-
-      return
-
-    }
-
-    events.push({
-
-      title:
-        "Nova descoberta",
-
-      description:
-        "Uma pista, objeto ou local importante pode ser encontrado.",
-
-      type:
-        "event",
-
-    })
-
-    if (
-      analysis.discoveredLocations.length > 0
-    ) {
+    if(
+      context.tension > 70
+    ){
 
       events.push({
 
         title:
-          "Novo caminho",
+          "Virada inesperada",
+
 
         description:
-          "Uma rota alternativa pode levar a um dos locais conhecidos.",
+          "A situação pode mudar rapidamente devido à alta tensão.",
+
 
         type:
           "event",
@@ -161,55 +136,204 @@ export class EventSuggestionEngine {
 
     }
 
+
   }
+
+
+
+
+
+  // ==================================
+  // Exploração
+  // ==================================
+
+  private static buildExplorationEvents(
+
+    context: SuggestionContext,
+
+    events: AssistantSuggestion[],
+
+  ) {
+
+
+    if(
+      !context.canExplore
+    ){
+
+      return
+
+    }
+
+
+
+    events.push({
+
+      title:
+        "Nova descoberta",
+
+
+      description:
+        "Uma pista, objeto ou local importante pode ser encontrado.",
+
+
+      type:
+        "event",
+
+    })
+
+
+
+    if(
+      context.location
+    ){
+
+      events.push({
+
+        title:
+          "Explorar a região",
+
+
+        description:
+          `Algo interessante pode existir em ${context.location}.`,
+
+
+        type:
+          "event",
+
+      })
+
+    }
+
+
+  }
+
+
+
+
 
   // ==================================
   // Personagens
   // ==================================
 
   private static buildCharacterEvents(
-  state: NarrativeState,
-  analysis: StoryAnalysis,
-  events: AssistantSuggestion[],
-) {
 
-  if (!state.canInteract) {
-    return
+    context: SuggestionContext,
+
+    events: AssistantSuggestion[],
+
+  ) {
+
+
+    if(
+      !context.canInteract
+    ){
+
+      return
+
+    }
+
+
+
+    if(
+      context.hasDialogue
+    ){
+
+      events.push({
+
+        title:
+          "Nova resposta",
+
+
+        description:
+          "Um personagem pode reagir às últimas palavras.",
+
+
+        type:
+          "character",
+
+      })
+
+    }
+
+
+
+    if(
+      context.hasDeath
+    ){
+
+      events.push({
+
+        title:
+          "Consequência emocional",
+
+
+        description:
+          "A perda de alguém pode gerar novas decisões.",
+
+
+        type:
+          "character",
+
+      })
+
+    }
+
+
   }
 
-  events.push({
-    title: "Reação de personagem",
-    description:
-      `${analysis.activeCharacters[0]} pode tomar uma decisão inesperada.`,
-    type: "character",
-  })
 
-}
+
+
+
   // ==================================
   // Narrativa
   // ==================================
 
   private static buildStoryEvents(
 
-    state: NarrativeState,
-
-    analysis: StoryAnalysis,
+    context: SuggestionContext,
 
     events: AssistantSuggestion[],
 
   ) {
 
-    if (
-      state.hasOpenThreads
-    ) {
+
+    if(
+      context.hasOpenThreads
+    ){
 
       events.push({
 
         title:
           "Retomar uma pendência",
 
+
         description:
-          analysis.unresolvedThreads[0],
+          "Um acontecimento anterior pode voltar a influenciar a história.",
+
+
+        type:
+          "event",
+
+      })
+
+    }
+
+
+
+    if(
+      context.objective
+    ){
+
+      events.push({
+
+        title:
+          "Avançar objetivo",
+
+
+        description:
+          context.objective,
+
 
         type:
           "strategy",
@@ -218,25 +342,25 @@ export class EventSuggestionEngine {
 
     }
 
-    if (
-      state.canCreateEvent
-    ) {
 
-      events.push({
 
-        title:
-          "Introduzir um novo acontecimento",
+    events.push({
 
-        description:
-          "Um evento inesperado pode movimentar a narrativa.",
+      title:
+        "Introduzir um acontecimento",
 
-        type:
-          "event",
 
-      })
+      description:
+        "Um novo evento pode movimentar a narrativa.",
 
-    }
+
+      type:
+        "event",
+
+    })
+
 
   }
+
 
 }

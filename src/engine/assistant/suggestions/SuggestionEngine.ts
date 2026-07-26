@@ -1,65 +1,83 @@
 import type {
-  StoryAnalysis,
-} from "../analysis/StoryAnalysis"
-
-import type {
   AssistantSuggestion,
 } from "../types/AssistantSuggestion"
 
 import type {
-  NarrativeState,
-} from "../state/NarrativeState"
+  SuggestionContext,
+} from "./SuggestionContext"
+
+
 
 export class SuggestionEngine {
 
+
   static build(
-    analysis: StoryAnalysis,
-    state: NarrativeState,
+
+    context: SuggestionContext,
+
   ): AssistantSuggestion[] {
 
-    const suggestions: AssistantSuggestion[] = []
+
+    const suggestions:
+      AssistantSuggestion[] = []
+
+
 
     this.buildConflictSuggestions(
-      state,
+      context,
       suggestions,
     )
+
+
 
     this.buildCharacterSuggestions(
-      analysis,
-      state,
+      context,
       suggestions,
     )
+
+
 
     this.buildObjectiveSuggestions(
-      analysis,
-      state,
+      context,
       suggestions,
     )
+
+
 
     this.buildQuestSuggestions(
-      analysis,
+      context,
       suggestions,
     )
+
+
 
     this.buildExplorationSuggestions(
-      analysis,
-      state,
+      context,
       suggestions,
     )
 
+
+
     this.buildStorySuggestions(
-      analysis,
-      state,
+      context,
       suggestions,
     )
+
+
 
     this.buildFallback(
       suggestions,
     )
 
+
+
     return suggestions
 
   }
+
+
+
+
 
   // ==================================
   // Combate
@@ -67,44 +85,84 @@ export class SuggestionEngine {
 
   private static buildConflictSuggestions(
 
-  state: NarrativeState,
+    context: SuggestionContext,
 
-  suggestions: AssistantSuggestion[],
+    suggestions: AssistantSuggestion[],
 
-) {
-
-  if (
-    state.situation !== "combat"
   ) {
-    return
-  }
 
-  suggestions.push({
-    title: "Buscar vantagem tática",
-    description:
-      "Use terreno, aliados ou recursos disponíveis antes de agir.",
-    type: "strategy",
-  })
 
-  suggestions.push({
-    title: "Proteger um aliado",
-    description:
-      "Um personagem vulnerável pode alterar o rumo do conflito.",
-    type: "action",
-  })
+    const {
+      state,
+    } = context
 
-  if (
-    state.isDangerous
-  ) {
+
+
+    if(
+      state.situation !== "combat"
+    ){
+
+      return
+
+    }
+
+
+
     suggestions.push({
-      title: "Recuar temporariamente",
+
+      title:
+        "Buscar vantagem tática",
+
       description:
-        "A tensão é alta. Sobreviver pode ser mais importante do que vencer agora.",
-      type: "strategy",
+        "Use terreno, aliados ou recursos disponíveis antes de agir.",
+
+      type:
+        "strategy",
+
     })
+
+
+
+    suggestions.push({
+
+      title:
+        "Proteger um aliado",
+
+      description:
+        "Um personagem vulnerável pode alterar o rumo do conflito.",
+
+      type:
+        "action",
+
+    })
+
+
+
+    if(
+      state.isDangerous
+    ){
+
+      suggestions.push({
+
+        title:
+          "Recuar temporariamente",
+
+        description:
+          "A tensão é alta. Sobreviver pode ser mais importante do que vencer agora.",
+
+        type:
+          "strategy",
+
+      })
+
+    }
+
+
   }
 
-}
+
+
+
 
   // ==================================
   // Personagens
@@ -112,25 +170,33 @@ export class SuggestionEngine {
 
   private static buildCharacterSuggestions(
 
-    analysis: StoryAnalysis,
-
-    state: NarrativeState,
+    context: SuggestionContext,
 
     suggestions: AssistantSuggestion[],
 
   ) {
 
-    if (
+
+    const {
+      analysis,
+      state,
+    } = context
+
+
+
+    if(
       !state.canInteract
-    ) {
+    ){
 
       return
 
     }
 
-    if (
+
+
+    if(
       state.hasDeath
-    ) {
+    ){
 
       suggestions.push({
 
@@ -147,9 +213,11 @@ export class SuggestionEngine {
 
     }
 
-    if (
+
+
+    if(
       state.hasDialogue
-    ) {
+    ){
 
       suggestions.push({
 
@@ -166,9 +234,11 @@ export class SuggestionEngine {
 
     }
 
-    if (
+
+
+    if(
       analysis.activeCharacters.length > 1
-    ) {
+    ){
 
       suggestions.push({
 
@@ -185,7 +255,12 @@ export class SuggestionEngine {
 
     }
 
+
   }
+
+
+
+
 
   // ==================================
   // Objetivos
@@ -193,38 +268,60 @@ export class SuggestionEngine {
 
   private static buildObjectiveSuggestions(
 
-    analysis: StoryAnalysis,
-
-    state: NarrativeState,
+    context: SuggestionContext,
 
     suggestions: AssistantSuggestion[],
 
   ) {
 
-    if (
+
+    const {
+      analysis,
+      state,
+    } = context
+
+
+
+    if(
       analysis.activeObjectives.length === 0
-    ) {
+    ){
 
       return
 
     }
 
+
+
     suggestions.push({
 
       title:
+
         state.situation === "combat"
+
           ? "Cumprir o objetivo durante o combate"
+
           : "Avançar o objetivo",
 
+
+
       description:
+
         analysis.activeObjectives[0],
 
+
+
       type:
+
         "strategy",
 
     })
 
+
   }
+
+
+
+
 
   // ==================================
   // Missões
@@ -232,20 +329,28 @@ export class SuggestionEngine {
 
   private static buildQuestSuggestions(
 
-    analysis: StoryAnalysis,
-
+    context: SuggestionContext,
 
     suggestions: AssistantSuggestion[],
 
   ) {
 
-    if (
+
+    const {
+      analysis,
+    } = context
+
+
+
+    if(
       analysis.activeQuests.length === 0
-    ) {
+    ){
 
       return
 
     }
+
+
 
     suggestions.push({
 
@@ -260,7 +365,12 @@ export class SuggestionEngine {
 
     })
 
+
   }
+
+
+
+
 
   // ==================================
   // Exploração
@@ -268,21 +378,29 @@ export class SuggestionEngine {
 
   private static buildExplorationSuggestions(
 
-    analysis: StoryAnalysis,
-
-    state: NarrativeState,
+    context: SuggestionContext,
 
     suggestions: AssistantSuggestion[],
 
   ) {
 
-    if (
+
+    const {
+      analysis,
+      state,
+    } = context
+
+
+
+    if(
       !state.canExplore
-    ) {
+    ){
 
       return
 
     }
+
+
 
     suggestions.push({
 
@@ -297,9 +415,11 @@ export class SuggestionEngine {
 
     })
 
-    if (
+
+
+    if(
       analysis.discoveredLocations.length > 0
-    ) {
+    ){
 
       suggestions.push({
 
@@ -316,7 +436,12 @@ export class SuggestionEngine {
 
     }
 
+
   }
+
+
+
+
 
   // ==================================
   // Narrativa
@@ -324,17 +449,23 @@ export class SuggestionEngine {
 
   private static buildStorySuggestions(
 
-    analysis: StoryAnalysis,
-
-    state: NarrativeState,
+    context: SuggestionContext,
 
     suggestions: AssistantSuggestion[],
 
   ) {
 
-    if (
+
+    const {
+      analysis,
+      state,
+    } = context
+
+
+
+    if(
       analysis.unansweredQuestions.length > 0
-    ) {
+    ){
 
       suggestions.push({
 
@@ -351,9 +482,11 @@ export class SuggestionEngine {
 
     }
 
-    if (
+
+
+    if(
       state.hasOpenThreads
-    ) {
+    ){
 
       suggestions.push({
 
@@ -370,9 +503,11 @@ export class SuggestionEngine {
 
     }
 
-    if (
+
+
+    if(
       state.canCreateEvent
-    ) {
+    ){
 
       suggestions.push({
 
@@ -389,7 +524,12 @@ export class SuggestionEngine {
 
     }
 
+
   }
+
+
+
+
 
   // ==================================
   // Segurança
@@ -401,13 +541,16 @@ export class SuggestionEngine {
 
   ) {
 
-    if (
+
+    if(
       suggestions.length > 0
-    ) {
+    ){
 
       return
 
     }
+
+
 
     suggestions.push({
 
@@ -422,6 +565,8 @@ export class SuggestionEngine {
 
     })
 
+
   }
+
 
 }

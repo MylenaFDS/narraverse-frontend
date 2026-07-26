@@ -27,7 +27,9 @@ import {
   NarrativeStateEngine,
 } from "./state/NarrativeStateEngine"
 
-
+import {
+  SuggestionContextEngine,
+} from "./suggestions/SuggestionContextEngine"
 
 export class AssistantEngine {
 
@@ -105,7 +107,11 @@ export class AssistantEngine {
       )
 
 
-
+    const suggestionContext =
+  SuggestionContextEngine.build(
+    analysis,
+    narrativeState,
+  )
 
 
     // ======================================
@@ -127,13 +133,9 @@ export class AssistantEngine {
 
       suggestions:
 
-        SuggestionEngine.build(
-
-          analysis,
-
-          narrativeState,
-
-        ),
+  SuggestionEngine.build(
+    suggestionContext,
+  ),
 
 
 
@@ -141,13 +143,9 @@ export class AssistantEngine {
 
       possibleEvents:
 
-        EventSuggestionEngine.build(
-
-          analysis,
-
-          narrativeState,
-
-        ),
+  EventSuggestionEngine.build(
+    suggestionContext,
+  ),
 
 
 
