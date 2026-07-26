@@ -13,25 +13,75 @@ export class CampaignStateFactory {
     return {
 
 
-      turn:0,
+      // ======================================
+      // Controle da campanha
+      // ======================================
+
+      turn: 0,
 
 
-      activeEvents:[],
+
+      // ======================================
+      // Histórico
+      // ======================================
+
+      history: [],
 
 
-      history:[],
+
+      // ======================================
+      // Eventos ativos
+      // ======================================
+
+      activeEvents: [],
 
 
-      aliveCharacters:[],
+
+      // ======================================
+      // Personagens
+      // ======================================
+
+      aliveCharacters: [],
+
+      deadCharacters: [],
+
+      knownCharacters: [],
 
 
-      deadCharacters:[],
+
+      // ======================================
+      // Mundo
+      // ======================================
+
+      discoveredLocations: [],
+
+      knownLocations: [],
 
 
-      activeQuests:[],
+
+      // ======================================
+      // Missões
+      // ======================================
+
+      activeQuests: [],
+
+      completedQuests: [],
+
+      activeObjectives: [],
 
 
-      discoveredLocations:[],
+
+      // ======================================
+      // Contexto narrativo
+      // ======================================
+
+      recentDialogues: [],
+
+      recentActions: [],
+
+      recentFacts: [],
+
+      unresolvedThreads: [],
 
 
     }
