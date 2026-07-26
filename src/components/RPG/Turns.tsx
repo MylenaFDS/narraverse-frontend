@@ -1092,7 +1092,8 @@ async function handleGenerateWithAI() {
     
   </div>
   
-)}{
+)}
+{
 showAIModal &&
 assistantResult && (
 
@@ -1154,26 +1155,27 @@ Sugestões
 <ul>
 
 {
-  assistantResult.suggestions.map(
-    (item, index) => (
+assistantResult.suggestions.map(
+(item,index)=>(
 
-      <li
-        key={index}
-        className="mb-2"
-      >
+<li
+key={index}
+className="mb-3"
+>
 
-        <strong>
-          {item.title}
-        </strong>
+<strong>
+• {item.title}
+</strong>
 
-        <p>
-          {item.description}
-        </p>
+<p className="text-gray-300">
+{item.description}
+</p>
 
-      </li>
+</li>
 
-    )
-  )
+)
+
+)
 }
 
 </ul>
@@ -1192,28 +1194,30 @@ Eventos possíveis
 <ul>
 
 {
-assistantResult.suggestions.map(
+assistantResult.possibleEvents.map(
 (item,index)=>(
 
 <li
 key={index}
-className="mb-2"
+className="mb-3"
 >
 
-  • {
-    typeof item === "string"
-      ? item
-      : JSON.stringify(item)
-  }
+<strong>
+• {item.title}
+</strong>
+
+<p className="text-gray-300">
+{item.description}
+</p>
 
 </li>
 
 )
+
 )
 }
 
 </ul>
-
 
 </section>
 
