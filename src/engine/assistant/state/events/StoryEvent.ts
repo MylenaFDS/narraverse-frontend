@@ -17,7 +17,7 @@ export interface StoryEvent {
    * Personagem que causou o evento
    */
   actorId?: number
-
+  actorName?: string
 
 
   /**

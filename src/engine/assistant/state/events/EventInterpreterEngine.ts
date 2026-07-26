@@ -6,23 +6,43 @@ import type {
   StoryEvent,
 } from "./StoryEvent"
 
+
 export class EventInterpreterEngine {
+
 
   static interpret(
     turn: RPGTurn,
   ): StoryEvent[] {
 
+
     const events: StoryEvent[] = []
+
+
+    console.log(
+      "INTERPRETING:",
+      turn.content,
+    )
+
 
     const text =
       turn.content.toLowerCase()
 
+
     const actorId =
       turn.character_id ?? undefined
+
+
+    const actorName =
+      this.extractMention(
+        turn.content,
+      )
+
+
 
     // ======================================
     // Combate
     // ======================================
+
 
     if (
 
@@ -43,6 +63,7 @@ export class EventInterpreterEngine {
 
     ) {
 
+
       events.push({
 
         type: "attack",
@@ -59,9 +80,13 @@ export class EventInterpreterEngine {
 
     }
 
+
+
+
     // ======================================
     // Defesa
     // ======================================
+
 
     if (
 
@@ -77,6 +102,7 @@ export class EventInterpreterEngine {
       )
 
     ) {
+
 
       events.push({
 
@@ -94,9 +120,13 @@ export class EventInterpreterEngine {
 
     }
 
+
+
+
     // ======================================
     // Movimento
     // ======================================
+
 
     if (
 
@@ -117,6 +147,7 @@ export class EventInterpreterEngine {
 
     ) {
 
+
       events.push({
 
         type: "movement",
@@ -126,6 +157,11 @@ export class EventInterpreterEngine {
         description:
           "Movimento importante",
 
+        location:
+          this.extractLocation(
+            turn.content,
+          ),
+
         turnId:
           turn.id,
 
@@ -133,17 +169,36 @@ export class EventInterpreterEngine {
 
     }
 
+
+
+
     // ======================================
     // Diálogo
     // ======================================
 
+
     if (
 
-      turn.content.includes("—") ||
+      turn.content.includes("—")
 
-      turn.content.includes("\"")
+      ||
+
+      this.contains(
+        text,
+        [
+          "disse",
+          "falou",
+          "sussurrou",
+          "respondeu",
+          "gritou",
+          "afirmou",
+          "declarou",
+          "contou",
+        ],
+      )
 
     ) {
+
 
       events.push({
 
@@ -152,7 +207,9 @@ export class EventInterpreterEngine {
         actorId,
 
         description:
-          "Diálogo importante",
+          actorName
+            ? `${actorName} participou de um diálogo`
+            : "Diálogo importante",
 
         turnId:
           turn.id,
@@ -161,9 +218,13 @@ export class EventInterpreterEngine {
 
     }
 
+
+
+
     // ======================================
     // Morte
     // ======================================
+
 
     if (
 
@@ -180,6 +241,7 @@ export class EventInterpreterEngine {
 
     ) {
 
+
       events.push({
 
         type: "death",
@@ -187,7 +249,9 @@ export class EventInterpreterEngine {
         actorId,
 
         description:
-          "Um personagem morreu",
+          actorName
+            ? `${actorName} morreu`
+            : "Um personagem morreu",
 
         turnId:
           turn.id,
@@ -196,9 +260,13 @@ export class EventInterpreterEngine {
 
     }
 
+
+
+
     // ======================================
     // Descoberta
     // ======================================
+
 
     if (
 
@@ -216,6 +284,7 @@ export class EventInterpreterEngine {
 
     ) {
 
+
       events.push({
 
         type: "discovery",
@@ -232,9 +301,13 @@ export class EventInterpreterEngine {
 
     }
 
+
+
+
     // ======================================
     // Missão
     // ======================================
+
 
     if (
 
@@ -249,6 +322,7 @@ export class EventInterpreterEngine {
       )
 
     ) {
+
 
       events.push({
 
@@ -266,9 +340,13 @@ export class EventInterpreterEngine {
 
     }
 
+
+
+
     // ======================================
     // Promessa
     // ======================================
+
 
     if (
 
@@ -282,6 +360,7 @@ export class EventInterpreterEngine {
       )
 
     ) {
+
 
       events.push({
 
@@ -299,9 +378,13 @@ export class EventInterpreterEngine {
 
     }
 
+
+
+
     // ======================================
     // Profecia
     // ======================================
+
 
     if (
 
@@ -316,6 +399,7 @@ export class EventInterpreterEngine {
 
     ) {
 
+
       events.push({
 
         type: "prophecy",
@@ -323,7 +407,9 @@ export class EventInterpreterEngine {
         actorId,
 
         description:
-          "Uma profecia foi mencionada",
+          actorName
+            ? `${actorName} revelou uma profecia`
+            : "Uma profecia foi mencionada",
 
         turnId:
           turn.id,
@@ -332,9 +418,13 @@ export class EventInterpreterEngine {
 
     }
 
+
+
+
     // ======================================
-    // Casamento / Aliança
+    // Aliança
     // ======================================
+
 
     if (
 
@@ -349,6 +439,7 @@ export class EventInterpreterEngine {
       )
 
     ) {
+
 
       events.push({
 
@@ -366,20 +457,110 @@ export class EventInterpreterEngine {
 
     }
 
+
+
+    console.log(
+      "EVENTS GENERATED:",
+      events,
+    )
+
+
     return events
 
   }
 
+
+
+
   private static contains(
-    text: string,
-    words: string[],
-  ): boolean {
+
+    text:string,
+
+    words:string[],
+
+  ):boolean {
+
 
     return words.some(
+
       word =>
         text.includes(word),
+
     )
 
   }
+
+
+
+
+  // ======================================
+  // Captura @Personagem
+  // ======================================
+
+
+  private static extractMention(
+
+    text:string,
+
+  ):string | undefined {
+
+
+    const match =
+      text.match(
+        /@([A-Za-zÀ-ÿ0-9_]+)/,
+      )
+
+
+    if(!match){
+
+      return undefined
+
+    }
+
+
+    return match[1]
+
+  }
+
+
+
+
+  // ======================================
+  // Local simples
+  // ======================================
+
+
+  private static extractLocation(
+
+    text:string,
+
+  ):string | undefined {
+
+
+    const locations = [
+
+      "gondor",
+      "mordor",
+      "valfenda",
+      "castelo",
+      "floresta",
+      "cidade",
+
+    ]
+
+
+    const lower =
+      text.toLowerCase()
+
+
+    return locations.find(
+
+      location =>
+        lower.includes(location),
+
+    )
+
+  }
+
 
 }

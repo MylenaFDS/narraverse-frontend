@@ -43,6 +43,10 @@ export class GenerateAssistantService {
           events,
         )
 
+        console.log("EVENTS", events)
+
+console.log("CAMPAIGN", campaign)
+
     }
 
     // ======================================
