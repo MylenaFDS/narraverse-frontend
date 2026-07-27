@@ -6,52 +6,62 @@ import type {
 export interface StoryEvent {
 
 
-  /**
-   * Tipo do acontecimento
-   */
+  // ======================================
+  // Tipo
+  // ======================================
+
   type: EventType
 
 
 
-  /**
-   * Personagem que causou o evento
-   */
+  // ======================================
+  // Personagens envolvidos
+  // ======================================
+
   actorId?: number
+
   actorName?: string
 
 
-  /**
-   * Personagem afetado
-   */
   targetId?: number
 
+  targetName?: string
 
 
-  /**
-   * Local onde ocorreu
-   */
+
+  // ======================================
+  // Mundo
+  // ======================================
+
   location?: string
 
 
 
-  /**
-   * Emoção associada
-   */
+  // ======================================
+  // Estado emocional
+  // ======================================
+
   emotion?: string
 
 
 
-  /**
-   * Descrição original extraída do turno
-   */
+  // ======================================
+  // Informação narrativa
+  // ======================================
+
   description: string
 
 
+  // Texto original
+  // importante para resumo e memória
+  sourceText?: string
 
-  /**
-   * Momento em que ocorreu
-   * útil para histórico
-   */
+
+
+  // ======================================
+  // Tempo
+  // ======================================
+
   turnId?: number
 
 
