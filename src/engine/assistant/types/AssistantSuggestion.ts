@@ -10,5 +10,6 @@ export interface AssistantSuggestion {
     | "event"
     | "character"
     | "strategy"
+    | "exploration"
 
 }

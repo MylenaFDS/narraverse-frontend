@@ -9,11 +9,8 @@ import type {
 export class CampaignStateEngine {
 
   static update(
-
     state: CampaignState,
-
     events: StoryEvent[],
-
   ): CampaignState {
 
     const next: CampaignState = {
@@ -23,12 +20,12 @@ export class CampaignStateEngine {
       turn:
         state.turn + 1,
 
-      activeEvents: [
-        ...state.activeEvents,
-      ],
-
       history: [
         ...state.history,
+      ],
+
+      activeEvents: [
+        ...state.activeEvents,
       ],
 
       aliveCharacters: [
@@ -39,12 +36,44 @@ export class CampaignStateEngine {
         ...state.deadCharacters,
       ],
 
-      activeQuests: [
-        ...state.activeQuests,
+      knownCharacters: [
+        ...state.knownCharacters,
       ],
 
       discoveredLocations: [
         ...state.discoveredLocations,
+      ],
+
+      knownLocations: [
+        ...state.knownLocations,
+      ],
+
+      activeQuests: [
+        ...state.activeQuests,
+      ],
+
+      completedQuests: [
+        ...state.completedQuests,
+      ],
+
+      activeObjectives: [
+        ...state.activeObjectives,
+      ],
+
+      recentDialogues: [
+        ...state.recentDialogues,
+      ],
+
+      recentActions: [
+        ...state.recentActions,
+      ],
+
+      recentFacts: [
+        ...state.recentFacts,
+      ],
+
+      unresolvedThreads: [
+        ...state.unresolvedThreads,
       ],
 
     }
@@ -57,6 +86,70 @@ export class CampaignStateEngine {
         event,
       )
 
+      // =============================
+      // Personagens conhecidos
+      // =============================
+
+      if (
+        event.actorName &&
+        !next.knownCharacters.includes(
+          event.actorName,
+        )
+      ) {
+
+        next.knownCharacters.push(
+          event.actorName,
+        )
+
+      }
+
+      if (
+        event.targetName &&
+        !next.knownCharacters.includes(
+          event.targetName,
+        )
+      ) {
+
+        next.knownCharacters.push(
+          event.targetName,
+        )
+
+      }
+
+      // =============================
+      // Locais conhecidos
+      // =============================
+
+      if (
+        event.location
+      ) {
+
+        if (
+          !next.knownLocations.includes(
+            event.location,
+          )
+        ) {
+
+          next.knownLocations.push(
+            event.location,
+          )
+
+        }
+
+        if (
+          !next.discoveredLocations.includes(
+            event.location,
+          )
+        ) {
+
+          next.discoveredLocations.push(
+            event.location,
+          )
+
+        }
+
+      }
+
       switch (
         event.type
       ) {
@@ -65,7 +158,44 @@ export class CampaignStateEngine {
 
           this.addEvent(
             next,
-            "Combate em andamento",
+            event.description,
+          )
+
+          next.recentActions.push(
+            event.sourceText ??
+            event.description,
+          )
+
+          break
+
+        case "defense":
+
+          next.recentActions.push(
+            event.sourceText ??
+            event.description,
+          )
+
+          break
+
+        case "movement":
+
+          this.addEvent(
+            next,
+            event.description,
+          )
+
+          next.recentActions.push(
+            event.sourceText ??
+            event.description,
+          )
+
+          break
+
+        case "dialogue":
+
+          next.recentDialogues.push(
+            event.sourceText ??
+            event.description,
           )
 
           break
@@ -77,65 +207,35 @@ export class CampaignStateEngine {
             event.description,
           )
 
-          if (
-            event.actorId !== undefined
-          ) {
+          next.recentFacts.push(
+            event.sourceText ??
+            event.description,
+          )
 
-            const characterId =
-              String(
-                event.actorId,
-              )
+          if (
+            event.actorName
+          ) {
 
             next.aliveCharacters =
               next.aliveCharacters.filter(
-                name =>
-                  name !== characterId,
+                character =>
+                  character !==
+                  event.actorName,
               )
 
             if (
               !next.deadCharacters.includes(
-                characterId,
+                event.actorName,
               )
             ) {
 
               next.deadCharacters.push(
-                characterId,
+                event.actorName,
               )
 
             }
 
           }
-
-          break
-
-        case "movement":
-
-          this.addEvent(
-            next,
-            event.description,
-          )
-
-          if (
-            event.location &&
-            !next.discoveredLocations.includes(
-              event.location,
-            )
-          ) {
-
-            next.discoveredLocations.push(
-              event.location,
-            )
-
-          }
-
-          break
-
-        case "dialogue":
-
-          this.addEvent(
-            next,
-            event.description,
-          )
 
           break
 
@@ -160,30 +260,94 @@ export class CampaignStateEngine {
 
           break
 
+        case "prophecy":
+
+  next.recentFacts.push(
+    event.sourceText ??
+    event.description,
+  )
+
+  break
+
+
+
+case "promise":
+
+  next.recentFacts.push(
+    event.sourceText ??
+    event.description,
+  )
+
+  break
+
+
+
+case "alliance":
+
+  next.recentFacts.push(
+    event.sourceText ??
+    event.description,
+  )
+
+  break
+
+
+
+case "relationship":
+
+  next.recentFacts.push(
+    event.sourceText ??
+    event.description,
+  )
+
+  break
+
+
+
+case "discovery":
+
+  next.recentFacts.push(
+    event.sourceText ??
+    event.description,
+  )
+
+  break
+
       }
 
     }
+  next.activeEvents =
+  [
+    ...new Set(
+      next.activeEvents,
+    ),
+  ]
 
+next.recentDialogues =
+  next.recentDialogues.slice(-10)
+
+next.recentActions =
+  next.recentActions.slice(-10)
+
+next.recentFacts =
+  next.recentFacts.slice(-10)
+
+next.history =
+  next.history.slice(-50)
     return next
 
   }
 
   private static addEvent(
-
     state: CampaignState,
-
     description: string,
-
   ): void {
 
     if (
-
       description.trim() !== "" &&
-
       !state.activeEvents.includes(
         description,
       )
-
     ) {
 
       state.activeEvents.push(

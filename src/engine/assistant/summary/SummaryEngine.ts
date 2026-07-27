@@ -3,6 +3,7 @@ import type {
 } from "../analysis/StoryAnalysis"
 
 
+
 export class SummaryEngine {
 
 
@@ -11,7 +12,7 @@ export class SummaryEngine {
   ): string {
 
 
-    const parts: string[] = []
+    const parts:string[] = []
 
 
 
@@ -19,9 +20,9 @@ export class SummaryEngine {
     // Situação atual
     // ==================================
 
-    if (
+    if(
       analysis.currentSituation
-    ) {
+    ){
 
       parts.push(
         analysis.currentSituation,
@@ -32,16 +33,28 @@ export class SummaryEngine {
 
 
     // ==================================
-    // Eventos recentes
+    // Eventos estruturados recentes
     // ==================================
 
-    if (
-      analysis.recentEvents &&
-      analysis.recentEvents.length > 0
-    ) {
+    if(
+
+      analysis.events &&
+      analysis.events.length > 0
+
+    ){
+
+      const eventDescriptions =
+        analysis.events
+          .slice(-5)
+          .map(
+            event =>
+              event.description,
+          )
+
+
 
       parts.push(
-        ...analysis.recentEvents.slice(0, 3),
+        ...eventDescriptions,
       )
 
     }
@@ -49,16 +62,61 @@ export class SummaryEngine {
 
 
     // ==================================
-    // Conflitos
+    // Local atual
     // ==================================
 
-    if (
-      analysis.activeConflicts &&
-      analysis.activeConflicts.length > 0
-    ) {
+    if(
+      analysis.currentLocation
+    ){
 
       parts.push(
-        ...analysis.activeConflicts.slice(0, 2),
+        `Local atual: ${analysis.currentLocation}`,
+      )
+
+    }
+
+
+
+    // ==================================
+    // Personagens importantes
+    // ==================================
+
+    if(
+
+      analysis.activeCharacters.length > 0
+
+    ){
+
+      parts.push(
+
+        `Personagens presentes: ${
+          analysis.activeCharacters
+            .slice(0,3)
+            .join(", ")
+        }`,
+
+      )
+
+    }
+
+
+
+    // ==================================
+    // Missões
+    // ==================================
+
+    if(
+
+      analysis.activeQuests.length > 0
+
+    ){
+
+      parts.push(
+
+        `Missão atual: ${
+          analysis.activeQuests[0]
+        }`,
+
       )
 
     }
@@ -69,13 +127,18 @@ export class SummaryEngine {
     // Pendências
     // ==================================
 
-    if (
-      analysis.unresolvedThreads &&
+    if(
+
       analysis.unresolvedThreads.length > 0
-    ) {
+
+    ){
 
       parts.push(
-        analysis.unresolvedThreads[0],
+
+        `Pendência: ${
+          analysis.unresolvedThreads[0]
+        }`,
+
       )
 
     }
@@ -95,12 +158,12 @@ export class SummaryEngine {
 
 
 
-    if (
+    if(
       unique.length === 0
-    ) {
+    ){
 
       return (
-        "Nenhum evento importante aconteceu recentemente."
+        "Nenhum acontecimento relevante registrado."
       )
 
     }
@@ -108,7 +171,7 @@ export class SummaryEngine {
 
 
     return unique.join(
-      ", ",
+      ". ",
     )
 
 

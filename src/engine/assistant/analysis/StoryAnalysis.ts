@@ -1,59 +1,85 @@
+import type {
+  StoryEvent,
+} from "../state/events/StoryEvent"
+
+
+
 export interface StoryAnalysis {
 
+
   // ======================================
-  // Estado atual da narrativa
+  // Estado atual
   // ======================================
 
-  activeConflicts: string[]
+  activeConflicts:string[]
 
-  currentSituation: string
+  currentSituation:string
 
-  sceneMood: string
+  sceneMood:string
+
+
 
   // ======================================
   // Personagens
   // ======================================
 
-  activeCharacters: string[]
+  activeCharacters:string[]
 
-  deadCharacters: string[]
+  deadCharacters:string[]
 
-  focusedCharacter?: string
+  focusedCharacter?:string
 
-  // ======================================
-  // Histórico recente
-  // ======================================
 
-  recentEvents: string[]
-
-  recentDialogue: string[]
-
-  recentFacts: string[]
 
   // ======================================
-  // Continuidade da história
+  // Histórico
   // ======================================
 
-  unresolvedThreads: string[]
+  recentEvents:string[]
 
-  unansweredQuestions: string[]
+  recentDialogue:string[]
+
+  recentFacts:string[]
+
+
+
+  // ======================================
+  // Continuidade
+  // ======================================
+
+  unresolvedThreads:string[]
+
+  unansweredQuestions:string[]
+
+
 
   // ======================================
   // Cenário
   // ======================================
 
-  currentLocation?: string
+  currentLocation?:string
 
-  discoveredLocations: string[]
+  discoveredLocations:string[]
 
-  topics: string[]
+  topics:string[]
+
+
 
   // ======================================
   // Objetivos
   // ======================================
 
-  activeObjectives: string[]
+  activeObjectives:string[]
 
-  activeQuests: string[]
+  activeQuests:string[]
+
+
+
+  // ======================================
+  // Eventos reais
+  // ======================================
+
+  events:StoryEvent[]
+
 
 }

@@ -12,12 +12,14 @@ import type {
 export class DialogueInterpreter {
 
 
+
   static interpret(
-    turn:RPGTurn,
-  ):StoryEvent[] {
+    turn: RPGTurn,
+  ): StoryEvent[] {
 
 
-    const events:StoryEvent[] = []
+    const events: StoryEvent[] = []
+
 
 
     const text =
@@ -73,11 +75,35 @@ export class DialogueInterpreter {
 
 
 
+    const dialogueText =
+      this.extractDialogue(
+        turn.content,
+      )
+
+
+
+    const targetName =
+      this.extractTarget(
+        turn.content,
+      )
+
+
+
     events.push({
+
+
+      // ==============================
+      // Tipo
+      // ==============================
 
       type:
         "dialogue",
 
+
+
+      // ==============================
+      // Personagem
+      // ==============================
 
       actorId,
 
@@ -85,17 +111,39 @@ export class DialogueInterpreter {
       actorName,
 
 
+      targetName,
+
+
+
+      // ==============================
+      // Informação narrativa
+      // ==============================
+
       description:
 
         actorName
 
-          ? `${actorName} participou de um diálogo`
+          ? `${actorName} realizou um diálogo`
 
-          : "Diálogo importante",
+          : "Um diálogo importante ocorreu",
 
+
+
+      sourceText:
+
+        dialogueText
+        ||
+        turn.content,
+
+
+
+      // ==============================
+      // Tempo
+      // ==============================
 
       turnId:
         turn.id,
+
 
 
     })
@@ -111,6 +159,10 @@ export class DialogueInterpreter {
 
 
 
+  // ======================================
+  // Detecta palavras de diálogo
+  // ======================================
+
   private static contains(
 
     text:string,
@@ -123,6 +175,7 @@ export class DialogueInterpreter {
     return words.some(
 
       word =>
+
         text.includes(word),
 
     )
@@ -133,6 +186,10 @@ export class DialogueInterpreter {
 
 
 
+
+  // ======================================
+  // Captura @Personagem
+  // ======================================
 
   private static extractMention(
 
@@ -160,6 +217,123 @@ export class DialogueInterpreter {
 
 
     return match[1]
+
+
+  }
+
+
+
+
+
+  // ======================================
+  // Extrai conteúdo entre aspas ou travessão
+  // ======================================
+
+  private static extractDialogue(
+
+    text:string,
+
+  ):string | undefined {
+
+
+
+    // ==============================
+    // Formato:
+    // "fala"
+    // ==============================
+
+    const quoted =
+
+      text.match(
+        /"([^"]+)"/,
+      )
+
+
+
+    if(
+      quoted
+    ){
+
+      return quoted[1]
+
+    }
+
+
+
+
+
+    // ==============================
+    // Formato:
+    // — fala —
+    // ==============================
+
+    const dash =
+
+      text.match(
+        /—\s*(.*?)($|—)/,
+      )
+
+
+
+    if(
+      dash
+    ){
+
+      return dash[1].trim()
+
+    }
+
+
+
+
+
+    return undefined
+
+
+  }
+
+
+
+
+
+  // ======================================
+  // Detecta personagem citado após fala
+  // ======================================
+
+  private static extractTarget(
+
+    text:string,
+
+  ):string | undefined {
+
+
+
+    const match =
+
+      text.match(
+
+        /@([A-Za-zÀ-ÿ0-9_]+)/g,
+
+      )
+
+
+
+    if(
+      !match ||
+      match.length < 2
+    ){
+
+      return undefined
+
+    }
+
+
+
+    return match[1]
+      .replace(
+        "@",
+        "",
+      )
 
 
   }
