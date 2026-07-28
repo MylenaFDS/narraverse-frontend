@@ -1,47 +1,81 @@
-import type { AssistantSuggestion } from "./types/AssistantSuggestion"
+import type {
+  AssistantSuggestion,
+} from "./types/AssistantSuggestion"
 
 export interface AssistantResult {
 
-  // ==========================
-  // Resumo da campanha
-  // ==========================
+  // ======================================
+  // Resumo
+  // ======================================
 
   summary: string
 
-  // ==========================
-  // Sugestões para o jogador
-  // ==========================
+  // ======================================
+  // Situação atual
+  // ======================================
+
+  currentSituation: string
+
+  sceneMood: string
+
+  currentLocation?: string
+
+  // ======================================
+  // Sugestões
+  // ======================================
 
   suggestions: AssistantSuggestion[]
 
-  // ==========================
-  // Eventos que podem acontecer
-  // ==========================
-
   possibleEvents: AssistantSuggestion[]
 
-  // ==========================
-  // Situação da campanha
-  // ==========================
-
-  activeConflicts: string[]
-
-  unresolvedThreads: string[]
-
-  // ==========================
+  // ======================================
   // Personagens
-  // ==========================
+  // ======================================
 
   aliveCharacters: string[]
 
   deadCharacters: string[]
 
-  // ==========================
-  // Estado da narrativa
-  // ==========================
+  focusedCharacter?: string
 
-  currentSituation: string
+  // ======================================
+  // Conflitos
+  // ======================================
 
-  sceneMood: string
+  activeConflicts: string[]
+
+  // ======================================
+  // Objetivos
+  // ======================================
+
+  activeObjectives: string[]
+
+  activeQuests: string[]
+
+  // ======================================
+  // Continuidade narrativa
+  // ======================================
+
+  unresolvedThreads: string[]
+
+  unansweredQuestions: string[]
+
+  // ======================================
+  // Cenário
+  // ======================================
+
+  discoveredLocations: string[]
+
+  topics: string[]
+
+  // ======================================
+  // Histórico recente
+  // ======================================
+
+  recentEvents: string[]
+
+  recentDialogue: string[]
+
+  recentFacts: string[]
 
 }

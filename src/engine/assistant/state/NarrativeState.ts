@@ -1,12 +1,10 @@
 export interface NarrativeState {
 
-
   // ======================================
   // Tipo da cena
   // ======================================
 
   situation:
-
     | "combat"
     | "dialogue"
     | "exploration"
@@ -14,79 +12,59 @@ export interface NarrativeState {
     | "calm"
     | "unknown"
 
-
-
   // ======================================
   // Intensidade narrativa
   // ======================================
 
-  tension:
-    number
-
-
+  tension: number
 
   // ======================================
   // Eventos importantes
   // ======================================
 
-  hasDeath:
-    boolean
+  importantEvents: string[]
 
+  recentCharacters: string[]
 
-  hasDialogue:
-    boolean
+  hasConflict: boolean
 
+  hasDeath: boolean
 
-  hasOpenThreads:
-    boolean
+  hasDialogue: boolean
 
+  hasProphecy: boolean
 
-  hasConflict:
-    boolean
+  hasRelationship: boolean
 
-
+  hasOpenThreads: boolean
 
   // ======================================
   // Risco
   // ======================================
 
-  isDangerous:
-    boolean
-
-
+  isDangerous: boolean
 
   // ======================================
   // Possibilidades
   // ======================================
 
-  canExplore:
-    boolean
+  canExplore: boolean
 
+  canInteract: boolean
 
-  canInteract:
-    boolean
-
-
-  canCreateEvent:
-    boolean
-
-
+  canCreateEvent: boolean
 
   // ======================================
   // Personagens
   // ======================================
 
-  characterCount:
-    number
-
-
+  characterCount: number
 
   // ======================================
   // Direção narrativa
   // ======================================
 
   narrativeFocus:
-
     | "action"
     | "emotion"
     | "dialogue"

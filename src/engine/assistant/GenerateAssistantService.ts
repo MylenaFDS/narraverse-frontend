@@ -9,90 +9,181 @@ import { AssistantStoryContextEngine } from "./story/AssistantStoryContextEngine
 
 import { AssistantService } from "./AssistantService"
 
+
 export class GenerateAssistantService {
 
+
   static generate(
+
     turns: RPGTurn[],
+
     characters: Character[],
+
   ) {
+
 
     // ======================================
     // Estado inicial da campanha
     // ======================================
 
     let campaign =
+
       CampaignStateFactory.create()
+
+
+
+    console.log(
+      "INITIAL CAMPAIGN",
+      campaign,
+    )
+
+
 
     // ======================================
     // Reconstrói toda a campanha
-    // a partir dos turnos
     // ======================================
 
     for (
       const turn of turns
     ) {
 
+
+      console.log(
+        "INTERPRETING TURN",
+        turn,
+      )
+
+
+
       const events =
+
         EventInterpreterEngine.interpret(
           turn,
         )
 
+
+
+      console.log(
+        "EVENTS GENERATED",
+        events,
+      )
+
+
+
       campaign =
+
         CampaignStateEngine.update(
           campaign,
           events,
         )
 
-        console.log("EVENTS", events)
 
-console.log("CAMPAIGN", campaign)
+
+      console.log(
+        "UPDATED CAMPAIGN",
+        campaign,
+      )
+
 
     }
 
+
+
     // ======================================
-    // Constrói o contexto narrativo
+    // Contexto narrativo
     // ======================================
 
     const story =
+
       AssistantStoryContextEngine.create(
         campaign,
         turns,
         characters,
       )
 
+
+
+    console.log(
+      "ASSISTANT STORY CONTEXT",
+      story,
+    )
+
+
+
     // ======================================
-    // Último turno da campanha
+    // Último turno
     // ======================================
 
     const currentTurn =
+
       turns.at(-1)
 
+
+
+    console.log(
+      "CURRENT TURN",
+      currentTurn,
+    )
+
+
+
     // ======================================
-    // Contexto completo para o assistente
+    // Contexto completo
     // ======================================
 
     const context = {
 
+
       turn:
+
         currentTurn,
 
+
       campaignState:
+
         campaign,
+
 
       story,
 
+
       characters,
+
 
     }
 
-    // ======================================
-    // Gera as sugestões
-    // ======================================
 
-    return AssistantService.generate(
+
+    console.log(
+      "ASSISTANT CONTEXT",
       context,
     )
 
+
+
+    // ======================================
+    // Gerar Assistente
+    // ======================================
+
+    const result =
+
+      AssistantService.generate(
+        context,
+      )
+
+
+
+    console.log(
+      "ASSISTANT RESULT",
+      result,
+    )
+
+
+
+    return result
+
+
   }
+
 
 }

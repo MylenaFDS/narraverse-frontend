@@ -6,665 +6,427 @@ import type {
   SuggestionContext,
 } from "./SuggestionContext"
 
-import type {
-  StoryEvent,
-} from "../state/events/StoryEvent"
-
 
 
 export class SuggestionEngine {
 
-
   static build(
-
     context: SuggestionContext,
-
   ): AssistantSuggestion[] {
 
-
-    const suggestions:
-      AssistantSuggestion[] = []
-
-
+    const suggestions: AssistantSuggestion[] = []
 
     this.buildEventSuggestions(
       context,
       suggestions,
     )
 
-
-
     this.buildCharacterSuggestions(
       context,
       suggestions,
     )
-
-
 
     this.buildObjectiveSuggestions(
       context,
       suggestions,
     )
 
-
-
     this.buildQuestSuggestions(
       context,
       suggestions,
     )
-
-
 
     this.buildExplorationSuggestions(
       context,
       suggestions,
     )
 
-
-
     this.buildStorySuggestions(
       context,
       suggestions,
     )
 
-
-
     this.buildFallback(
       suggestions,
     )
 
-
-
-    return suggestions
+    return this.removeDuplicates(
+      suggestions,
+    )
 
   }
 
-
-
-
-
-  // ==================================
-  // Eventos estruturados
-  // ==================================
+  // ======================================
+  // Eventos
+  // ======================================
 
   private static buildEventSuggestions(
-
     context: SuggestionContext,
-
     suggestions: AssistantSuggestion[],
-
   ) {
 
-
-    const events =
-      context.analysis.events
-
-
-
-    // ===============================
-    // Combate
-    // ===============================
-
-    if (
-
-      this.hasEvent(
-        events,
-        "attack",
-      )
-
+    for (
+      const event of context.analysis.events.slice(-10)
     ) {
 
-      suggestions.push({
+      switch (
+        event.type
+      ) {
 
-        title:
-          "Buscar vantagem tática",
+        case "prophecy":
 
+          suggestions.push({
 
-        description:
-          "Analise o campo de batalha, aliados e recursos antes de agir.",
+            title:
 
+              event.actorName
+                ? `Perguntar a ${event.actorName} sobre a profecia`
+                : "Investigar a profecia",
 
-        type:
-          "strategy",
+            description:
 
-      })
+              event.description,
 
+            type:
+              "action",
 
+          })
 
-      suggestions.push({
+          break
 
-        title:
-          "Proteger um aliado",
+        case "death":
 
+          suggestions.push({
 
-        description:
-          "Um personagem vulnerável pode mudar o rumo do conflito.",
+            title:
 
+              event.actorName
+                ? `Reagir à morte de ${event.actorName}`
+                : "Reagir à perda recente",
 
-        type:
-          "action",
+            description:
 
-      })
+              event.description,
+
+            type:
+              "character",
+
+          })
+
+          break
+
+        case "dialogue":
+
+          suggestions.push({
+
+            title:
+
+              event.actorName
+                ? `Responder a ${event.actorName}`
+                : "Responder ao diálogo",
+
+            description:
+
+              event.description,
+
+            type:
+              "character",
+
+          })
+
+          break
+
+        case "alliance":
+
+          suggestions.push({
+
+            title:
+              "Fortalecer a aliança",
+
+            description:
+              event.description,
+
+            type:
+              "character",
+
+          })
+
+          break
+
+        case "quest":
+
+          suggestions.push({
+
+            title:
+              "Avançar a missão",
+
+            description:
+              event.description,
+
+            type:
+              "strategy",
+
+          })
+
+          break
+
+        case "attack":
+
+          suggestions.push({
+
+            title:
+              "Preparar a próxima ação",
+
+            description:
+              "O combate continua e exige uma resposta imediata.",
+
+            type:
+              "strategy",
+
+          })
+
+          break
+
+        case "discovery":
+
+          suggestions.push({
+
+            title:
+              "Investigar a descoberta",
+
+            description:
+              event.description,
+
+            type:
+              "action",
+
+          })
+
+          break
+
+      }
 
     }
-
-
-
-    // ===============================
-    // Morte
-    // ===============================
-
-    if (
-
-      this.hasEvent(
-        events,
-        "death",
-      )
-
-    ) {
-
-
-      suggestions.push({
-
-        title:
-          "Lidar com a perda",
-
-
-        description:
-          "A morte recente pode alterar relações e decisões futuras.",
-
-
-        type:
-          "character",
-
-      })
-
-
-    }
-
-
-
-    // ===============================
-    // Profecia
-    // ===============================
-
-    if (
-
-      this.hasEvent(
-        events,
-        "prophecy",
-      )
-
-    ) {
-
-
-      suggestions.push({
-
-        title:
-          "Investigar a profecia",
-
-
-        description:
-          "Descubra o significado e as consequências dessa revelação.",
-
-
-        type:
-          "event",
-
-      })
-
-
-    }
-
-
-
-    // ===============================
-    // Aliança
-    // ===============================
-
-    if (
-
-      this.hasEvent(
-        events,
-        "alliance",
-      )
-
-    ) {
-
-
-      suggestions.push({
-
-        title:
-          "Fortalecer a aliança",
-
-
-        description:
-          "Novos acordos podem mudar o equilíbrio político da história.",
-
-
-        type:
-          "character",
-
-      })
-
-
-    }
-
-
-
-    // ===============================
-    // Descoberta
-    // ===============================
-
-    if (
-
-      this.hasEvent(
-        events,
-        "discovery",
-      )
-
-    ) {
-
-
-      suggestions.push({
-
-        title:
-          "Investigar a descoberta",
-
-
-        description:
-          "A nova informação pode revelar caminhos ou ameaças.",
-
-
-        type:
-          "exploration",
-
-      })
-
-
-    }
-
-
 
   }
 
-
-
-
-
-  // ==================================
+  // ======================================
   // Personagens
-  // ==================================
+  // ======================================
 
   private static buildCharacterSuggestions(
-
     context: SuggestionContext,
-
     suggestions: AssistantSuggestion[],
-
   ) {
 
-
-    const {
-      analysis,
-    } = context
-
-
+    const analysis =
+      context.analysis
 
     if (
-
-      analysis.recentDialogue.length > 0
-
-    ) {
-
-
-      suggestions.push({
-
-        title:
-          "Responder ao diálogo",
-
-
-        description:
-          analysis.recentDialogue.at(-1) ??
-          "Uma conversa recente pode influenciar a narrativa.",
-
-
-        type:
-          "character",
-
-      })
-
-
-    }
-
-
-
-    if (
-
       analysis.activeCharacters.length > 1
-
     ) {
-
 
       suggestions.push({
 
         title:
-          "Criar interação entre personagens",
-
+          "Conversar com outro personagem",
 
         description:
-          "Outro personagem pode reagir, revelar informações ou tomar uma decisão.",
-
+          "Uma interação pode revelar novas informações ou alterar os acontecimentos.",
 
         type:
           "character",
 
       })
 
-
     }
-
 
   }
 
-
-
-
-
-  // ==================================
+  // ======================================
   // Objetivos
-  // ==================================
+  // ======================================
 
   private static buildObjectiveSuggestions(
-
     context: SuggestionContext,
-
     suggestions: AssistantSuggestion[],
-
   ) {
 
+    const objective =
+      context.analysis.activeObjectives[0]
 
-    const objectives =
-      context.analysis.activeObjectives
-
-
-
-    if(
-      objectives.length === 0
-    ){
+    if (
+      !objective
+    ) {
 
       return
 
     }
 
-
-
     suggestions.push({
 
       title:
-        "Avançar o objetivo atual",
-
+        "Dar o próximo passo do objetivo",
 
       description:
-        objectives[0],
-
+        objective,
 
       type:
         "strategy",
 
     })
 
-
   }
 
-
-
-
-
-  // ==================================
+  // ======================================
   // Missões
-  // ==================================
+  // ======================================
 
   private static buildQuestSuggestions(
-
     context: SuggestionContext,
-
     suggestions: AssistantSuggestion[],
-
   ) {
 
+    const quest =
+      context.analysis.activeQuests[0]
 
-    const quests =
-      context.analysis.activeQuests
-
-
-
-    if(
-      quests.length === 0
-    ){
+    if (
+      !quest
+    ) {
 
       return
 
     }
 
-
-
     suggestions.push({
 
       title:
-        "Continuar a missão",
-
+        "Prosseguir com a missão",
 
       description:
-        quests[0],
-
+        quest,
 
       type:
         "event",
 
     })
 
-
   }
 
-
-
-
-
-  // ==================================
+  // ======================================
   // Exploração
-  // ==================================
+  // ======================================
 
   private static buildExplorationSuggestions(
-
     context: SuggestionContext,
-
     suggestions: AssistantSuggestion[],
-
   ) {
 
+    const location =
+      context.analysis.currentLocation
 
-    const locations =
-      context.analysis.discoveredLocations
-
-
-
-    if(
-
-      locations.length === 0
-
-    ){
+    if (
+      !location
+    ) {
 
       return
 
     }
 
-
-
     suggestions.push({
 
       title:
-        "Explorar um local conhecido",
-
+        `Explorar ${location}`,
 
       description:
-        locations[0],
-
-
-      type:
-        "exploration",
-
-    })
-
-
-  }
-
-
-
-
-
-  // ==================================
-  // Continuidade narrativa
-  // ==================================
-
-  private static buildStorySuggestions(
-
-    context: SuggestionContext,
-
-    suggestions: AssistantSuggestion[],
-
-  ) {
-
-
-    const {
-      analysis,
-    } = context
-
-
-
-    if(
-
-      analysis.unansweredQuestions.length > 0
-
-    ) {
-
-
-      suggestions.push({
-
-        title:
-          "Buscar respostas",
-
-
-        description:
-          analysis.unansweredQuestions[0],
-
-
-        type:
-          "strategy",
-
-      })
-
-
-    }
-
-
-
-    if(
-
-      analysis.unresolvedThreads.length > 0
-
-    ) {
-
-
-      suggestions.push({
-
-        title:
-          "Retomar um acontecimento",
-
-
-        description:
-          analysis.unresolvedThreads[0],
-
-
-        type:
-          "event",
-
-      })
-
-
-    }
-
-
-  }
-
-
-
-
-
-  // ==================================
-  // Fallback
-  // ==================================
-
-  private static buildFallback(
-
-    suggestions: AssistantSuggestion[],
-
-  ) {
-
-
-    if(
-      suggestions.length > 0
-    ){
-
-      return
-
-    }
-
-
-
-    suggestions.push({
-
-      title:
-        "Continuar explorando",
-
-
-      description:
-        "Observe o ambiente e permita que a história evolua naturalmente.",
-
+        "O ambiente pode esconder novas pistas.",
 
       type:
         "action",
 
     })
 
+  }
+
+  // ======================================
+  // Continuidade
+  // ======================================
+
+  private static buildStorySuggestions(
+    context: SuggestionContext,
+    suggestions: AssistantSuggestion[],
+  ) {
+
+    const analysis =
+      context.analysis
+
+    if (
+      analysis.unresolvedThreads.length > 0
+    ) {
+
+      suggestions.push({
+
+        title:
+          "Retomar uma pendência",
+
+        description:
+          analysis.unresolvedThreads[0],
+
+        type:
+          "event",
+
+      })
+
+    }
 
   }
 
+  // ======================================
+  // Fallback
+  // ======================================
 
+  private static buildFallback(
+    suggestions: AssistantSuggestion[],
+  ) {
 
+    if (
+      suggestions.length > 0
+    ) {
 
+      return
 
-  // ==================================
-  // Helper
-  // ==================================
+    }
 
-  private static hasEvent(
+    suggestions.push({
 
-    events: StoryEvent[],
+      title:
+        "Observar o ambiente",
 
-    type: StoryEvent["type"],
+      description:
+        "Use o cenário para iniciar naturalmente o próximo turno.",
 
-  ): boolean {
+      type:
+        "action",
 
-
-    return events.some(
-
-      event =>
-        event.type === type,
-
-    )
+    })
 
   }
 
+  private static removeDuplicates(
+    suggestions: AssistantSuggestion[],
+  ): AssistantSuggestion[] {
+
+    return [
+      ...new Map(
+        suggestions.map(
+          suggestion => [
+            suggestion.title,
+            suggestion,
+          ],
+        ),
+      ).values(),
+    ]
+
+  }
 
 }

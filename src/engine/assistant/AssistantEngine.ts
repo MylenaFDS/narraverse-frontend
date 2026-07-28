@@ -102,7 +102,7 @@ export class AssistantEngine {
 
     const narrativeState =
 
-      NarrativeStateEngine.analyze(
+      NarrativeStateEngine.build(
         analysis,
       )
 
@@ -120,88 +120,154 @@ export class AssistantEngine {
 
     return {
 
+  // ======================================
+  // Resumo
+  // ======================================
 
-      summary:
+  summary:
 
-        SummaryEngine.build(
-          analysis,
-        ),
-
-
-
-
-
-      suggestions:
-
-  SuggestionEngine.build(
-    suggestionContext,
-  ),
+    SummaryEngine.build(
+      analysis,
+    ),
 
 
+  // ======================================
+  // Situação atual
+  // ======================================
+
+  currentSituation:
+
+    analysis.currentSituation,
 
 
+  sceneMood:
 
-      possibleEvents:
-
-  EventSuggestionEngine.build(
-    suggestionContext,
-  ),
+    analysis.sceneMood,
 
 
+  currentLocation:
 
-
-
-      aliveCharacters:
-
-        CharacterStatusEngine.alive(
-          analysis,
-        ),
+    analysis.currentLocation,
 
 
 
+  // ======================================
+  // Sugestões
+  // ======================================
+
+  suggestions:
+
+    SuggestionEngine.build(
+      suggestionContext,
+    ),
 
 
-      deadCharacters:
+  possibleEvents:
 
-        CharacterStatusEngine.dead(
-          analysis,
-        ),
-
-
-
-
-
-      activeConflicts:
-
-        analysis.activeConflicts,
-
-
-
-
-
-      unresolvedThreads:
-
-        analysis.unresolvedThreads,
+    EventSuggestionEngine.build(
+      suggestionContext,
+    ),
 
 
 
+  // ======================================
+  // Personagens
+  // ======================================
+
+  aliveCharacters:
+
+    CharacterStatusEngine.alive(
+      analysis,
+    ),
 
 
-      currentSituation:
+  deadCharacters:
 
-        analysis.currentSituation,
-
-
-
-
-
-      sceneMood:
-
-        analysis.sceneMood,
+    CharacterStatusEngine.dead(
+      analysis,
+    ),
 
 
+  focusedCharacter:
 
-    }
+    analysis.focusedCharacter,
+
+
+
+  // ======================================
+  // Conflitos
+  // ======================================
+
+  activeConflicts:
+
+    analysis.activeConflicts,
+
+
+
+  // ======================================
+  // Objetivos
+  // ======================================
+
+  activeObjectives:
+
+    analysis.activeObjectives ?? [],
+
+
+  activeQuests:
+
+    analysis.activeQuests ?? [],
+
+
+
+  // ======================================
+  // Continuidade narrativa
+  // ======================================
+
+  unresolvedThreads:
+
+    analysis.unresolvedThreads,
+
+
+  unansweredQuestions:
+
+    analysis.unansweredQuestions ?? [],
+
+
+
+  // ======================================
+  // Cenário
+  // ======================================
+
+  discoveredLocations:
+
+    analysis.discoveredLocations ?? [],
+
+
+  topics:
+
+    analysis.topics ?? [],
+
+
+
+  // ======================================
+  // Histórico recente
+  // ======================================
+
+  recentEvents:
+
+    analysis.recentEvents ?? [],
+
+
+  recentDialogue:
+
+    analysis.recentDialogue ?? [],
+
+
+  recentFacts:
+
+    analysis.recentFacts ?? [],
+
+}
 
 
   }

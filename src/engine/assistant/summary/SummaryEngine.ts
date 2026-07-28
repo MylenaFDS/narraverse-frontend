@@ -2,180 +2,240 @@ import type {
   StoryAnalysis,
 } from "../analysis/StoryAnalysis"
 
-
+import type {
+  StoryEvent,
+} from "../state/events/StoryEvent"
 
 export class SummaryEngine {
-
 
   static build(
     analysis: StoryAnalysis,
   ): string {
 
-
-    const parts:string[] = []
-
-
-
-    // ==================================
-    // Situação atual
-    // ==================================
-
-    if(
-      analysis.currentSituation
-    ){
-
-      parts.push(
-        analysis.currentSituation,
+    const summary =
+      this.summarizeEvents(
+        analysis,
       )
+
+    if (
+      summary
+    ) {
+
+      return summary
 
     }
 
-
-
-    // ==================================
-    // Eventos estruturados recentes
-    // ==================================
-
-    if(
-
-      analysis.events &&
-      analysis.events.length > 0
-
-    ){
-
-      const eventDescriptions =
-        analysis.events
-          .slice(-5)
-          .map(
-            event =>
-              event.description,
-          )
-
-
-
-      parts.push(
-        ...eventDescriptions,
-      )
-
-    }
-
-
-
-    // ==================================
-    // Local atual
-    // ==================================
-
-    if(
-      analysis.currentLocation
-    ){
-
-      parts.push(
-        `Local atual: ${analysis.currentLocation}`,
-      )
-
-    }
-
-
-
-    // ==================================
-    // Personagens importantes
-    // ==================================
-
-    if(
-
-      analysis.activeCharacters.length > 0
-
-    ){
-
-      parts.push(
-
-        `Personagens presentes: ${
-          analysis.activeCharacters
-            .slice(0,3)
-            .join(", ")
-        }`,
-
-      )
-
-    }
-
-
-
-    // ==================================
-    // Missões
-    // ==================================
-
-    if(
-
-      analysis.activeQuests.length > 0
-
-    ){
-
-      parts.push(
-
-        `Missão atual: ${
-          analysis.activeQuests[0]
-        }`,
-
-      )
-
-    }
-
-
-
-    // ==================================
-    // Pendências
-    // ==================================
-
-    if(
-
-      analysis.unresolvedThreads.length > 0
-
-    ){
-
-      parts.push(
-
-        `Pendência: ${
-          analysis.unresolvedThreads[0]
-        }`,
-
-      )
-
-    }
-
-
-
-    // ==================================
-    // Remover duplicados
-    // ==================================
-
-    const unique =
-      [
-        ...new Set(
-          parts,
-        ),
-      ]
-
-
-
-    if(
-      unique.length === 0
-    ){
-
-      return (
-        "Nenhum acontecimento relevante registrado."
-      )
-
-    }
-
-
-
-    return unique.join(
-      ". ",
+    return (
+      "Nenhum acontecimento relevante registrado."
     )
-
 
   }
 
+  // ==================================
+  // Síntese narrativa
+  // ==================================
+
+  private static summarizeEvents(
+    analysis: StoryAnalysis,
+  ): string {
+
+    const events =
+      analysis.events
+
+    if (
+      events.length === 0
+    ) {
+
+      return ""
+
+    }
+
+    const death =
+      this.find(
+        events,
+        "death",
+      )
+
+    const attack =
+      this.find(
+        events,
+        "attack",
+      )
+
+    const prophecy =
+      this.find(
+        events,
+        "prophecy",
+      )
+
+    const relationship =
+      this.find(
+        events,
+        "relationship",
+      )
+
+    const quest =
+      this.find(
+        events,
+        "quest",
+      )
+
+    const location =
+      analysis.currentLocation
+
+    const characters =
+      analysis.activeCharacters
+        .slice(0, 2)
+
+    const text: string[] = []
+
+    // ==========================
+    // Morte
+    // ==========================
+
+    if (
+      death
+    ) {
+
+      text.push(
+        death.description,
+      )
+
+    }
+
+    // ==========================
+    // Combate
+    // ==========================
+
+    else if (
+      attack
+    ) {
+
+      if (
+        characters.length > 0
+      ) {
+
+        text.push(
+          `${characters.join(" e ")} enfrentam um conflito importante.`,
+        )
+
+      }
+
+      else {
+
+        text.push(
+          "Um conflito importante está em andamento.",
+        )
+
+      }
+
+    }
+
+    // ==========================
+    // Profecia
+    // ==========================
+
+    if (
+      prophecy
+    ) {
+
+      if (
+        location
+      ) {
+
+        text.push(
+          `Uma antiga profecia influencia os acontecimentos em ${location}.`,
+        )
+
+      }
+
+      else {
+
+        text.push(
+          "Uma antiga profecia influencia os acontecimentos.",
+        )
+
+      }
+
+    }
+
+    // ==========================
+    // Relação
+    // ==========================
+
+    if (
+      relationship
+    ) {
+
+      text.push(
+        "As relações entre os personagens continuam evoluindo.",
+      )
+
+    }
+
+    // ==========================
+    // Objetivo
+    // ==========================
+
+    if (
+      analysis.activeObjectives.length > 0
+    ) {
+
+      text.push(
+        `O principal objetivo continua sendo ${analysis.activeObjectives[0]}.`,
+      )
+
+    }
+
+    // ==========================
+    // Missão
+    // ==========================
+
+    else if (
+      quest
+    ) {
+
+      text.push(
+        `A missão em andamento é ${quest.description}.`,
+      )
+
+    }
+
+    // ==========================
+    // Local
+    // ==========================
+
+    if (
+      location &&
+      !prophecy
+    ) {
+
+      text.push(
+        `A cena permanece em ${location}.`,
+      )
+
+    }
+
+    return text.join(
+      " ",
+    )
+
+  }
+
+  // ==================================
+  // Helpers
+  // ==================================
+
+  private static find(
+    events: StoryEvent[],
+    type: StoryEvent["type"],
+  ): StoryEvent | undefined {
+
+    return events.find(
+      event =>
+        event.type === type,
+    )
+
+  }
 
 }

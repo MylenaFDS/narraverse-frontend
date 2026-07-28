@@ -2,108 +2,110 @@ import type {
   StoryAnalysis,
 } from "../analysis/StoryAnalysis"
 
-import type {
-  NarrativeState,
-} from "./NarrativeState"
+
+import type { NarrativeState } from "./NarrativeState"
+
 
 
 export class NarrativeStateEngine {
 
 
-  static analyze(
-    analysis: StoryAnalysis,
-    
-  ): NarrativeState {
+  static build(
+    analysis:StoryAnalysis,
+  ):NarrativeState {
 
 
-    const situation =
-      this.detectSituation(
-        analysis,
-      )
-
-
-    const tension =
-      this.calculateTension(
-        analysis,
-      )
+    const events =
+      analysis.events
 
 
 
     return {
 
+  situation:
+    this.detectSituation(
+      analysis,
+    ),
 
-      situation,
+  tension:
+    this.calculateTension(
+      analysis,
+    ),
 
+  importantEvents:
+    events
+      .slice(-5)
+      .map(
+        event => event.description,
+      ),
 
-      tension,
+  recentCharacters:
+    analysis.activeCharacters
+      .slice(0, 5),
 
+  hasConflict:
+    events.some(
+      event =>
+        event.type === "attack",
+    ),
 
+  hasDeath:
+    events.some(
+      event =>
+        event.type === "death",
+    ),
 
-      hasDeath:
+  hasDialogue:
+    events.some(
+      event =>
+        event.type === "dialogue",
+    ),
 
-        analysis.deadCharacters.length > 0,
+  hasProphecy:
+    events.some(
+      event =>
+        event.type === "prophecy",
+    ),
 
+  hasRelationship:
+    events.some(
+      event =>
+        event.type === "relationship" ||
+        event.type === "alliance",
+    ),
 
+  hasOpenThreads:
+    analysis.unresolvedThreads.length > 0,
 
-      hasDialogue:
+  isDangerous:
+    this.calculateTension(
+      analysis,
+    ) >= 70,
 
-        analysis.recentDialogue.length > 0,
+  canExplore:
+    this.detectSituation(
+      analysis,
+    ) !== "combat",
 
+  canInteract:
+    analysis.activeCharacters.length > 1,
 
+  canCreateEvent:
+    !events.some(
+      event =>
+        event.type === "death",
+    ),
 
-      hasOpenThreads:
+  characterCount:
+    analysis.activeCharacters.length,
 
-        analysis.unresolvedThreads.length > 0,
+  narrativeFocus:
+    this.detectNarrativeFocus(
+      analysis,
+    ),
 
+}
 
-
-      hasConflict:
-
-        analysis.activeConflicts.length > 0,
-
-
-
-      isDangerous:
-
-        tension >= 60,
-
-
-
-      canExplore:
-
-        analysis.activeConflicts.length === 0,
-
-
-
-      canInteract:
-
-        analysis.activeCharacters.length > 1,
-
-
-
-      canCreateEvent:
-
-        situation === "calm"
-        ||
-        situation === "exploration",
-
-
-
-      characterCount:
-
-        analysis.activeCharacters.length,
-
-
-
-      narrativeFocus:
-
-        this.detectFocus(
-          situation,
-          tension,
-        ),
-
-
-    }
 
   }
 
@@ -112,24 +114,15 @@ export class NarrativeStateEngine {
 
 
   private static detectSituation(
-    analysis: StoryAnalysis,
-  ): NarrativeState["situation"] {
-
-
-    const text =
-      analysis.currentSituation
-        .toLowerCase()
-
+    analysis:StoryAnalysis,
+  ):NarrativeState["situation"] {
 
 
     if(
-
-      text.includes("combate")
-      ||
-      text.includes("batalha")
-      ||
-      text.includes("ataque")
-
+      analysis.events.some(
+        event =>
+          event.type === "attack",
+      )
     ){
 
       return "combat"
@@ -137,25 +130,16 @@ export class NarrativeStateEngine {
     }
 
 
-
     if(
-      analysis.recentDialogue.length > 0
+      analysis.events.some(
+        event =>
+          event.type === "dialogue",
+      )
     ){
 
       return "dialogue"
 
     }
-
-
-
-    if(
-      analysis.unresolvedThreads.length > 0
-    ){
-
-      return "investigation"
-
-    }
-
 
 
     if(
@@ -167,7 +151,6 @@ export class NarrativeStateEngine {
     }
 
 
-
     return "calm"
 
   }
@@ -177,109 +160,90 @@ export class NarrativeStateEngine {
 
 
   private static calculateTension(
-    analysis: StoryAnalysis,
-  ): number {
+    analysis:StoryAnalysis,
+  ):number {
 
 
-    let value = 0
-
+    let tension = 20
 
 
     if(
-      analysis.activeConflicts.length > 0
+      analysis.events.some(
+        event =>
+          event.type === "death",
+      )
     ){
 
-      value += 50
+      tension +=40
 
     }
 
 
-
     if(
-      analysis.deadCharacters.length > 0
+      analysis.events.some(
+        event =>
+          event.type === "attack",
+      )
     ){
 
-      value += 25
+      tension +=30
 
     }
 
 
-
     if(
-
-      analysis.sceneMood
-        .toLowerCase()
-        .includes("tensão")
-
+      analysis.unresolvedThreads.length > 0
     ){
 
-      value += 25
+      tension +=10
 
     }
-
 
 
     return Math.min(
-      value,
+      tension,
       100,
     )
 
   }
 
+private static detectNarrativeFocus(
+  analysis: StoryAnalysis,
+): NarrativeState["narrativeFocus"] {
 
-
-
-
-  private static detectFocus(
-
-    situation:
-      NarrativeState["situation"],
-
-    tension:number,
-
-  ): NarrativeState["narrativeFocus"] {
-
-
-
-    if(
-      tension >= 60
-    ){
-
-      return "action"
-
-    }
-
-
-
-    switch(
-      situation
-    ){
-
-      case "dialogue":
-
-        return "dialogue"
-
-
-
-      case "exploration":
-
-        return "discovery"
-
-
-
-      case "investigation":
-
-        return "progress"
-
-
-
-      default:
-
-        return "emotion"
-
-    }
-
+  if (
+    analysis.events.some(
+      event => event.type === "attack",
+    )
+  ) {
+    return "action"
   }
 
+  if (
+    analysis.events.some(
+      event => event.type === "dialogue",
+    )
+  ) {
+    return "dialogue"
+  }
 
+  if (
+    analysis.discoveredLocations.length > 0
+  ) {
+    return "discovery"
+  }
+
+  if (
+    analysis.events.some(
+      event =>
+        event.type === "relationship" ||
+        event.type === "emotion",
+    )
+  ) {
+    return "emotion"
+  }
+
+  return "progress"
+
+}
 }

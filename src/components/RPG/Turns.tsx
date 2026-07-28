@@ -29,7 +29,7 @@ import { useLocation, useNavigate } from "react-router-dom"
 
 import { GenerateAssistantService } from "../../engine/assistant/GenerateAssistantService"
 import type { AssistantResult } from "../../engine/assistant/AssistantResult"
-
+import AssistantModal from "../Assistant/AssistantModal"
 type Props = {
   rpgId: number
   rpgOwnerId: number
@@ -1094,205 +1094,24 @@ async function handleGenerateWithAI() {
   
 )}
 {
-showAIModal &&
-assistantResult && (
-
-<div
-className="
-fixed inset-0
-bg-black/70
-flex
-items-center
-justify-center
-z-50
-"
->
-
-<div
-className="
-bg-[#18181b]
-border
-border-[#4a2f2f]
-rounded-2xl
-p-6
-w-[500px]
-max-h-[80vh]
-overflow-y-auto
-"
->
-
-<h2
-className="
-text-2xl
-text-[#e0a96d]
-mb-4
-"
->
-✨ Assistente Narrativo
-</h2>
-
-
-<section>
-
-<h3 className="text-yellow-400">
-Resumo
-</h3>
-
-<p>
-{assistantResult.summary}
-</p>
-
-</section>
-
-
-
-<section className="mt-4">
-
-<h3 className="text-yellow-400">
-Sugestões
-</h3>
-
-<ul>
-
-{
-assistantResult.suggestions.map(
-(item,index)=>(
-
-<li
-key={index}
-className="mb-3"
->
-
-<strong>
-• {item.title}
-</strong>
-
-<p className="text-gray-300">
-{item.description}
-</p>
-
-</li>
-
-)
-
-)
-}
-
-</ul>
-
-</section>
-
-
-
-<section className="mt-4">
-
-<h3 className="text-yellow-400">
-Eventos possíveis
-</h3>
-
-
-<ul>
-
-{
-assistantResult.possibleEvents.map(
-(item,index)=>(
-
-<li
-key={index}
-className="mb-3"
->
-
-<strong>
-• {item.title}
-</strong>
-
-<p className="text-gray-300">
-{item.description}
-</p>
-
-</li>
-
-)
-
-)
-}
-
-</ul>
-
-</section>
-
-
-
-<section className="mt-4">
-
-<h3 className="text-yellow-400">
-Personagens vivos
-</h3>
-
-
-<p>
-
-{
-assistantResult.aliveCharacters.join(
-", "
-)
-}
-
-</p>
-
-
-</section>
-
-
-
-<section className="mt-4">
-
-<h3 className="text-yellow-400">
-Conflitos ativos
-</h3>
-
-
-{
-assistantResult.activeConflicts.map(
-(item,index)=>(
-
-<p key={index}>
-• {item}
-</p>
-
-)
-)
-}
-
-
-</section>
-
-
-
-<button
-
-onClick={()=>{
-setShowAIModal(false)
-}}
-
-className="
-rpg-btn
-w-full
-mt-6
-"
-
->
-
-Fechar
-
-</button>
-
-
-</div>
-
-</div>
-
-)
+  showAIModal &&
+  assistantResult && (
+
+    <AssistantModal
+      open={
+    showAIModal
+  }
+      result={
+        assistantResult
+      }
+
+      onClose={() =>
+        setShowAIModal(false)
+      }
+
+    />
+
+  )
 }
     </>
   )
