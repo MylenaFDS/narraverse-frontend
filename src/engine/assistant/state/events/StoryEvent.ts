@@ -7,7 +7,7 @@ export interface StoryEvent {
 
 
   // ======================================
-  // Tipo
+  // Tipo do evento
   // ======================================
 
   type: EventType
@@ -15,7 +15,7 @@ export interface StoryEvent {
 
 
   // ======================================
-  // Personagens envolvidos
+  // Personagem que realizou a ação
   // ======================================
 
   actorId?: number
@@ -23,9 +23,34 @@ export interface StoryEvent {
   actorName?: string
 
 
+
+  // ======================================
+  // Personagens afetados
+  // ======================================
+
+  /**
+   * Primeiro alvo principal
+   * Mantido para compatibilidade
+   * com engines antigas
+   */
   targetId?: number
 
   targetName?: string
+
+
+
+  /**
+   * Novos eventos podem envolver
+   * vários personagens:
+   *
+   * Aragorn + Arwen
+   * Frodo + Sam + Legolas
+   */
+  targetIds?: number[]
+
+
+
+  targetNames?: string[]
 
 
 
@@ -34,6 +59,24 @@ export interface StoryEvent {
   // ======================================
 
   location?: string
+
+
+
+  // ======================================
+  // Relações
+  // ======================================
+
+
+  /**
+   * Exemplo:
+   *
+   * romance
+   * amizade
+   * aliança
+   * rivalidade
+   * traição
+   */
+  relationType?: string
 
 
 
@@ -52,9 +95,37 @@ export interface StoryEvent {
   description: string
 
 
-  // Texto original
-  // importante para resumo e memória
+
+  /**
+   * Texto original do turno
+   *
+   * Usado para:
+   * - memória
+   * - resumo
+   * - reconstrução narrativa
+   */
   sourceText?: string
+
+
+
+  // ======================================
+  // Impacto narrativo
+  // ======================================
+
+
+  importance?: 
+    | "low"
+    | "medium"
+    | "high"
+    | "critical"
+
+
+
+  /**
+   * Indica se o evento
+   * muda o estado do mundo
+   */
+  worldImpact?: boolean
 
 
 

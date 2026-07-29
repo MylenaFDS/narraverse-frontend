@@ -898,7 +898,7 @@ async function handleGenerateWithAI() {
       onClick={handleGenerateWithAI}
       className="rpg-btn"
     >
-      ✨ Gerar com IA
+      ✨ Assistente Narrativo
     </button>
 
     <button
