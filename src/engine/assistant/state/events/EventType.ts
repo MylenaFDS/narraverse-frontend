@@ -11,6 +11,14 @@ export type EventType =
 
   | "death"
 
+  | "victory"
+
+  | "surrender"
+
+  | "retreat"
+  
+  | "siege"
+
   | "conflict"
 
 
