@@ -1,45 +1,119 @@
 import type {
- EventType,
-} from "./EventType"
+  EventType,
+} from "../../types/EventType"
 
 
 
 export interface StoryEvent {
 
 
-type:EventType
+  // ======================================
+  // Tipo do evento
+  // ======================================
+
+  type: EventType
 
 
 
-actorId?:number
+  // ======================================
+  // Personagens envolvidos
+  // ======================================
 
-actorName?:string
+  actorId?: number
 
-
-
-targetId?:number
-
-targetName?:string
+  actorName?: string
 
 
+  targetId?: number
 
-location?:string
+  targetName?: string
 
 
-
-emotion?:string
+  participants?: string[]
 
 
 
-description:string
+  // ======================================
+  // Facções e mundo
+  // ======================================
+
+  faction?: string
+
+  location?: string
+
+  item?: string
 
 
 
-sourceText?:string
+  // ======================================
+  // Estado emocional
+  // ======================================
+
+  emotion?: string
 
 
 
-turnId?:number
+  // ======================================
+  // Importância narrativa
+  // ======================================
+
+  importance?: number
+
+  tags?: string[]
+
+
+
+  // ======================================
+  // Texto narrativo
+  // ======================================
+
+  description: string
+
+
+  consequence?: string
+
+
+  sourceText?: string
+
+
+
+  // ======================================
+  // Controle temporal
+  // ======================================
+
+  turnId?: number
+
+  timestamp?: number
+
+
+
+  // ======================================
+  // Sistema de reputação
+  // ======================================
+
+
+  /**
+   * Quem sofreu alteração de reputação
+   *
+   * Ex:
+   * "Aragorn"
+   * "Casa Stark"
+   * "Reino de Gondor"
+   */
+  reputationTarget?: string
+
+
+
+  /**
+   * Valor da mudança
+   *
+   * Positivo:
+   * +10 aliado
+   *
+   * Negativo:
+   * -20 inimigo
+   */
+  reputationValue?: number
 
 
 

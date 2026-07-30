@@ -211,7 +211,27 @@ event.type
 ){
 
 
+// =================================
+// REPUTAÇÃO
+// =================================
 
+case "reputation":
+
+
+this.processReputation(
+
+  next,
+  event.reputationTarget ??
+  event.actorName ??
+  "Desconhecido",
+
+  event.reputationValue ??
+  0,
+
+)
+
+
+break
 
 
 // =================================
@@ -534,7 +554,28 @@ next.activeEvents,
 ]
 
 
+next.recentFacts =
+next.recentFacts.slice(-30)
 
+
+
+Object.keys(
+  next.reputation,
+)
+.forEach(
+  key => {
+
+    next.reputation[key] =
+      Math.max(
+        -100,
+        Math.min(
+          100,
+          next.reputation[key],
+        ),
+      )
+
+  }
+)
 
 return next
 
@@ -785,26 +826,42 @@ event.description,
 
 private static processReputation(
 
-state:CampaignState,
+  state:CampaignState,
 
-name:string,
+  name:string,
 
-value:number,
+  value:number,
 
 ){
+
+
+if(
+!name ||
+value === 0
+)
+return
+
 
 
 if(
 !state.reputation[name]
 ){
 
-state.reputation[name]=0
+state.reputation[name] = 0
 
 }
 
 
 
-state.reputation[name]+=value
+state.reputation[name] += value
+
+
+
+state.recentFacts.push(
+
+  `${name} teve sua reputação alterada em ${value > 0 ? "+" : ""}${value}`
+
+)
 
 
 
