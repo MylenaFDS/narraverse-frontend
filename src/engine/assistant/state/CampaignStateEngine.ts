@@ -2,360 +2,976 @@ import type {
   CampaignState,
 } from "./CampaignState"
 
+
 import type {
   StoryEvent,
 } from "./events/StoryEvent"
 
+
+
 export class CampaignStateEngine {
 
-  static update(
-    state: CampaignState,
-    events: StoryEvent[],
-  ): CampaignState {
 
-    const next: CampaignState = {
 
-      ...state,
+static update(
 
-      turn:
-        state.turn + 1,
+  state: CampaignState,
 
-      history: [
-        ...state.history,
-      ],
+  events: StoryEvent[],
 
-      activeEvents: [
-        ...state.activeEvents,
-      ],
+): CampaignState {
 
-      aliveCharacters: [
-        ...state.aliveCharacters,
-      ],
 
-      deadCharacters: [
-        ...state.deadCharacters,
-      ],
 
-      knownCharacters: [
-        ...state.knownCharacters,
-      ],
+const next:CampaignState = {
 
-      discoveredLocations: [
-        ...state.discoveredLocations,
-      ],
 
-      knownLocations: [
-        ...state.knownLocations,
-      ],
+...state,
 
-      activeQuests: [
-        ...state.activeQuests,
-      ],
 
-      completedQuests: [
-        ...state.completedQuests,
-      ],
+turn:
+state.turn + 1,
 
-      activeObjectives: [
-        ...state.activeObjectives,
-      ],
 
-      recentDialogues: [
-        ...state.recentDialogues,
-      ],
 
-      recentActions: [
-        ...state.recentActions,
-      ],
+history:[
+...state.history,
+],
 
-      recentFacts: [
-        ...state.recentFacts,
-      ],
 
-      unresolvedThreads: [
-        ...state.unresolvedThreads,
-      ],
 
-    }
+activeEvents:[
+...state.activeEvents,
+],
 
-    for (
-      const event of events
-    ) {
 
-      next.history.push(
-        event,
-      )
 
-      // =============================
-      // Personagens conhecidos
-      // =============================
+aliveCharacters:[
+...state.aliveCharacters,
+],
 
-      if (
-        event.actorName &&
-        !next.knownCharacters.includes(
-          event.actorName,
-        )
-      ) {
 
-        next.knownCharacters.push(
-          event.actorName,
-        )
 
-      }
+deadCharacters:[
+...state.deadCharacters,
+],
 
-      if (
-        event.targetName &&
-        !next.knownCharacters.includes(
-          event.targetName,
-        )
-      ) {
 
-        next.knownCharacters.push(
-          event.targetName,
-        )
 
-      }
+knownCharacters:[
+...state.knownCharacters,
+],
 
-      // =============================
-      // Locais conhecidos
-      // =============================
 
-      if (
-        event.location
-      ) {
 
-        if (
-          !next.knownLocations.includes(
-            event.location,
-          )
-        ) {
+knownLocations:[
+...state.knownLocations,
+],
 
-          next.knownLocations.push(
-            event.location,
-          )
 
-        }
 
-        if (
-          !next.discoveredLocations.includes(
-            event.location,
-          )
-        ) {
+discoveredLocations:[
+...state.discoveredLocations,
+],
 
-          next.discoveredLocations.push(
-            event.location,
-          )
 
-        }
 
-      }
+activeQuests:[
+...state.activeQuests,
+],
 
-      switch (
-        event.type
-      ) {
 
-        case "attack":
 
-          this.addEvent(
-            next,
-            event.description,
-          )
+completedQuests:[
+...state.completedQuests,
+],
 
-          next.recentActions.push(
-            event.sourceText ??
-            event.description,
-          )
 
-          break
 
-        case "defense":
+activeObjectives:[
+...state.activeObjectives,
+],
 
-          next.recentActions.push(
-            event.sourceText ??
-            event.description,
-          )
 
-          break
 
-        case "movement":
+recentDialogues:[
+...state.recentDialogues,
+],
 
-          this.addEvent(
-            next,
-            event.description,
-          )
 
-          next.recentActions.push(
-            event.sourceText ??
-            event.description,
-          )
 
-          break
+recentActions:[
+...state.recentActions,
+],
 
-        case "dialogue":
 
-          next.recentDialogues.push(
-            event.sourceText ??
-            event.description,
-          )
 
-          break
+recentFacts:[
+...state.recentFacts,
+],
 
-        case "death":
 
-          this.addEvent(
-            next,
-            event.description,
-          )
 
-          next.recentFacts.push(
-            event.sourceText ??
-            event.description,
-          )
+unresolvedThreads:[
+...state.unresolvedThreads,
+],
 
-          if (
-            event.actorName
-          ) {
 
-            next.aliveCharacters =
-              next.aliveCharacters.filter(
-                character =>
-                  character !==
-                  event.actorName,
-              )
 
-            if (
-              !next.deadCharacters.includes(
-                event.actorName,
-              )
-            ) {
+relationships:[
+...(state.relationships ?? []),
+],
 
-              next.deadCharacters.push(
-                event.actorName,
-              )
 
-            }
 
-          }
+reputation:
+{
+...(state.reputation ?? {}),
+},
 
-          break
 
-        case "quest":
 
-          this.addEvent(
-            next,
-            event.description,
-          )
+}
 
-          if (
-            !next.activeQuests.includes(
-              event.description,
-            )
-          ) {
 
-            next.activeQuests.push(
-              event.description,
-            )
 
-          }
 
-          break
 
-        case "prophecy":
 
-  next.recentFacts.push(
-    event.sourceText ??
-    event.description,
-  )
 
-  break
+for(
+const event of events
+){
 
 
 
-case "promise":
+// =============================
+// Memória principal
+// =============================
 
-  next.recentFacts.push(
-    event.sourceText ??
-    event.description,
-  )
 
-  break
+next.history.push(
+event,
+)
 
 
 
-case "alliance":
 
-  next.recentFacts.push(
-    event.sourceText ??
-    event.description,
-  )
 
-  break
+// =============================
+// Personagens conhecidos
+// =============================
 
+
+this.registerCharacter(
+next,
+event.actorName,
+)
+
+
+this.registerCharacter(
+next,
+event.targetName,
+)
+
+
+
+
+
+
+// =============================
+// Localização
+// =============================
+
+
+if(
+event.location
+){
+
+this.registerLocation(
+next,
+event.location,
+)
+
+}
+
+
+
+
+
+
+
+// =============================
+// Processamento narrativo
+// =============================
+
+
+switch(
+event.type
+){
+
+
+
+
+
+// =================================
+// COMBATE
+// =================================
+
+
+case "attack":
+
+
+this.addActiveEvent(
+
+next,
+
+event.description,
+
+)
+
+
+this.rememberAction(
+next,
+event,
+)
+
+
+break
+
+
+
+
+
+
+
+case "defense":
+
+
+this.rememberAction(
+next,
+event,
+)
+
+
+break
+
+
+
+
+
+
+
+// =================================
+// MOVIMENTO
+// =================================
+
+
+case "movement":
+
+
+this.addActiveEvent(
+
+next,
+
+event.description,
+
+)
+
+
+this.rememberAction(
+next,
+event,
+)
+
+
+break
+
+
+
+
+
+
+
+// =================================
+// DIÁLOGO
+// =================================
+
+
+case "dialogue":
+
+
+next.recentDialogues.push(
+
+event.sourceText ??
+event.description,
+
+)
+
+
+break
+
+
+
+
+
+
+
+// =================================
+// MORTE
+// =================================
+
+
+case "death":
+
+
+this.processDeath(
+next,
+event,
+)
+
+
+break
+
+
+
+
+
+
+
+// =================================
+// RELACIONAMENTO
+// =================================
 
 
 case "relationship":
 
-  next.recentFacts.push(
-    event.sourceText ??
-    event.description,
-  )
 
-  break
+this.processRelationship(
+next,
+event,
+)
+
+
+break
+
+
+
+
+
+
+
+// =================================
+// ALIANÇA
+// =================================
+
+
+case "alliance":
+
+
+this.processAlliance(
+next,
+event,
+)
+
+
+break
+
+
+
+
+
+
+
+// =================================
+// CONFLITO
+// =================================
+
+
+case "conflict":
+
+
+this.processConflict(
+next,
+event,
+)
+
+
+break
+
+
+
+
+
+
+
+// =================================
+// PROFECIA / LORE
+// =================================
+
+
+case "prophecy":
+
+
+next.unresolvedThreads.push(
+
+event.description,
+
+)
+
+
+next.recentFacts.push(
+
+event.sourceText ??
+event.description,
+
+)
+
+
+break
+
+
+
+
+
+
+
+// =================================
+// QUEST
+// =================================
+
+
+case "quest":
+
+
+if(
+!next.activeQuests.includes(
+event.description,
+)
+){
+
+next.activeQuests.push(
+event.description,
+)
+
+}
+
+
+break
+
+
+
+
 
 
 
 case "discovery":
 
-  next.recentFacts.push(
-    event.sourceText ??
-    event.description,
-  )
 
-  break
+next.recentFacts.push(
 
-      }
+event.description,
 
-    }
-  next.activeEvents =
-  [
-    ...new Set(
-      next.activeEvents,
-    ),
-  ]
+)
 
-next.recentDialogues =
-  next.recentDialogues.slice(-10)
 
-next.recentActions =
-  next.recentActions.slice(-10)
+break
 
-next.recentFacts =
-  next.recentFacts.slice(-10)
+
+
+
+}
+
+
+}
+
+
+
+
+
+
+
+// =============================
+// Limpeza de memória
+// =============================
+
 
 next.history =
-  next.history.slice(-50)
-    return next
+next.history.slice(-100)
 
-  }
 
-  private static addEvent(
-    state: CampaignState,
-    description: string,
-  ): void {
 
-    if (
-      description.trim() !== "" &&
-      !state.activeEvents.includes(
-        description,
-      )
-    ) {
+next.recentActions =
+next.recentActions.slice(-15)
 
-      state.activeEvents.push(
-        description,
-      )
 
-    }
 
-  }
+next.recentDialogues =
+next.recentDialogues.slice(-15)
+
+
+
+next.recentFacts =
+next.recentFacts.slice(-30)
+
+
+
+next.unresolvedThreads =
+[
+...new Set(
+next.unresolvedThreads,
+)
+]
+
+
+
+
+next.activeEvents =
+[
+...new Set(
+next.activeEvents,
+)
+]
+
+
+
+
+return next
+
+
+}
+
+
+
+
+
+
+
+
+
+// =================================================
+// MORTE REAL
+// =================================================
+
+
+private static processDeath(
+
+state:CampaignState,
+
+event:StoryEvent,
+
+){
+
+
+
+const name =
+event.targetName ??
+event.actorName
+
+
+
+if(
+!name
+)return
+
+
+
+
+state.aliveCharacters =
+state.aliveCharacters.filter(
+
+c =>
+c !== name
+
+)
+
+
+
+if(
+!state.deadCharacters.includes(
+name,
+)
+){
+
+state.deadCharacters.push(
+name,
+)
+
+}
+
+
+
+state.recentFacts.push(
+
+`${name} morreu`,
+
+)
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// =================================================
+// RELACIONAMENTOS
+// =================================================
+
+
+private static processRelationship(
+
+state:CampaignState,
+
+event:StoryEvent,
+
+){
+
+
+
+if(
+!event.actorName &&
+!event.targetName
+)
+return
+
+
+
+state.relationships.push({
+
+from:
+event.actorName ?? "Desconhecido",
+
+
+to:
+event.targetName ?? "Desconhecido",
+
+
+type:
+"personal",
+
+
+turn:
+state.turn,
+
+
+})
+
+
+
+
+
+state.recentFacts.push(
+
+event.description,
+
+)
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// =================================================
+// ALIANÇA
+// =================================================
+
+
+private static processAlliance(
+
+state:CampaignState,
+
+event:StoryEvent,
+
+){
+
+
+state.relationships.push({
+
+from:
+event.actorName ?? "Desconhecido",
+
+
+to:
+event.targetName ?? "Grupo",
+
+
+type:
+"alliance",
+
+
+turn:
+state.turn,
+
+})
+
+
+
+state.recentFacts.push(
+
+event.description,
+
+)
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// =================================================
+// CONFLITO
+// =================================================
+
+
+private static processConflict(
+
+state:CampaignState,
+
+event:StoryEvent,
+
+){
+
+
+
+state.activeEvents.push(
+
+event.description,
+
+)
+
+
+
+state.unresolvedThreads.push(
+
+event.description,
+
+)
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// =================================================
+// REPUTAÇÃO
+// =================================================
+
+
+private static processReputation(
+
+state:CampaignState,
+
+name:string,
+
+value:number,
+
+){
+
+
+if(
+!state.reputation[name]
+){
+
+state.reputation[name]=0
+
+}
+
+
+
+state.reputation[name]+=value
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// =================================================
+// MEMÓRIA
+// =================================================
+
+
+private static rememberAction(
+
+state:CampaignState,
+
+event:StoryEvent,
+
+){
+
+
+state.recentActions.push(
+
+event.sourceText ??
+event.description,
+
+)
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// =================================================
+// PERSONAGEM
+// =================================================
+
+
+private static registerCharacter(
+
+state:CampaignState,
+
+name?:string,
+
+){
+
+
+if(
+!name
+)
+return
+
+
+
+if(
+!state.knownCharacters.includes(
+name,
+)
+){
+
+state.knownCharacters.push(
+name,
+)
+
+}
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// =================================================
+// LOCAL
+// =================================================
+
+
+private static registerLocation(
+
+state:CampaignState,
+
+location:string,
+
+){
+
+
+if(
+!state.knownLocations.includes(
+location,
+)
+){
+
+state.knownLocations.push(
+location,
+)
+
+}
+
+
+
+if(
+!state.discoveredLocations.includes(
+location,
+)
+){
+
+state.discoveredLocations.push(
+location,
+)
+
+}
+
+
+}
+
+
+
+
+
+
+
+
+
+private static addActiveEvent(
+
+state:CampaignState,
+
+event:string,
+
+){
+
+
+if(
+!state.activeEvents.includes(
+event,
+)
+){
+
+state.activeEvents.push(
+event,
+)
+
+}
+
+
+
+}
+
+
 
 }

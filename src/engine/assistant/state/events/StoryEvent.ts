@@ -1,139 +1,46 @@
 import type {
-  EventType,
+ EventType,
 } from "./EventType"
+
 
 
 export interface StoryEvent {
 
 
-  // ======================================
-  // Tipo do evento
-  // ======================================
-
-  type: EventType
+type:EventType
 
 
 
-  // ======================================
-  // Personagem que realizou a ação
-  // ======================================
+actorId?:number
 
-  actorId?: number
-
-  actorName?: string
+actorName?:string
 
 
 
-  // ======================================
-  // Personagens afetados
-  // ======================================
+targetId?:number
 
-  /**
-   * Primeiro alvo principal
-   * Mantido para compatibilidade
-   * com engines antigas
-   */
-  targetId?: number
-
-  targetName?: string
+targetName?:string
 
 
 
-  /**
-   * Novos eventos podem envolver
-   * vários personagens:
-   *
-   * Aragorn + Arwen
-   * Frodo + Sam + Legolas
-   */
-  targetIds?: number[]
+location?:string
 
 
 
-  targetNames?: string[]
+emotion?:string
 
 
 
-  // ======================================
-  // Mundo
-  // ======================================
-
-  location?: string
+description:string
 
 
 
-  // ======================================
-  // Relações
-  // ======================================
-
-
-  /**
-   * Exemplo:
-   *
-   * romance
-   * amizade
-   * aliança
-   * rivalidade
-   * traição
-   */
-  relationType?: string
+sourceText?:string
 
 
 
-  // ======================================
-  // Estado emocional
-  // ======================================
+turnId?:number
 
-  emotion?: string
-
-
-
-  // ======================================
-  // Informação narrativa
-  // ======================================
-
-  description: string
-
-
-
-  /**
-   * Texto original do turno
-   *
-   * Usado para:
-   * - memória
-   * - resumo
-   * - reconstrução narrativa
-   */
-  sourceText?: string
-
-
-
-  // ======================================
-  // Impacto narrativo
-  // ======================================
-
-
-  importance?: 
-    | "low"
-    | "medium"
-    | "high"
-    | "critical"
-
-
-
-  /**
-   * Indica se o evento
-   * muda o estado do mundo
-   */
-  worldImpact?: boolean
-
-
-
-  // ======================================
-  // Tempo
-  // ======================================
-
-  turnId?: number
 
 
 }

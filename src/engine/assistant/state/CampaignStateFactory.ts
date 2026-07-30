@@ -2,24 +2,17 @@ import type {
   CampaignState,
 } from "./CampaignState"
 
-
-
 export class CampaignStateFactory {
-
 
   static create(): CampaignState {
 
-
     return {
 
-
       // ======================================
-      // Controle da campanha
+      // Controle
       // ======================================
 
       turn: 0,
-
-
 
       // ======================================
       // Histórico
@@ -27,15 +20,11 @@ export class CampaignStateFactory {
 
       history: [],
 
-
-
       // ======================================
-      // Eventos ativos
+      // Eventos
       // ======================================
 
       activeEvents: [],
-
-
 
       // ======================================
       // Personagens
@@ -47,7 +36,17 @@ export class CampaignStateFactory {
 
       knownCharacters: [],
 
+      // ======================================
+      // Relacionamentos
+      // ======================================
 
+      relationships: [],
+
+      // ======================================
+      // Reputação
+      // ======================================
+
+      reputation: {},
 
       // ======================================
       // Mundo
@@ -57,7 +56,9 @@ export class CampaignStateFactory {
 
       knownLocations: [],
 
+      discoveredItems: [],
 
+      discoveredFactions: [],
 
       // ======================================
       // Missões
@@ -67,12 +68,14 @@ export class CampaignStateFactory {
 
       completedQuests: [],
 
+      failedQuests: [],
+
       activeObjectives: [],
 
-
+      completedObjectives: [],
 
       // ======================================
-      // Contexto narrativo
+      // Memória narrativa
       // ======================================
 
       recentDialogues: [],
@@ -83,11 +86,20 @@ export class CampaignStateFactory {
 
       unresolvedThreads: [],
 
+      unansweredQuestions: [],
+
+      importantMoments: [],
+
+      // ======================================
+      // Estado do mundo
+      // ======================================
+
+      worldFlags: {},
+
+      variables: {},
 
     }
 
-
   }
-
 
 }

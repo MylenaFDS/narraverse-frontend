@@ -1,21 +1,40 @@
-import type { StoryEvent } from "./events/StoryEvent"
+import type {
+  StoryEvent,
+} from "./events/StoryEvent"
+
+export interface CharacterRelationship {
+
+  from: string
+
+  to: string
+
+  type:
+    | "personal"
+    | "alliance"
+    | "friendship"
+    | "enemy"
+    | "family"
+
+  turn: number
+
+}
 
 export interface CampaignState {
 
   // ======================================
-  // Controle da campanha
+  // Controle
   // ======================================
 
   turn: number
 
   // ======================================
-  // Histórico completo
+  // Histórico
   // ======================================
 
   history: StoryEvent[]
 
   // ======================================
-  // Eventos ativos
+  // Eventos
   // ======================================
 
   activeEvents: string[]
@@ -31,12 +50,28 @@ export interface CampaignState {
   knownCharacters: string[]
 
   // ======================================
+  // Relacionamentos
+  // ======================================
+
+  relationships: CharacterRelationship[]
+
+  // ======================================
+  // Reputação
+  // ======================================
+
+  reputation: Record<string, number>
+
+  // ======================================
   // Mundo
   // ======================================
 
   discoveredLocations: string[]
 
   knownLocations: string[]
+
+  discoveredItems: string[]
+
+  discoveredFactions: string[]
 
   // ======================================
   // Missões
@@ -46,10 +81,14 @@ export interface CampaignState {
 
   completedQuests: string[]
 
+  failedQuests: string[]
+
   activeObjectives: string[]
 
+  completedObjectives: string[]
+
   // ======================================
-  // Contexto narrativo
+  // Memória narrativa
   // ======================================
 
   recentDialogues: string[]
@@ -59,5 +98,17 @@ export interface CampaignState {
   recentFacts: string[]
 
   unresolvedThreads: string[]
+
+  unansweredQuestions: string[]
+
+  importantMoments: string[]
+
+  // ======================================
+  // Estado do mundo
+  // ======================================
+
+  worldFlags: Record<string, boolean>
+
+  variables: Record<string, string | number | boolean>
 
 }

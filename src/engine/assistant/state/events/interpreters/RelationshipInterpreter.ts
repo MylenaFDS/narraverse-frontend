@@ -1,178 +1,223 @@
 import type {
-  RPGTurn,
+RPGTurn,
 } from "../../../../../types/turn"
 
+
 import type {
-  StoryEvent,
+StoryEvent,
 } from "../StoryEvent"
+
 
 
 export class RelationshipInterpreter {
 
 
-  static interpret(
-    turn:RPGTurn,
-  ):StoryEvent[] {
 
+static interpret(
+turn:RPGTurn,
+):StoryEvent[]{
 
-    const events:StoryEvent[] = []
 
 
-    const text =
-      turn.content.toLowerCase()
+const text =
+turn.content.toLowerCase()
 
 
+const events:StoryEvent[]=[]
 
-    const actorId =
-      turn.character_id ?? undefined
 
+const actorId =
+turn.character_id ?? undefined
 
 
-    // ======================================
-    // Aliança
-    // ======================================
 
+const targetName =
+this.extractMention(
+turn.content,
+)
 
-    if (
 
-      this.contains(
-        text,
-        [
-          "aliança",
-          "aliado",
-          "unidos",
-          "juntos",
-          "juramento",
-          "prometo",
-        ],
-      )
 
-    ){
 
-      events.push({
 
-        type:
-          "alliance",
+if(
+this.contains(
+text,
+[
+"cas",
+"amor",
+"abraç",
+"beij",
+"espos",
+"namor",
+"união",
+"relacion",
+]
+)
+){
 
-        actorId,
 
-        description:
-          "Uma relação de aliança foi fortalecida",
 
-        turnId:
-          turn.id,
+events.push({
 
-      })
+type:"relationship",
 
-    }
+actorId,
 
 
+targetName,
 
-    // ======================================
-    // Romance / Casamento
-    // ======================================
 
+description:
+"Uma relação pessoal evoluiu",
 
-    if (
 
-      this.contains(
-        text,
-        [
-          "amor",
-          "amada",
-          "amado",
-          "casamento",
-          "casou",
-          "união",
-          "abraço",
-        ],
-      )
+sourceText:
+turn.content,
 
-    ){
 
-      events.push({
+turnId:
+turn.id,
 
-        type:
-          "relationship",
 
-        actorId,
+})
 
-        description:
-          "Uma relação pessoal importante aconteceu",
+}
 
-        turnId:
-          turn.id,
 
-      })
 
-    }
 
 
+if(
+this.contains(
+text,
+[
+"alian",
+"pacto",
+"juramento",
+"juntos",
+"leald",
+"prometo",
+]
+)
+){
 
-    // ======================================
-    // Conflito entre personagens
-    // ======================================
 
+events.push({
 
-    if (
+type:"alliance",
 
-      this.contains(
-        text,
-        [
-          "ódio",
-          "inimigo",
-          "traiu",
-          "traição",
-          "vingança",
-        ],
-      )
+actorId,
 
-    ){
+targetName,
 
-      events.push({
 
-        type:
-          "conflict",
+description:
+"Uma aliança foi fortalecida",
 
-        actorId,
 
-        description:
-          "Um conflito entre personagens foi criado",
+sourceText:
+turn.content,
 
-        turnId:
-          turn.id,
 
-      })
+turnId:
+turn.id,
 
-    }
+})
 
 
+}
 
-    return events
 
-  }
 
 
 
+if(
+this.contains(
+text,
+[
+"trai",
+"engan",
+"conspir",
+"vingança",
+]
+)
+){
 
 
-  private static contains(
+events.push({
 
-    text:string,
+type:"conflict",
 
-    words:string[],
+actorId,
 
-  ):boolean {
+targetName,
 
 
-    return words.some(
+description:
+"Uma traição criou conflito",
 
-      word =>
-        text.includes(word),
 
-    )
+sourceText:
+turn.content,
 
-  }
+
+turnId:
+turn.id,
+
+})
+
+
+}
+
+
+
+return events
+
+
+}
+
+
+
+
+
+private static contains(
+text:string,
+words:string[],
+){
+
+
+return words.some(
+word =>
+text.includes(word)
+)
+
+
+}
+
+
+
+
+
+private static extractMention(
+text:string,
+){
+
+
+const match =
+text.match(
+/@([A-Za-zÀ-ÿ]+)/,
+)
+
+
+return match
+?
+match[1]
+:
+undefined
+
+
+}
 
 
 }
