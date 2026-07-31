@@ -2,7 +2,7 @@ import type { WorldContext } from "./context/ContextEngine"
 
 import { MemoryEngine } from "./MemoryEngine"
 import { EventEngine } from "./EventEngine"
-import { WorldStateEngine } from "./WorldStateEngine"
+import { WorldStateEngine } from "./assistant/state/world/WorldStateEngine"
 
 export interface CampaignSnapshot {
 

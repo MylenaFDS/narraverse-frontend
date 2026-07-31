@@ -4,7 +4,7 @@ import { RuleEngine } from "./RuleEngine"
 import { MemoryEngine } from "./MemoryEngine"
 import { DecisionEngine } from "./WorldDecisionEngine"
 import { ActionEngine } from "./ActionEngine"
-import { WorldStateEngine } from "./WorldStateEngine"
+import { WorldStateEngine } from "./assistant/state/world/WorldStateEngine"
 import { EventEngine } from "./EventEngine"
 import { NarrativeEngine } from "./NarrativeEngine"
 
@@ -41,11 +41,29 @@ export class EngineManager {
 
   title: "Execução da Engine",
 
-  description: "Contexto processado pelo EngineManager.",
+  description:
+    "Contexto processado pelo EngineManager.",
 
   timestamp: Date.now(),
 
   importance: 1,
+
+  // =============================
+  // Metadados narrativos
+  // =============================
+
+  people: [],
+
+  places: [],
+
+  tags: [
+    "engine",
+    "world-processing",
+  ],
+
+  confidence: 1,
+
+  recalled: 0,
 })
 
     // 3. Sugere decisões
