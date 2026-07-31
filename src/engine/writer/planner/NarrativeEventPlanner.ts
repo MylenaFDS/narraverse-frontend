@@ -18,6 +18,10 @@ export class NarrativeEventPlanner {
 
 
 
+    // ======================================
+    // Emoção dominante
+    // ======================================
+
     const dominantEmotion =
       Object.entries(
         context.emotion ?? {},
@@ -33,11 +37,13 @@ export class NarrativeEventPlanner {
 
 
     const emotionValue =
-      context.emotion?.[
-        dominantEmotion as keyof typeof context.emotion
-      ]
-      ??
-      0
+      Number(
+        context.emotion?.[
+          dominantEmotion as keyof typeof context.emotion
+        ]
+        ??
+        0
+      )
 
 
 
@@ -47,7 +53,26 @@ export class NarrativeEventPlanner {
 
 
     // ======================================
-    // História anterior
+    // Análise dramática
+    // ======================================
+
+    const tension =
+      this.calculateTension(
+        context,
+        emotionValue,
+      )
+
+
+
+    const focus =
+      this.defineFocus(
+        context,
+      )
+
+
+
+    // ======================================
+    // Contexto anterior
     // ======================================
 
     if(
@@ -57,10 +82,40 @@ export class NarrativeEventPlanner {
       events.push(
 
         EventFactory.create(
+
           "thought",
+
           context.story.currentSituation,
+
           NarrativePriority.Thought,
-        ),
+
+        )
+
+      )
+
+    }
+
+
+
+    // ======================================
+    // Localização
+    // ======================================
+
+    if(
+      context.story.currentLocation
+    ){
+
+      events.push(
+
+        EventFactory.create(
+
+          "description",
+
+          `Local atual: ${context.story.currentLocation}`,
+
+          NarrativePriority.Description,
+
+        )
 
       )
 
@@ -73,18 +128,50 @@ export class NarrativeEventPlanner {
     // ======================================
 
     if(
-      context.story.activeEvents.length > 0
+      context.story.activeEvents.length
     ){
 
       events.push(
 
         EventFactory.create(
-          "description",
+
+          "conflict",
+
           context.story.activeEvents.join(
             ". "
           ),
-          NarrativePriority.Description,
-        ),
+
+          NarrativePriority.Conflict,
+
+        )
+
+      )
+
+    }
+
+
+
+    // ======================================
+    // Fios narrativos abertos
+    // ======================================
+
+    if(
+      context.story.unresolvedThreads.length
+    ){
+
+      events.push(
+
+        EventFactory.create(
+
+          "mystery",
+
+          context.story.unresolvedThreads.join(
+            ". "
+          ),
+
+          NarrativePriority.Mystery,
+
+        )
 
       )
 
@@ -106,10 +193,14 @@ export class NarrativeEventPlanner {
       events.push(
 
         EventFactory.create(
+
           "observation",
-          null,
+
+          focus,
+
           NarrativePriority.Observation,
-        ),
+
+        )
 
       )
 
@@ -118,7 +209,7 @@ export class NarrativeEventPlanner {
 
 
     // ======================================
-    // Emoção
+    // Estado emocional
     // ======================================
 
     if(
@@ -131,10 +222,14 @@ export class NarrativeEventPlanner {
       events.push(
 
         EventFactory.create(
+
           "emotion",
+
           dominantEmotion,
+
           NarrativePriority.Emotion,
-        ),
+
+        )
 
       )
 
@@ -143,7 +238,7 @@ export class NarrativeEventPlanner {
 
 
     // ======================================
-    // Ação
+    // Ação principal
     // ======================================
 
     if(action){
@@ -151,10 +246,14 @@ export class NarrativeEventPlanner {
       events.push(
 
         EventFactory.create(
+
           "action",
+
           action,
+
           NarrativePriority.Action,
-        ),
+
+        )
 
       )
 
@@ -167,16 +266,24 @@ export class NarrativeEventPlanner {
     // ======================================
 
     if(
-      this.shouldSpeak(context)
+      this.shouldSpeak(
+        context,
+      )
     ){
 
       events.push(
 
         EventFactory.create(
+
           "dialogue",
+
+          context.story.lastDialogue
+          ??
           action,
+
           NarrativePriority.Dialogue,
-        ),
+
+        )
 
       )
 
@@ -185,20 +292,53 @@ export class NarrativeEventPlanner {
 
 
     // ======================================
-    // Final
+    // Consequência futura
     // ======================================
 
     if(
-      this.shouldEnd(context)
+      tension >= 70
     ){
 
       events.push(
 
         EventFactory.create(
-          "ending",
-          null,
+
+          "consequence",
+
+          "As escolhas atuais podem alterar o destino dos próximos acontecimentos.",
+
+          NarrativePriority.Consequence,
+
+        )
+
+      )
+
+    }
+
+
+
+    // ======================================
+    // Gancho final
+    // ======================================
+
+    if(
+      this.shouldCreateHook(
+        context,
+        tension,
+      )
+    ){
+
+      events.push(
+
+        EventFactory.create(
+
+          "hook",
+
+          "Uma nova possibilidade surge diante do personagem.",
+
           NarrativePriority.Ending,
-        ),
+
+        )
 
       )
 
@@ -208,8 +348,13 @@ export class NarrativeEventPlanner {
 
     console.log(
       "NARRATIVE EVENTS",
-      events,
+      {
+        tension,
+        focus,
+        events,
+      },
     )
+
 
 
     return events.sort(
@@ -217,6 +362,107 @@ export class NarrativeEventPlanner {
         a.priority -
         b.priority,
     )
+
+  }
+
+
+
+
+
+
+
+  // ======================================
+  // Tensão narrativa
+  // ======================================
+
+  private static calculateTension(
+
+    context:WriterContext,
+
+    emotion:number,
+
+  ){
+
+    let value = 0
+
+
+
+    value += emotion * 0.4
+
+
+
+    value +=
+      context.story.activeEvents.length * 10
+
+
+
+    value +=
+      context.story.unresolvedThreads.length * 8
+
+
+
+    if(
+      context.decision.action === "attack"
+    ){
+
+      value += 30
+
+    }
+
+
+
+    if(
+      context.decision.action === "investigate"
+    ){
+
+      value += 15
+
+    }
+
+
+
+    return Math.min(
+      100,
+      Math.round(value),
+    )
+
+  }
+
+
+
+
+
+
+
+  // ======================================
+  // Foco narrativo
+  // ======================================
+
+  private static defineFocus(
+    context:WriterContext,
+  ){
+
+    if(
+      context.story.focusedCharacter
+    ){
+
+      return context.story.focusedCharacter
+
+    }
+
+
+
+    if(
+      context.character.name
+    ){
+
+      return context.character.name
+
+    }
+
+
+
+    return "O ambiente ao redor"
 
   }
 
@@ -234,7 +480,9 @@ export class NarrativeEventPlanner {
     if(
       context.decision.action === "explore"
     ){
+
       return true
+
     }
 
 
@@ -243,7 +491,9 @@ export class NarrativeEventPlanner {
         context.personality,
       )
     ){
+
       return true
+
     }
 
 
@@ -267,7 +517,9 @@ export class NarrativeEventPlanner {
         context.personality,
       )
     ){
+
       return true
+
     }
 
 
@@ -288,14 +540,18 @@ export class NarrativeEventPlanner {
     if(
       !context.allowDialogue
     ){
+
       return false
+
     }
 
 
     if(
       context.decision.action !== "talk"
     ){
+
       return false
+
     }
 
 
@@ -311,29 +567,36 @@ export class NarrativeEventPlanner {
 
 
 
-  private static shouldEnd(
+  private static shouldCreateHook(
+
     context:WriterContext,
+
+    tension:number,
+
   ){
 
     if(
-      context.decision.action === "attack"
+      tension >= 60
     ){
-      return false
+
+      return true
+
     }
 
 
     if(
-      PersonalityEngine.isImpulsive(
-        context.personality,
-      )
+      context.story.unansweredQuestions.length
     ){
-      return false
+
+      return true
+
     }
 
 
-    return true
+    return false
 
   }
+
 
 
 }

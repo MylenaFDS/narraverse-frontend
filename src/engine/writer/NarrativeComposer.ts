@@ -7,14 +7,15 @@ import { NarrativeEventPlanner } from "./planner/NarrativeEventPlanner"
 import { SentencePlanner } from "./planner/SentencePlanner"
 import { StyleTransformerEngine } from "./StyleTransformerEngine"
 
-
 export class NarrativeComposer {
-
 
   static compose(
     context: WriterContext,
   ): NarrativeDraft {
 
+    // ======================================
+    // Perfil narrativo
+    // ======================================
 
     const style =
       StyleEngine.apply({
@@ -39,64 +40,144 @@ export class NarrativeComposer {
 
       })
 
-
+    // ======================================
+    // Emoção dominante
+    // ======================================
 
     const dominantEmotion =
       Object.entries(
         context.emotion ?? {},
       )
-      .sort(
-        (a,b) =>
-          b[1] - a[1],
-      )[0]?.[0] ?? "trust"
+        .sort(
+          (a,b)=>
+            b[1]-a[1],
+        )[0]?.[0]
+      ??
+      "trust"
 
-
-
-    // ============================
-    // Planejamento
-    // ============================
+    // ======================================
+    // Planejamento de eventos
+    // ======================================
 
     const events =
       NarrativeEventPlanner.plan(
         context,
       )
 
-
-
-    // ============================
-    // Bibliotecas
-    // ============================
+    // ======================================
+    // Biblioteca narrativa
+    // ======================================
 
     const fragments =
       LibraryManager.compose(
+
         events,
+
         context.story,
+
       )
 
+    // ======================================
+    // Planejamento de frases
+    // ======================================
 
-
-    // ============================
-    // Montagem narrativa
-    // ============================
-
-    const text =
+    let text =
       SentencePlanner.compose(
         fragments,
       )
 
+    // ======================================
+    // Contexto emocional
+    // ======================================
 
+    if(
+      dominantEmotion ===
+      "fear"
+    ){
 
-    // ============================
-    // Estilo
-    // ============================
+      text =
+        "O ambiente parecia mais pesado do que o normal. "
+        + text
+
+    }
+
+    if(
+      dominantEmotion ===
+      "anger"
+    ){
+
+      text =
+        "A tensão era impossível de ignorar. "
+        + text
+
+    }
+
+    if(
+      dominantEmotion ===
+      "joy"
+    ){
+
+      text =
+        "Por um breve instante, tudo parecia finalmente em paz. "
+        + text
+
+    }
+
+    // ======================================
+    // Objetivo da cena
+    // ======================================
+
+    if(
+      context.goal
+    ){
+
+      text +=
+        ` O objetivo imediato permanece: ${context.goal.title}.`
+
+    }
+
+    // ======================================
+    // Consequências
+    // ======================================
+
+    if(
+      context.story.currentSituation
+    ){
+
+      text +=
+        ` Esta situação pode alterar os próximos acontecimentos.`
+
+    }
+
+    // ======================================
+    // Continuidade
+    // ======================================
+
+    if(
+      context.story.previousSummary
+    ){
+
+      text =
+        `${context.story.previousSummary}\n\n${text}`
+
+    }
+
+    // ======================================
+    // Transformação de estilo
+    // ======================================
 
     const prompt =
       StyleTransformerEngine.apply(
+
         text,
+
         style,
+
       )
 
-
+    // ======================================
+    // Resultado
+    // ======================================
 
     return {
 
@@ -106,8 +187,7 @@ export class NarrativeComposer {
 
       style,
 
-
-      writerHints: {
+      writerHints:{
 
         firstPerson:
           context.firstPerson,
