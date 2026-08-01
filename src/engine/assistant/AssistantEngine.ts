@@ -11,6 +11,10 @@ import type {
 
 import { SummaryEngine } from "./summary/SummaryEngine"
 
+import {
+  NarrativeSummaryComposer,
+} from "./summary/NarrativeSummaryComposer"
+
 import { SuggestionEngine } from "./suggestions/SuggestionEngine"
 
 import { EventSuggestionEngine } from "./suggestions/EventSuggestionEngine"
@@ -113,12 +117,25 @@ export class AssistantEngine {
     narrativeState,
   )
 
+// ======================================
+// Resultado do assistente
+// ======================================
 
-    // ======================================
-    // Resultado do assistente
-    // ======================================
+const summaryData =
 
-    return {
+  SummaryEngine.build(
+    analysis,
+  )
+
+
+const summary =
+
+  NarrativeSummaryComposer.compose(
+    summaryData,
+  )
+
+
+return {
 
   // ======================================
   // Resumo
@@ -126,9 +143,7 @@ export class AssistantEngine {
 
   summary:
 
-    SummaryEngine.build(
-      analysis,
-    ),
+  summary,
 
 
   // ======================================
