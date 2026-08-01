@@ -1,22 +1,17 @@
 import type {
- SummaryData,
+  SummaryData,
 } from "./SummaryData"
-
-
-
 
 
 export class NarrativeSummaryComposer {
 
 
-
 static compose(
- data:SummaryData,
+  data:SummaryData,
 ):string{
 
 
  const paragraphs:string[]=[]
-
 
 
 
@@ -28,53 +23,89 @@ static compose(
  if(data.location){
 
 
- paragraphs.push(
+  paragraphs.push(
 
- `A campanha atravessa um momento decisivo em ${data.location}.`
+   `A campanha atravessa um momento decisivo em ${this.capitalize(data.location)}, onde acontecimentos recentes começam a transformar profundamente o destino da jornada.`
 
- )
-
-
+  )
 
  }
 
 
 
 
-
-
  // ==================================
- // Eventos principais
+ // Eventos importantes
  // ==================================
 
 
- const important =
-   data.majorEvents.filter(
+ const events =
+   data.majorEvents
+     .filter(
+       event =>
+        event.importance !== "low"
+     )
+
+
+
+ const deaths =
+   events.filter(
      event =>
-       event.importance !== "low"
+      event.type === "death"
    )
 
 
 
+ const revelations =
+   events.filter(
+     event =>
+      event.type === "prophecy" ||
+      event.type === "discovery"
+   )
+
+
+
+ const relationships =
+   events.filter(
+     event =>
+      event.type === "relationship"
+   )
+
+
+
+ const dialogues =
+   events.filter(
+     event =>
+      event.type === "dialogue"
+   )
+
+
+
+
+
+ // ==================================
+ // Perdas
+ // ==================================
+
+
  if(
-   important.length
+  deaths.length
  ){
 
 
- paragraphs.push(
+  paragraphs.push(
 
- this.composeEvents(
-   important,
- )
+   deaths
+    .map(
+     event =>
+      `${event.description}. Essa perda representa uma ruptura profunda na história, alterando alianças, objetivos e o caminho daqueles que permanecem na jornada.`
+    )
+    .join(" ")
 
- )
+  )
 
 
  }
-
-
-
-
 
 
 
@@ -85,22 +116,24 @@ static compose(
 
 
  if(
-   data.revelations.length
+  revelations.length
  ){
 
 
- paragraphs.push(
+  paragraphs.push(
 
- `Novas revelações surgiram: ${data.revelations.join(", ")}.`
+   `Novas revelações surgiram durante a jornada: ${
+    this.unique(
+      revelations.map(
+       e=>e.description
+      )
+    ).join(", ")
+   }. Esses acontecimentos sugerem que forças maiores podem estar conectadas ao destino dos personagens.`
 
- )
+  )
 
 
  }
-
-
-
-
 
 
 
@@ -112,15 +145,15 @@ static compose(
 
 
  if(
-   data.relationships.length
+  relationships.length
  ){
 
 
- paragraphs.push(
+  paragraphs.push(
 
- `Os vínculos entre os personagens passaram por mudanças importantes, podendo criar novas alianças ou futuros conflitos.`
+   `Os vínculos entre os personagens passaram por mudanças importantes, criando novas possibilidades de alianças, conflitos e escolhas difíceis.`
 
- )
+  )
 
 
  }
@@ -128,7 +161,24 @@ static compose(
 
 
 
+ // ==================================
+ // Diálogo
+ // ==================================
 
+
+ if(
+  dialogues.length
+ ){
+
+
+  paragraphs.push(
+
+   `Conversas importantes revelaram novas perspectivas entre os envolvidos, trazendo informações capazes de influenciar os próximos acontecimentos.`
+
+  )
+
+
+ }
 
 
 
@@ -139,21 +189,20 @@ static compose(
 
 
  if(
-   data.consequences.length
+  data.consequences.length
  ){
 
 
- paragraphs.push(
+  paragraphs.push(
 
- data.consequences.join(" ")
+   this.unique(
+    data.consequences
+   ).join(" ")
 
- )
+  )
 
 
  }
-
-
-
 
 
 
@@ -164,15 +213,15 @@ static compose(
 
 
  if(
-   data.characters.length
+  data.characters.length
  ){
 
 
- paragraphs.push(
+  paragraphs.push(
 
- `Entre os personagens envolvidos estão ${data.characters.slice(0,4).join(", ")}.`
+   `Entre os personagens envolvidos estão ${data.characters.slice(0,4).join(", ")}, cujas decisões poderão definir o futuro da campanha.`
 
- )
+  )
 
 
  }
@@ -181,9 +230,8 @@ static compose(
 
 
 
-
  return paragraphs.join(
-   "\n\n",
+  "\n\n"
  )
 
 
@@ -195,61 +243,35 @@ static compose(
 
 
 
+private static unique(
+ values:string[],
+):string[]{
 
 
-private static composeEvents(
- events:SummaryData["majorEvents"],
+ return [
+  ...new Set(
+   values
+  )
+ ]
+
+}
+
+
+
+
+
+
+
+private static capitalize(
+ value:string,
 ):string{
 
 
- return events
-   .map(event=>{
-
-
-    switch(event.type){
-
-
-    case "death":
-
-      return (
-
-      `${event.description} Essa perda representa uma ruptura significativa nos acontecimentos atuais.`
-
-      )
-
-
-
-    case "prophecy":
-
-      return (
-
-      `${event.description} O destino dos personagens parece estar ligado a forças maiores.`
-
-      )
-
-
-
-    case "dialogue":
-
-      return (
-
-      `${event.description} Esse momento revelou novas perspectivas entre os envolvidos.`
-
-      )
-
-
-
-    default:
-
-      return event.description
-
-
-    }
-
-
-   })
-
-   .join(" ")
+ return (
+  value.charAt(0).toUpperCase()
+  +
+  value.slice(1)
+ )
 
 
 }

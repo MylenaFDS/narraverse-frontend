@@ -12,6 +12,7 @@ import type {
   SummaryData,
 } from "./SummaryData"
 
+
 import type {
   SummaryEvent,
 } from "./SummaryEvent"
@@ -53,7 +54,7 @@ static build(
 
 
     relationships:
-      this.extractByType(
+      this.extractUniqueDescriptions(
         analysis.events,
         "relationship",
       ),
@@ -68,10 +69,10 @@ static build(
 
 
     conflicts:
-      this.extractByType(
-        analysis.events,
-        "attack",
-      ),
+  this.extractUniqueDescriptions(
+    analysis.events,
+    "combat",
+  ),
 
 
 
@@ -107,7 +108,7 @@ static build(
 
 
 // ==================================
-// Eventos
+// Eventos principais
 // ==================================
 
 
@@ -120,26 +121,17 @@ private static extractEvents(
     new Map<string,SummaryEvent>()
 
 
+  const allowed = [
+  "combat",
+  "death",
+  "relationship",
+  "dialogue",
+  "quest",
+  "discovery",
+  "prophecy",
+  "emotion",
+] as SummaryEvent["type"][]
 
-  const allowedTypes:SummaryEvent["type"][] = [
-
-    "combat",
-
-    "death",
-
-    "relationship",
-
-    "dialogue",
-
-    "quest",
-
-    "discovery",
-
-    "prophecy",
-
-    "emotion",
-
-  ]
 
 
 
@@ -149,7 +141,7 @@ private static extractEvents(
 
 
     if(
-      !allowedTypes.includes(
+      !allowed.includes(
         event.type as SummaryEvent["type"],
       )
     ){
@@ -160,13 +152,22 @@ private static extractEvents(
 
 
 
-    const summaryEventType =
+    const type =
       event.type as SummaryEvent["type"]
 
 
 
+
+    const normalized =
+      this.normalizeDescription(
+        event.description,
+      )
+
+
+
     const key =
-      `${summaryEventType}-${event.description}`
+      `${type}-${normalized}`
+
 
 
 
@@ -180,19 +181,17 @@ private static extractEvents(
 
 
 
+
     unique.set(
 
       key,
 
       {
 
-        type:
-          summaryEventType,
-
+        type,
 
         description:
-          event.description,
-
+          normalized,
 
         importance:
           this.calculateImportance(
@@ -205,6 +204,7 @@ private static extractEvents(
 
 
   }
+
 
 
 
@@ -223,28 +223,39 @@ private static extractEvents(
 
 
 
-private static extractByType(
+// ==================================
+// Remover duplicados
+// ==================================
+
+
+private static extractUniqueDescriptions(
  events:StoryEvent[],
  type:StoryEvent["type"],
 ):string[]{
 
 
- return events
 
-   .filter(
-     event =>
-       event.type === type
+ return [
+
+   ...new Set(
+
+    events
+
+    .filter(
+      event =>
+        event.type === type
+    )
+
+    .map(
+      event =>
+        this.normalizeDescription(
+          event.description,
+        )
+    )
+
    )
 
-   .map(
-     event =>
-       event.description
-   )
-
-   .filter(
-     (value,index,array)=>
-       array.indexOf(value) === index
-   )
+ ]
 
 
 }
@@ -255,6 +266,11 @@ private static extractByType(
 
 
 
+
+
+// ==================================
+// Revelações
+// ==================================
 
 
 private static extractRevelations(
@@ -262,20 +278,43 @@ private static extractRevelations(
 ):string[]{
 
 
- return analysis.events
+ const revelations =
 
-   .filter(
-     event =>
-       event.type === "prophecy"
-       ||
-       event.type === "discovery"
+ analysis.events
+
+ .filter(
+
+  event =>
+
+   event.type === "prophecy"
+
+   ||
+
+   event.type === "discovery"
+
+ )
+
+ .map(
+
+  event =>
+
+   this.normalizeDescription(
+    event.description,
    )
 
-   .map(
-     event =>
-       event.description
-   )
+ )
 
+
+
+
+
+ return [
+
+  ...new Set(
+    revelations
+  )
+
+ ]
 
 }
 
@@ -285,6 +324,11 @@ private static extractRevelations(
 
 
 
+
+
+// ==================================
+// Consequências
+// ==================================
 
 
 private static generateConsequences(
@@ -297,37 +341,49 @@ private static generateConsequences(
 
 
  if(
-   analysis.events.some(
-     e =>
-       e.type==="death"
-   )
+
+  analysis.events.some(
+
+   event =>
+    event.type==="death"
+
+  )
+
  ){
 
-   consequences.push(
+  consequences.push(
 
-     "A perda de um personagem importante alterou o equilíbrio da história."
+   "A perda de um personagem importante provocou uma mudança irreversível nos caminhos da campanha."
 
-   )
+  )
 
  }
 
 
 
  if(
-   analysis.unresolvedThreads.length
+
+  analysis.unresolvedThreads.length
+
  ){
 
-   consequences.push(
+  consequences.push(
 
-     "Existem acontecimentos pendentes que podem influenciar o futuro da campanha."
+   "Existem mistérios e acontecimentos pendentes que podem influenciar os próximos capítulos."
 
-   )
+  )
 
  }
 
 
 
- return consequences
+ return [
+
+  ...new Set(
+    consequences
+  )
+
+ ]
 
 
 }
@@ -338,6 +394,11 @@ private static generateConsequences(
 
 
 
+
+
+// ==================================
+// Importância
+// ==================================
 
 
 private static calculateImportance(
@@ -356,6 +417,7 @@ private static calculateImportance(
       return "high"
 
 
+
     case "relationship":
       return "medium"
 
@@ -364,10 +426,56 @@ private static calculateImportance(
       return "medium"
 
 
+    case "dialogue":
+      return "medium"
+
+
+
     default:
       return "low"
 
+
   }
+
+
+}
+
+
+
+
+
+
+
+
+
+// ==================================
+// Limpeza narrativa
+// ==================================
+
+
+private static normalizeDescription(
+ text:string,
+):string{
+
+
+ return text
+
+  .replace(
+    /\.$/,
+    "",
+  )
+
+  .replace(
+    /^Local importante identificado:\s*/i,
+    "",
+  )
+
+  .replace(
+    /^Um diálogo importante ocorreu\.\s*/i,
+    "",
+  )
+
+  .trim()
 
 
 }
