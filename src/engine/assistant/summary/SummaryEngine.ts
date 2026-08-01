@@ -6,20 +6,27 @@ import type {
   StoryEvent,
 } from "../state/events/StoryEvent"
 
+
+
 export class SummaryEngine {
+
 
   static build(
     analysis: StoryAnalysis,
   ): string {
 
-    const sections: string[] = []
+
+    const sections:string[] = []
+
+
 
     const summary =
       this.summarizeEvents(
         analysis,
       )
 
-    if (summary) {
+
+    if(summary){
 
       sections.push(
         summary,
@@ -27,12 +34,16 @@ export class SummaryEngine {
 
     }
 
+
+
+
     const world =
       this.summarizeWorld(
         analysis,
       )
 
-    if (world) {
+
+    if(world){
 
       sections.push(
         world,
@@ -40,12 +51,17 @@ export class SummaryEngine {
 
     }
 
+
+
+
+
     const characters =
       this.summarizeCharacters(
         analysis,
       )
 
-    if (characters) {
+
+    if(characters){
 
       sections.push(
         characters,
@@ -53,12 +69,17 @@ export class SummaryEngine {
 
     }
 
+
+
+
+
     const objectives =
       this.summarizeObjectives(
         analysis,
       )
 
-    if (objectives) {
+
+    if(objectives){
 
       sections.push(
         objectives,
@@ -66,12 +87,17 @@ export class SummaryEngine {
 
     }
 
+
+
+
+
     const mysteries =
       this.summarizeMysteries(
         analysis,
       )
 
-    if (mysteries) {
+
+    if(mysteries){
 
       sections.push(
         mysteries,
@@ -79,9 +105,13 @@ export class SummaryEngine {
 
     }
 
-    if (
+
+
+
+
+    if(
       sections.length === 0
-    ) {
+    ){
 
       return (
         "Nenhum acontecimento relevante foi registrado até o momento."
@@ -89,228 +119,409 @@ export class SummaryEngine {
 
     }
 
+
+
     return sections.join(
       " ",
     )
 
   }
 
+
+
+
+
+
+
+
   // ==================================
   // Síntese narrativa principal
   // ==================================
 
+
   private static summarizeEvents(
-    analysis: StoryAnalysis,
-  ): string {
+    analysis:StoryAnalysis,
+  ):string{
+
 
     const events =
       analysis.events
 
-    if (
+
+
+    if(
       events.length === 0
-    ) {
+    ){
 
       return ""
 
     }
 
-    const text:string[] = []
 
-    const death =
-      this.find(
-        events,
-        "death",
-      )
 
-    const attack =
-      this.find(
-        events,
-        "attack",
-      )
 
-    const dialogue =
-      this.find(
-        events,
-        "dialogue",
-      )
+    const sentences:string[] = []
 
-    const relationship =
-      this.find(
-        events,
-        "relationship",
-      )
 
-    const prophecy =
-      this.find(
-        events,
-        "prophecy",
-      )
 
-    const quest =
-      this.find(
-        events,
-        "quest",
-      )
+    const handlers:
 
-    const discovery =
-      this.find(
-        events,
-        "discovery",
-      )
+    Partial<
 
-    const emotion =
-      this.find(
-        events,
-        "emotion",
-      )
+      Record<
+        StoryEvent["type"],
+        (event:StoryEvent)=>string
+      >
 
-    // ==========================
-    // Morte
-    // ==========================
+    >
 
-    if (
-      death
-    ) {
+  = {
 
-      text.push(
-        death.description,
-      )
 
-    }
+    death:
+      event =>
+        this.transformDeath(
+          event.description,
+        ),
 
-    // ==========================
-    // Combate
-    // ==========================
 
-    if (
-      attack
-    ) {
 
-      text.push(
-        attack.description,
-      )
+    attack:
+      event =>
+        this.transformConflict(
+          event.description,
+        ),
 
-    }
 
-    // ==========================
-    // Diálogo
-    // ==========================
 
-    if (
-      dialogue
-    ) {
+    dialogue:
+      event =>
+        this.transformDialogue(
+          event.description,
+        ),
 
-      text.push(
-        dialogue.description,
-      )
 
-    }
 
-    // ==========================
-    // Relações
-    // ==========================
+    relationship:
+      event =>
+        this.transformRelationship(
+          event.description,
+        ),
 
-    if (
-      relationship
-    ) {
 
-      text.push(
-        relationship.description,
-      )
 
-    }
+    prophecy:
+      event =>
+        this.transformProphecy(
+          event.description,
+        ),
 
-    // ==========================
-    // Descoberta
-    // ==========================
 
-    if (
-      discovery
-    ) {
 
-      text.push(
-        discovery.description,
-      )
+    discovery:
+      event =>
+        this.transformDiscovery(
+          event.description,
+        ),
+
+
+
+    emotion:
+      event =>
+        this.transformEmotion(
+          event.description,
+        ),
+
+
+
+    quest:
+      event =>
+        this.transformQuest(
+          event.description,
+        ),
+
+
+  }
+
+
+
+
+
+
+
+    for(
+      const event of events
+    ){
+
+
+      const handler =
+        handlers[event.type]
+
+
+
+      if(handler){
+
+        sentences.push(
+          handler(event),
+        )
+
+      }
 
     }
 
-    // ==========================
-    // Emoção
-    // ==========================
 
-    if (
-      emotion
-    ) {
 
-      text.push(
-        emotion.description,
-      )
 
-    }
 
-    // ==========================
-    // Profecia
-    // ==========================
-
-    if (
-      prophecy
-    ) {
-
-      text.push(
-        prophecy.description,
-      )
-
-    }
-
-    // ==========================
-    // Missão
-    // ==========================
-
-    if (
-      quest
-    ) {
-
-      text.push(
-        quest.description,
-      )
-
-    }
-
-    return text.join(
+    return sentences.join(
       " ",
     )
 
   }
 
+
+
+
+
+
+
+
+
+  // ==================================
+  // Interpretação narrativa
+  // ==================================
+
+
+  private static transformDeath(
+    description:string,
+  ):string{
+
+
+    return (
+
+      `${description}. `
+      +
+      `Essa perda representa uma ruptura significativa na história, `
+      +
+      `alterando os caminhos daqueles que continuam a jornada.`
+
+    )
+
+  }
+
+
+
+
+
+
+
+  private static transformConflict(
+    description:string,
+  ):string{
+
+
+    return (
+
+      `${description}. `
+      +
+      `O conflito aumenta a tensão da narrativa e força os personagens `
+      +
+      `a enfrentar novos riscos e decisões difíceis.`
+
+    )
+
+  }
+
+
+
+
+
+
+
+  private static transformRelationship(
+    description:string,
+  ):string{
+
+
+    return (
+
+      `${description}. `
+      +
+      `Essa mudança emocional pode fortalecer alianças, criar conflitos `
+      +
+      `ou influenciar escolhas futuras.`
+
+    )
+
+  }
+
+
+
+
+
+
+
+  private static transformDialogue(
+    description:string,
+  ):string{
+
+
+    return (
+
+      `${description}. `
+      +
+      `O diálogo revelou novas perspectivas e trouxe maior compreensão `
+      +
+      `sobre os envolvidos e seus objetivos.`
+
+    )
+
+  }
+
+
+
+
+
+
+
+  private static transformProphecy(
+    description:string,
+  ):string{
+
+
+    return (
+
+      `${description}. `
+      +
+      `A revelação sugere que os acontecimentos atuais podem fazer parte `
+      +
+      `de um destino maior ainda em desenvolvimento.`
+
+    )
+
+  }
+
+
+
+
+
+
+
+  private static transformDiscovery(
+    description:string,
+  ):string{
+
+
+    return (
+
+      `${description}. `
+      +
+      `Essa descoberta adiciona novas informações capazes de mudar `
+      +
+      `o rumo dos próximos acontecimentos.`
+
+    )
+
+  }
+
+
+
+
+
+
+
+  private static transformEmotion(
+    description:string,
+  ):string{
+
+
+    return (
+
+      `${description}. `
+      +
+      `O estado emocional presente influencia diretamente o tom `
+      +
+      `e as consequências da cena.`
+
+    )
+
+  }
+
+
+
+
+
+
+
+  private static transformQuest(
+    description:string,
+  ):string{
+
+
+    return (
+
+      `${description}. `
+      +
+      `Esse objetivo direciona os próximos passos da jornada `
+      +
+      `e estabelece um novo caminho para os personagens.`
+
+    )
+
+  }
+
+
+
+
+
+
+
+
+
   // ==================================
   // Mundo
   // ==================================
+
 
   private static summarizeWorld(
     analysis:StoryAnalysis,
   ):string{
 
+
     const text:string[] = []
+
+
 
     if(
       analysis.currentLocation
     ){
 
       text.push(
-        `A cena acontece em ${analysis.currentLocation}.`,
+
+        `A cena acontece em ${analysis.currentLocation}, um local que influencia diretamente os acontecimentos atuais.`
+
       )
 
     }
+
+
+
+
 
     if(
       analysis.sceneMood
     ){
 
       text.push(
-        `O clima predominante é ${analysis.sceneMood}.`,
+
+        `O clima predominante é ${analysis.sceneMood}, refletindo o tom emocional da narrativa.`
+
       )
 
     }
+
+
+
 
     return text.join(
       " ",
@@ -318,13 +529,23 @@ export class SummaryEngine {
 
   }
 
+
+
+
+
+
+
+
+
   // ==================================
   // Personagens
   // ==================================
 
+
   private static summarizeCharacters(
     analysis:StoryAnalysis,
   ):string{
+
 
     if(
       analysis.activeCharacters.length === 0
@@ -334,36 +555,59 @@ export class SummaryEngine {
 
     }
 
+
+
+
     if(
       analysis.activeCharacters.length === 1
     ){
 
       return (
+
         `${analysis.activeCharacters[0]} permanece no centro dos acontecimentos.`
+
       )
 
     }
 
+
+
+
+
     const names =
-      analysis.activeCharacters
-        .slice(
-          0,
-          4,
-        )
+      analysis.activeCharacters.slice(
+        0,
+        4,
+      )
+
+
+
 
     return (
-      `Os principais envolvidos são ${names.join(", ")}.`
+
+      `Os principais envolvidos são ${names.join(", ")}, cujas decisões podem influenciar o destino da campanha.`
+
     )
 
   }
+
+
+
+
+
+
+
+
 
   // ==================================
   // Objetivos
   // ==================================
 
+
   private static summarizeObjectives(
     analysis:StoryAnalysis,
   ):string{
+
 
     if(
       analysis.activeObjectives.length === 0
@@ -373,41 +617,69 @@ export class SummaryEngine {
 
     }
 
+
+
+
+
     return (
-      `O objetivo principal continua sendo ${analysis.activeObjectives[0]}.`
+
+      `O objetivo principal atual é ${analysis.activeObjectives[0]}, guiando os próximos passos da narrativa.`
+
     )
 
   }
+
+
+
+
+
+
+
+
 
   // ==================================
   // Mistérios
   // ==================================
 
+
   private static summarizeMysteries(
     analysis:StoryAnalysis,
   ):string{
 
+
     const text:string[] = []
 
+
+
     if(
-  analysis.unresolvedThreads.length
-){
+      analysis.unresolvedThreads.length > 0
+    ){
 
-  text.push(
-    `${analysis.unresolvedThreads.length} acontecimentos ainda aguardam uma resolução.`,
-  )
+      text.push(
 
-}
+        `${analysis.unresolvedThreads.length} acontecimentos permanecem sem resolução e podem influenciar o futuro da história.`
 
-if(
-  analysis.unansweredQuestions.length
-){
+      )
 
-  text.push(
-    `${analysis.unansweredQuestions.length} perguntas permanecem sem resposta.`,
-  )
+    }
 
-}
+
+
+
+    if(
+      analysis.unansweredQuestions.length > 0
+    ){
+
+      text.push(
+
+        `${analysis.unansweredQuestions.length} perguntas continuam sem resposta, mantendo mistérios em aberto.`
+
+      )
+
+    }
+
+
+
 
     return text.join(
       " ",
@@ -415,20 +687,15 @@ if(
 
   }
 
-  // ==================================
-  // Helpers
-  // ==================================
 
-  private static find(
-    events:StoryEvent[],
-    type:StoryEvent["type"],
-  ){
 
-    return events.find(
-      event =>
-        event.type === type,
-    )
 
-  }
+
+
+
+
+
+  
+
 
 }

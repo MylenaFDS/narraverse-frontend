@@ -3,6 +3,7 @@ import type {
 } from "../../engine/assistant/AssistantResult"
 
 
+
 interface Props {
 
   open:boolean
@@ -12,6 +13,8 @@ interface Props {
   result:AssistantResult | null
 
 }
+
+
 
 
 
@@ -71,11 +74,6 @@ export default function AssistantModal({
       >
 
 
-        {/* =========================
-            Header
-        ========================= */}
-
-
         <div
           className="
             flex
@@ -116,7 +114,7 @@ export default function AssistantModal({
               "
             >
 
-              Análise da campanha e próximos caminhos narrativos
+              Observação da campanha, análise do mundo e possíveis destinos narrativos.
 
             </p>
 
@@ -159,25 +157,158 @@ export default function AssistantModal({
 
 
 
+
+
           {/* =========================
-              Resumo
+              Resumo da campanha
           ========================= */}
 
 
           <Section
+
             title="📖 Resumo da campanha"
+
           >
 
-            <p
-              className="
-                leading-relaxed
-                text-neutral-200
-              "
-            >
+            <Card>
 
-              {result.summary || "Nenhum resumo disponível."}
 
-            </p>
+              <div
+                className="
+                  space-y-5
+                "
+              >
+
+
+                <div
+                  className="
+                    flex
+                    items-start
+                    gap-3
+                  "
+                >
+
+                  <span
+                    className="
+                      text-3xl
+                    "
+                  >
+
+                    📜
+
+                  </span>
+
+
+
+                  <p
+                    className="
+                      leading-relaxed
+                      text-neutral-200
+                    "
+                  >
+
+                    {
+                      result.summary ||
+                      "A campanha ainda está em seus primeiros momentos. O mundo aguarda pelos acontecimentos que irão moldar seu destino."
+                    }
+
+                  </p>
+
+
+                </div>
+
+
+
+
+
+                <div
+                  className="
+                    border-t
+                    border-neutral-800
+                    pt-4
+                    grid
+                    grid-cols-2
+                    md:grid-cols-4
+                    gap-3
+                  "
+                >
+
+
+                  <SummaryMetric
+
+                    icon="🎭"
+
+                    label="Atmosfera"
+
+                    value={
+                      result.sceneMood ||
+                      "Indefinida"
+                    }
+
+                  />
+
+
+
+                  <SummaryMetric
+
+                    icon="⚔️"
+
+                    label="Conflitos"
+
+                    value={
+                      String(
+                        result.activeConflicts?.length ?? 0
+                      )
+                    }
+
+                  />
+
+
+
+                  <SummaryMetric
+
+                    icon="🔮"
+
+                    label="Mistérios"
+
+                    value={
+                      String(
+                        result.unresolvedThreads?.length ?? 0
+                      )
+                    }
+
+                  />
+
+
+
+                  <SummaryMetric
+
+                    icon="👥"
+
+                    label="Personagens"
+
+                    value={
+                      String(
+                        (
+                          result.aliveCharacters?.length ?? 0
+                        )
+                        +
+                        (
+                          result.deadCharacters?.length ?? 0
+                        )
+                      )
+                    }
+
+                  />
+
+
+                </div>
+
+
+              </div>
+
+
+            </Card>
 
 
           </Section>
@@ -186,45 +317,64 @@ export default function AssistantModal({
 
 
 
+
+
+
           {/* =========================
-              Estado atual
+              Situação atual
           ========================= */}
 
 
           <Section
+
             title="🎭 Situação atual"
+
           >
 
             <Card>
 
-              <p>
 
-                {result.currentSituation}
+              <p
+                className="
+                  leading-relaxed
+                  text-neutral-200
+                "
+              >
+
+                {
+                  result.currentSituation ||
+                  "A situação atual ainda não foi definida."
+                }
 
               </p>
+
 
 
               <p
                 className="
                   mt-3
-                  text-neutral-300
+                  text-neutral-400
                 "
               >
 
-                🌫️ Clima:
+                🌫️ Estado emocional da cena:
 
                 {" "}
 
                 <span
                   className="
-                    font-semibold
                     text-white
+                    font-semibold
                   "
                 >
 
-                  {result.sceneMood}
+                  {
+                    result.sceneMood ||
+                    "Desconhecido"
+                  }
 
                 </span>
+
 
               </p>
 
@@ -238,19 +388,20 @@ export default function AssistantModal({
 
 
 
-          {/* =========================
-              Sugestões
-          ========================= */}
+
 
 
           <Section
-            title="💡 O que fazer agora"
-          >
 
+            title="💡 Possíveis caminhos"
+
+          >
 
             <SuggestionList
 
-              items={result.suggestions}
+              items={
+                result.suggestions
+              }
 
             />
 
@@ -261,21 +412,19 @@ export default function AssistantModal({
 
 
 
-          {/* =========================
-              Eventos possíveis
-          ========================= */}
 
 
           <Section
 
-            title="🌌 Eventos possíveis"
+            title="🌌 Eventos que podem surgir"
 
           >
 
-
             <EventList
 
-              items={result.possibleEvents}
+              items={
+                result.possibleEvents
+              }
 
             />
 
@@ -286,9 +435,6 @@ export default function AssistantModal({
 
 
 
-          {/* =========================
-              Conflitos
-          ========================= */}
 
 
           <Section
@@ -312,14 +458,11 @@ export default function AssistantModal({
 
 
 
-          {/* =========================
-              Pontas soltas
-          ========================= */}
 
 
           <Section
 
-            title="🔮 Pontas soltas"
+            title="🔮 Mistérios e pontas soltas"
 
           >
 
@@ -338,9 +481,6 @@ export default function AssistantModal({
 
 
 
-          {/* =========================
-              Personagens
-          ========================= */}
 
 
           <div
@@ -351,10 +491,9 @@ export default function AssistantModal({
             "
           >
 
-
             <Section
 
-              title="🟢 Personagens vivos"
+              title="🟢 Personagens presentes"
 
             >
 
@@ -366,7 +505,6 @@ export default function AssistantModal({
 
               />
 
-
             </Section>
 
 
@@ -374,7 +512,7 @@ export default function AssistantModal({
 
             <Section
 
-              title="⚰️ Personagens mortos"
+              title="⚰️ Personagens perdidos"
 
             >
 
@@ -385,7 +523,6 @@ export default function AssistantModal({
                 }
 
               />
-
 
             </Section>
 
@@ -411,10 +548,6 @@ export default function AssistantModal({
 
 
 
-
-/* =====================================================
-   Section
-===================================================== */
 
 
 function Section({
@@ -444,7 +577,6 @@ function Section({
         className="
           text-lg
           font-bold
-          text-white
         "
       >
 
@@ -468,11 +600,6 @@ function Section({
 
 
 
-/* =====================================================
-   Card
-===================================================== */
-
-
 function Card({
 
   children,
@@ -487,17 +614,15 @@ function Card({
   return (
 
     <div
-
       className="
         bg-neutral-900
         border
         border-neutral-800
         rounded-xl
         p-4
-        transition
         hover:border-neutral-600
+        transition
       "
-
     >
 
       {children}
@@ -514,9 +639,84 @@ function Card({
 
 
 
-/* =====================================================
-   Sugestões
-===================================================== */
+function SummaryMetric({
+
+  icon,
+
+  label,
+
+  value,
+
+}:{
+
+  icon:string
+
+  label:string
+
+  value:string
+
+}){
+
+
+  return (
+
+    <div
+      className="
+        bg-neutral-950
+        rounded-lg
+        p-3
+        border
+        border-neutral-800
+      "
+    >
+
+      <div
+        className="
+          flex
+          items-center
+          gap-2
+          text-xs
+          uppercase
+          text-neutral-500
+        "
+      >
+
+        <span>
+          {icon}
+        </span>
+
+
+        {label}
+
+
+      </div>
+
+
+
+      <p
+        className="
+          text-white
+          font-bold
+          text-lg
+          mt-2
+        "
+      >
+
+        {value}
+
+      </p>
+
+
+    </div>
+
+  )
+
+}
+
+
+
+
+
 
 
 function SuggestionList({
@@ -552,19 +752,21 @@ function SuggestionList({
           (item,index)=>(
 
             <Card
+
               key={index}
+
             >
 
               <h4
                 className="
                   font-semibold
-                  text-white
                 "
               >
 
                 💡 {item.title}
 
               </h4>
+
 
 
               <p
@@ -597,12 +799,6 @@ function SuggestionList({
 
 
 
-
-
-
-/* =====================================================
-   Eventos
-===================================================== */
 
 
 function EventList({
@@ -654,6 +850,7 @@ function EventList({
               </h4>
 
 
+
               <p
                 className="
                   text-neutral-300
@@ -687,11 +884,6 @@ function EventList({
 
 
 
-/* =====================================================
-   Lista genérica
-===================================================== */
-
-
 function List({
 
   children,
@@ -723,11 +915,6 @@ function List({
 
 
 
-
-
-/* =====================================================
-   Lista simples
-===================================================== */
 
 
 function SimpleList({
@@ -796,11 +983,6 @@ function SimpleList({
 
 
 
-/* =====================================================
-   Empty State
-===================================================== */
-
-
 function Empty(){
 
 
@@ -813,7 +995,7 @@ function Empty(){
       "
     >
 
-      Nenhuma informação registrada.
+      Nenhuma informação narrativa registrada até o momento.
 
     </p>
 
