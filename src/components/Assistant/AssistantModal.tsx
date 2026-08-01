@@ -45,6 +45,7 @@ export default function AssistantModal({
         fixed
         inset-0
         bg-black/70
+        backdrop-blur-sm
         flex
         items-center
         justify-center
@@ -56,11 +57,11 @@ export default function AssistantModal({
 
       <div
         className="
-          bg-neutral-900
+          bg-neutral-950
           text-white
-          rounded-xl
+          rounded-2xl
           w-full
-          max-w-3xl
+          max-w-4xl
           max-h-[90vh]
           overflow-y-auto
           shadow-2xl
@@ -80,20 +81,47 @@ export default function AssistantModal({
             flex
             justify-between
             items-center
-            p-5
+            p-6
             border-b
             border-neutral-700
+            sticky
+            top-0
+            bg-neutral-950
+            z-10
           "
         >
 
-          <h2
-            className="
-              text-xl
-              font-bold
-            "
-          >
-            ✨ Assistente Narrativo
-          </h2>
+          <div>
+
+            <h2
+              className="
+                text-2xl
+                font-bold
+                flex
+                items-center
+                gap-2
+              "
+            >
+
+              ✨ Assistente Narrativo
+
+            </h2>
+
+
+            <p
+              className="
+                text-sm
+                text-neutral-400
+                mt-1
+              "
+            >
+
+              Análise da campanha e próximos caminhos narrativos
+
+            </p>
+
+          </div>
+
 
 
           <button
@@ -103,11 +131,16 @@ export default function AssistantModal({
             className="
               text-neutral-400
               hover:text-white
-              text-xl
+              text-3xl
+              transition
             "
 
+            aria-label="Fechar"
+
           >
+
             ×
+
           </button>
 
 
@@ -119,8 +152,8 @@ export default function AssistantModal({
 
         <div
           className="
-            p-5
-            space-y-6
+            p-6
+            space-y-8
           "
         >
 
@@ -135,9 +168,17 @@ export default function AssistantModal({
             title="📖 Resumo da campanha"
           >
 
-            <p>
-              {result.summary}
+            <p
+              className="
+                leading-relaxed
+                text-neutral-200
+              "
+            >
+
+              {result.summary || "Nenhum resumo disponível."}
+
             </p>
+
 
           </Section>
 
@@ -154,29 +195,44 @@ export default function AssistantModal({
             title="🎭 Situação atual"
           >
 
+            <Card>
 
-            <p>
-              {result.currentSituation}
-            </p>
+              <p>
+
+                {result.currentSituation}
+
+              </p>
 
 
-            <p
-              className="
-                mt-2
-                text-neutral-300
-              "
-            >
+              <p
+                className="
+                  mt-3
+                  text-neutral-300
+                "
+              >
 
-              Clima:
-              {" "}
-              {result.sceneMood}
+                🌫️ Clima:
 
-            </p>
+                {" "}
+
+                <span
+                  className="
+                    font-semibold
+                    text-white
+                  "
+                >
+
+                  {result.sceneMood}
+
+                </span>
+
+              </p>
+
+
+            </Card>
 
 
           </Section>
-
-
 
 
 
@@ -192,57 +248,14 @@ export default function AssistantModal({
           >
 
 
-            {
-              result.suggestions.length === 0
+            <SuggestionList
 
-              ?
+              items={result.suggestions}
 
-              <Empty/>
-
-              :
-
-              <List>
-
-                {
-                  result.suggestions.map(
-                    (item,index)=>(
-
-                      <Card
-                        key={index}
-                      >
-
-                        <h4
-                          className="
-                            font-semibold
-                          "
-                        >
-                          {item.title}
-                        </h4>
-
-
-                        <p
-                          className="
-                            text-neutral-300
-                          "
-                        >
-                          {item.description}
-                        </p>
-
-
-                      </Card>
-
-                    )
-                  )
-                }
-
-              </List>
-
-            }
+            />
 
 
           </Section>
-
-
 
 
 
@@ -254,64 +267,20 @@ export default function AssistantModal({
 
 
           <Section
+
             title="🌌 Eventos possíveis"
+
           >
 
 
-            {
-              result.possibleEvents.length === 0
+            <EventList
 
-              ?
+              items={result.possibleEvents}
 
-              <Empty/>
-
-              :
-
-              <List>
-
-                {
-                  result.possibleEvents.map(
-                    (event,index)=>(
-
-                      <Card
-                        key={index}
-                      >
-
-                        <h4
-                          className="
-                            font-semibold
-                          "
-                        >
-                          {event.title}
-                        </h4>
-
-
-                        <p
-                          className="
-                            text-neutral-300
-                          "
-                        >
-
-                          {event.description}
-
-                        </p>
-
-
-                      </Card>
-
-                    )
-                  )
-                }
-
-              </List>
-
-            }
+            />
 
 
           </Section>
-
-
-
 
 
 
@@ -323,9 +292,10 @@ export default function AssistantModal({
 
 
           <Section
-            title="⚔️ Conflitos ativos"
-          >
 
+            title="⚔️ Conflitos ativos"
+
+          >
 
             <SimpleList
 
@@ -342,17 +312,16 @@ export default function AssistantModal({
 
 
 
-
-
           {/* =========================
-              Pendências
+              Pontas soltas
           ========================= */}
 
 
           <Section
-            title="🔮 Pontas soltas"
-          >
 
+            title="🔮 Pontas soltas"
+
+          >
 
             <SimpleList
 
@@ -369,51 +338,59 @@ export default function AssistantModal({
 
 
 
-
-
-
           {/* =========================
               Personagens
           ========================= */}
 
 
-
-          <Section
-            title="🟢 Personagens vivos"
+          <div
+            className="
+              grid
+              md:grid-cols-2
+              gap-6
+            "
           >
 
 
-            <SimpleList
+            <Section
 
-              items={
-                result.aliveCharacters
-              }
+              title="🟢 Personagens vivos"
 
-            />
+            >
 
+              <SimpleList
 
-          </Section>
+                items={
+                  result.aliveCharacters
+                }
 
-
-
-
-
-
-          <Section
-            title="⚰️ Personagens mortos"
-          >
+              />
 
 
-            <SimpleList
-
-              items={
-                result.deadCharacters
-              }
-
-            />
+            </Section>
 
 
-          </Section>
+
+
+            <Section
+
+              title="⚰️ Personagens mortos"
+
+            >
+
+              <SimpleList
+
+                items={
+                  result.deadCharacters
+                }
+
+              />
+
+
+            </Section>
+
+
+          </div>
 
 
 
@@ -421,9 +398,7 @@ export default function AssistantModal({
         </div>
 
 
-
       </div>
-
 
 
     </div>
@@ -437,6 +412,9 @@ export default function AssistantModal({
 
 
 
+/* =====================================================
+   Section
+===================================================== */
 
 
 function Section({
@@ -456,14 +434,17 @@ function Section({
 
   return (
 
-    <section>
-
+    <section
+      className="
+        space-y-3
+      "
+    >
 
       <h3
         className="
           text-lg
           font-bold
-          mb-2
+          text-white
         "
       >
 
@@ -479,13 +460,17 @@ function Section({
 
   )
 
-
 }
 
 
 
 
 
+
+
+/* =====================================================
+   Card
+===================================================== */
 
 
 function Card({
@@ -502,11 +487,17 @@ function Card({
   return (
 
     <div
+
       className="
-        bg-neutral-800
-        rounded-lg
-        p-3
+        bg-neutral-900
+        border
+        border-neutral-800
+        rounded-xl
+        p-4
+        transition
+        hover:border-neutral-600
       "
+
     >
 
       {children}
@@ -515,6 +506,90 @@ function Card({
 
   )
 
+}
+
+
+
+
+
+
+
+/* =====================================================
+   Sugestões
+===================================================== */
+
+
+function SuggestionList({
+
+  items,
+
+}:{
+
+  items:AssistantResult["suggestions"]
+
+}){
+
+
+  if(
+    !items ||
+    items.length === 0
+  ){
+
+    return <Empty/>
+
+  }
+
+
+
+  return (
+
+    <List>
+
+      {
+
+        items.map(
+
+          (item,index)=>(
+
+            <Card
+              key={index}
+            >
+
+              <h4
+                className="
+                  font-semibold
+                  text-white
+                "
+              >
+
+                💡 {item.title}
+
+              </h4>
+
+
+              <p
+                className="
+                  text-neutral-300
+                  mt-2
+                "
+              >
+
+                {item.description}
+
+              </p>
+
+
+            </Card>
+
+          )
+
+        )
+
+      }
+
+    </List>
+
+  )
 
 }
 
@@ -522,6 +597,99 @@ function Card({
 
 
 
+
+
+
+/* =====================================================
+   Eventos
+===================================================== */
+
+
+function EventList({
+
+  items,
+
+}:{
+
+  items:AssistantResult["possibleEvents"]
+
+}){
+
+
+  if(
+    !items ||
+    items.length === 0
+  ){
+
+    return <Empty/>
+
+  }
+
+
+
+  return (
+
+    <List>
+
+      {
+
+        items.map(
+
+          (event,index)=>(
+
+            <Card
+
+              key={index}
+
+            >
+
+              <h4
+                className="
+                  font-semibold
+                "
+              >
+
+                🌌 {event.title}
+
+              </h4>
+
+
+              <p
+                className="
+                  text-neutral-300
+                  mt-2
+                "
+              >
+
+                {event.description}
+
+              </p>
+
+
+            </Card>
+
+          )
+
+        )
+
+      }
+
+
+    </List>
+
+  )
+
+}
+
+
+
+
+
+
+
+/* =====================================================
+   Lista genérica
+===================================================== */
 
 
 function List({
@@ -539,7 +707,7 @@ function List({
 
     <div
       className="
-        space-y-2
+        space-y-3
       "
     >
 
@@ -555,6 +723,11 @@ function List({
 
 
 
+
+
+/* =====================================================
+   Lista simples
+===================================================== */
 
 
 function SimpleList({
@@ -585,30 +758,35 @@ function SimpleList({
       className="
         list-disc
         pl-5
-        space-y-1
+        space-y-2
         text-neutral-300
       "
     >
 
       {
+
         items.map(
+
           (item,index)=>(
 
             <li
               key={index}
             >
+
               {item}
+
             </li>
 
           )
+
         )
+
       }
 
 
     </ul>
 
   )
-
 
 }
 
@@ -618,7 +796,13 @@ function SimpleList({
 
 
 
+/* =====================================================
+   Empty State
+===================================================== */
+
+
 function Empty(){
+
 
   return (
 
@@ -628,7 +812,9 @@ function Empty(){
         italic
       "
     >
+
       Nenhuma informação registrada.
+
     </p>
 
   )
