@@ -274,44 +274,49 @@ private static extractUniqueDescriptions(
 
 
 private static extractRevelations(
- analysis:StoryAnalysis,
+  analysis:StoryAnalysis,
 ):string[]{
-
-
- const revelations =
-
- analysis.events
-
- .filter(
-
-  event =>
-
-   event.type === "prophecy"
-
-   ||
-
-   event.type === "discovery"
-
- )
-
- .map(
-
-  event =>
-
-   this.normalizeDescription(
-    event.description,
-   )
-
- )
-
-
-
 
 
  return [
 
   ...new Set(
-    revelations
+
+   analysis.events
+
+    .filter(
+
+      event =>
+
+        event.type === "prophecy"
+
+        ||
+
+        (
+          event.type === "discovery"
+
+          &&
+
+          !event.description
+            .toLowerCase()
+            .startsWith(
+              "local importante"
+            )
+
+        )
+
+    )
+
+    .map(
+
+      event =>
+
+        this.normalizeDescription(
+          event.description,
+        )
+
+    )
+
   )
 
  ]
@@ -351,11 +356,12 @@ private static generateConsequences(
 
  ){
 
-  consequences.push(
 
-   "A perda de um personagem importante provocou uma mudança irreversível nos caminhos da campanha."
+   consequences.push(
+ "A ausência de personagens importantes continuará influenciando os próximos acontecimentos da campanha."
+)
 
-  )
+  
 
  }
 
