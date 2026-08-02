@@ -81,17 +81,7 @@ static compose(
 
 
 
- if(
-  data.relationships.length
- ){
 
-  paragraphs.push(
-
-   `Os vínculos entre os personagens passaram por transformações importantes, criando novas possibilidades de alianças, conflitos ou mudanças de perspectiva.`
-
-  )
-
- }
 
 
 
@@ -117,19 +107,22 @@ static compose(
 
 
  if(
-  data.consequences.length
- ){
+ data.consequences.length &&
+ !importantEvents.some(
+  event =>
+   event.type === "death"
+ )
+){
 
-  paragraphs.push(
+ paragraphs.push(
 
-   this.unique(
-    data.consequences,
-   )
-   .join(" ")
+  this.unique(
+   data.consequences,
+  ).join(" ")
 
-  )
+ )
 
- }
+}
 
 
 
@@ -237,7 +230,7 @@ private static composeOpening(
 // ======================================
 
 private static composeEvents(
- events:SummaryData["majorEvents"],
+  events:SummaryData["majorEvents"],
 ):string{
 
 
@@ -245,6 +238,8 @@ private static composeEvents(
 
 
   death:[] as string[],
+
+  betrayal:[] as string[],
 
   prophecy:[] as string[],
 
@@ -254,7 +249,13 @@ private static composeEvents(
 
   discovery:[] as string[],
 
+  combat:[] as string[],
+
   dialogue:[] as string[],
+
+  quest:[] as string[],
+
+  achievement:[] as string[],
 
   other:[] as string[],
 
@@ -269,80 +270,185 @@ private static composeEvents(
 
 
   const text =
-   this.cleanEvent(
-    event.description,
-   )
+
+    this.cleanEvent(
+      event.description,
+    )
 
 
 
   switch(event.type){
 
 
-   case "death":
+    // ==================================
+    // Perdas irreversíveis
+    // ==================================
 
-    groups.death.push(
-     text,
+    case "death":
+
+      groups.death.push(
+        text,
+      )
+
+      break
+
+
+
+    // ==================================
+    // Traições
+    // ==================================
+
+    case "betrayal":
+
+      groups.betrayal.push(
+        text,
+      )
+
+      break
+
+
+
+    // ==================================
+    // Revelações
+    // ==================================
+
+    case "prophecy":
+
+      groups.prophecy.push(
+        text,
+      )
+
+      break
+
+
+
+    // ==================================
+    // Alianças
+    // ==================================
+
+    case "alliance":
+
+      groups.alliance.push(
+        text,
+      )
+
+      break
+
+
+
+    // ==================================
+    // Relações
+    // ==================================
+
+    case "relationship":
+
+      groups.relationship.push(
+        text,
+      )
+
+      break
+
+
+
+    // ==================================
+    // Descobertas
+    // ==================================
+
+case "discovery": {
+
+  const ignoredLocations = [
+
+    "gondor",
+
+    "mordor",
+
+    "condado",
+
+    "rivendell",
+
+  ]
+
+
+
+  if(
+
+    text.length > 5
+
+    &&
+
+    !ignoredLocations.includes(
+      text.toLowerCase(),
     )
 
-    break
-
-
-
-   case "prophecy":
-
-    groups.prophecy.push(
-     text,
-    )
-
-    break
-
-
-
-   case "alliance":
-
-    groups.alliance.push(
-     text,
-    )
-
-    break
-
-
-
-   case "relationship":
-
-    groups.relationship.push(
-     text,
-    )
-
-    break
-
-
-
-   case "discovery":
+  ){
 
     groups.discovery.push(
-     text,
+      text,
     )
 
-    break
+  }
+
+
+  break
+
+}
+    // ==================================
+    // Conflitos
+    // ==================================
+
+    case "combat":
+
+      groups.combat.push(
+        text,
+      )
+
+      break
 
 
 
-   case "dialogue":
+    // ==================================
+    // Conversas
+    // ==================================
 
-    groups.dialogue.push(
-     text,
-    )
+    case "dialogue":
 
-    break
+      groups.dialogue.push(
+        text,
+      )
+
+      break
 
 
 
-   default:
+    // ==================================
+    // Progressão
+    // ==================================
 
-    groups.other.push(
-     text,
-    )
+    case "quest":
+
+      groups.quest.push(
+        text,
+      )
+
+      break
+
+
+
+    case "achievement":
+
+      groups.achievement.push(
+        text,
+      )
+
+      break
+
+
+
+    default:
+
+      groups.other.push(
+        text,
+      )
 
 
   }
@@ -358,6 +464,11 @@ private static composeEvents(
 
 
 
+
+
+ // ==================================
+ // Mortes
+ // ==================================
 
  if(
   groups.death.length
@@ -375,6 +486,30 @@ private static composeEvents(
 
 
 
+ // ==================================
+ // Traições
+ // ==================================
+
+ if(
+  groups.betrayal.length
+ ){
+
+  result.push(
+
+   `${this.unique(groups.betrayal).join(", ")}. Essa traição alterou a confiança entre os envolvidos e poderá gerar novos conflitos.`
+
+  )
+
+ }
+
+
+
+
+
+ // ==================================
+ // Profecias
+ // ==================================
+
  if(
   groups.prophecy.length
  ){
@@ -390,6 +525,10 @@ private static composeEvents(
 
 
 
+
+ // ==================================
+ // Alianças
+ // ==================================
 
  if(
   groups.alliance.length
@@ -407,6 +546,10 @@ private static composeEvents(
 
 
 
+ // ==================================
+ // Relações
+ // ==================================
+
  if(
   groups.relationship.length
  ){
@@ -422,6 +565,10 @@ private static composeEvents(
 
 
 
+
+ // ==================================
+ // Descobertas
+ // ==================================
 
  if(
   groups.discovery.length
@@ -439,13 +586,102 @@ private static composeEvents(
 
 
 
+ // ==================================
+ // Combates
+ // ==================================
+
  if(
-  groups.dialogue.length
+  groups.combat.length
  ){
 
   result.push(
 
-   `Conversas importantes revelaram novas perspectivas entre os envolvidos.`
+   `${this.unique(groups.combat).join(", ")}. Esses conflitos aumentaram a tensão da campanha e podem alterar os próximos acontecimentos.`
+
+  )
+
+ }
+
+
+
+
+
+ // ==================================
+ // Diálogos
+ // ==================================
+
+ if(
+  groups.dialogue.length
+ ){
+
+  const dialogues =
+ this.unique(
+  groups.dialogue,
+ )
+
+
+.filter(
+ text =>
+  text.length > 0
+)
+
+
+
+if(
+ dialogues.length
+){
+
+ result.push(
+
+  `${dialogues.join(", ")}. Essas conversas revelaram novas perspectivas entre os envolvidos.`
+
+ )
+
+}
+
+ }
+
+
+
+
+
+ // ==================================
+ // Missões
+ // ==================================
+
+ if(
+  groups.quest.length ||
+  groups.achievement.length
+ ){
+
+  result.push(
+
+   `Novos avanços foram realizados: ${this.unique([
+    ...groups.quest,
+    ...groups.achievement,
+   ]).join(", ")}.`
+
+  )
+
+ }
+
+
+
+
+
+ // ==================================
+ // Outros
+ // ==================================
+
+ if(
+  groups.other.length
+ ){
+
+  result.push(
+
+   this.unique(
+    groups.other,
+   ).join(", ")
 
   )
 
@@ -525,21 +761,59 @@ private static composeObjectives(
 // ======================================
 
 private static cleanEvent(
- text:string,
+  text:string,
 ):string{
 
 
  return text
 
-  .replace(
-   /^Um diálogo importante ocorreu\.?/i,
-   "",
-  )
+  // remove eventos genéricos de diálogo
 
   .replace(
-   /^Local importante identificado:\s*/i,
-   "",
+    /^Um diálogo importante ocorreu\.?/i,
+    "",
   )
+
+
+  // remove prefixos de localização
+
+  .replace(
+    /^Local importante identificado:\s*/i,
+    "",
+  )
+
+
+  // remove frases vazias de sistema
+
+  .replace(
+    /^Uma profecia ou destino foi revelado\.?/i,
+    "Uma profecia ou destino foi revelado",
+  )
+
+
+  // remove vírgulas antes de pontuação
+
+  .replace(
+    /,\s*\./g,
+    ".",
+  )
+
+
+  // remove espaços duplicados
+
+  .replace(
+    /\s+/g,
+    " ",
+  )
+
+
+  // remove pontos repetidos
+
+  .replace(
+    /\.{2,}/g,
+    ".",
+  )
+
 
   .trim()
 
@@ -559,19 +833,18 @@ private static cleanEvent(
 // ======================================
 
 private static unique(
- values:string[],
+  values:string[],
 ):string[]{
 
 
  return [
 
   ...new Set(
-
-   values
-
+    values,
   )
 
  ]
+
 
 }
 
@@ -582,6 +855,14 @@ private static unique(
 
 
 
+
+
+
+
+
+// ======================================
+// Capitalização
+// ======================================
 
 private static capitalize(
  value:string,
@@ -598,8 +879,8 @@ private static capitalize(
 
  )
 
-}
 
+}
 
 
 }
