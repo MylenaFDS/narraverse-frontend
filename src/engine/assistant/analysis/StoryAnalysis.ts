@@ -2,84 +2,88 @@ import type {
   StoryEvent,
 } from "../state/events/StoryEvent"
 
-
-
 export interface StoryAnalysis {
-
 
   // ======================================
   // Estado atual
   // ======================================
 
-  activeConflicts:string[]
+  activeConflicts: string[]
 
-  currentSituation:string
+  currentSituation: string
 
-  sceneMood:string
+  sceneMood: string
 
-
+  narrativeTension?: number
 
   // ======================================
   // Personagens
   // ======================================
 
-  activeCharacters:string[]
+  activeCharacters: string[]
 
-  deadCharacters:string[]
+  deadCharacters: string[]
 
-  focusedCharacter?:string
-
-
+  focusedCharacter?: string
 
   // ======================================
   // Histórico
   // ======================================
 
-  recentEvents:string[]
+  recentEvents: string[]
 
-  recentDialogue:string[]
+  recentDialogue: string[]
 
-  recentFacts:string[]
-
-
+  recentFacts: string[]
 
   // ======================================
   // Continuidade
   // ======================================
 
-  unresolvedThreads:string[]
+  unresolvedThreads: string[]
 
-  unansweredQuestions:string[]
-
-
+  unansweredQuestions: string[]
 
   // ======================================
   // Cenário
   // ======================================
 
-  currentLocation?:string
+  currentLocation?: string
 
-  discoveredLocations:string[]
+  discoveredLocations: string[]
 
-  topics:string[]
-
-
+  topics: string[]
 
   // ======================================
   // Objetivos
   // ======================================
 
-  activeObjectives:string[]
+  activeObjectives: string[]
 
-  activeQuests:string[]
-
-
+  activeQuests: string[]
 
   // ======================================
-  // Eventos reais
+  // Eventos estruturados
   // ======================================
 
-  events:StoryEvent[]
+  events: StoryEvent[]
 
+  // ======================================
+  // Estatísticas narrativas
+  // ======================================
+
+  eventCount: number
+
+  importantEventCount: number
+
+  hasDeaths: boolean
+
+  hasDialogue: boolean
+
+  hasCombat: boolean
+
+  hasRelationships: boolean
+
+  hasRevelations: boolean
 
 }

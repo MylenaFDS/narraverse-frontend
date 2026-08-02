@@ -2,39 +2,40 @@ import type {
   EventType,
 } from "../../types/EventType"
 
-
-
 export interface StoryEvent {
 
+  // ======================================
+  // Identificação
+  // ======================================
 
-  // ======================================
-  // Tipo do evento
-  // ======================================
+  id?: string
 
   type: EventType
 
-
-
   // ======================================
-  // Personagens envolvidos
+  // Personagem principal
   // ======================================
 
   actorId?: number
 
   actorName?: string
 
+  // ======================================
+  // Alvo
+  // ======================================
 
   targetId?: number
 
   targetName?: string
 
+  // ======================================
+  // Outros participantes
+  // ======================================
 
   participants?: string[]
 
-
-
   // ======================================
-  // Facções e mundo
+  // Mundo
   // ======================================
 
   faction?: string
@@ -43,78 +44,77 @@ export interface StoryEvent {
 
   item?: string
 
-
-
   // ======================================
-  // Estado emocional
+  // Emoções
   // ======================================
 
   emotion?: string
 
-
-
   // ======================================
-  // Importância narrativa
-  // ======================================
-
-  importance?: number
-
-  tags?: string[]
-
-
-
-  // ======================================
-  // Texto narrativo
+  // Narrativa
   // ======================================
 
   description: string
 
-
   consequence?: string
-
 
   sourceText?: string
 
-
+  summary?: string
 
   // ======================================
-  // Controle temporal
+  // Dramaturgia
+  // ======================================
+
+  importance?: number
+
+  dramaticWeight?: number
+
+  tensionDelta?: number
+
+  plotImpact?:
+    | "low"
+    | "medium"
+    | "high"
+
+  // ======================================
+  // Continuidade
+  // ======================================
+
+  createsThread?: boolean
+
+  resolvesThread?: boolean
+
+  opensMystery?: boolean
+
+  closesMystery?: boolean
+
+  // ======================================
+  // Consequências
+  // ======================================
+
+  consequences?: string[]
+
+  // ======================================
+  // Classificação
+  // ======================================
+
+  tags?: string[]
+
+  // ======================================
+  // Tempo
   // ======================================
 
   turnId?: number
 
   timestamp?: number
 
-
-
   // ======================================
-  // Sistema de reputação
+  // Reputação
   // ======================================
 
-
-  /**
-   * Quem sofreu alteração de reputação
-   *
-   * Ex:
-   * "Aragorn"
-   * "Casa Stark"
-   * "Reino de Gondor"
-   */
   reputationTarget?: string
 
-
-
-  /**
-   * Valor da mudança
-   *
-   * Positivo:
-   * +10 aliado
-   *
-   * Negativo:
-   * -20 inimigo
-   */
   reputationValue?: number
-
-
 
 }

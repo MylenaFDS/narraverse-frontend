@@ -7,27 +7,57 @@ import type {
 export interface SummaryData {
 
 
-  // ==================================
-  // Contexto da cena
-  // ==================================
+  // ======================================
+  // Identidade da cena
+  // ======================================
 
   location:string | null
 
   atmosphere:string | null
 
 
+  // ======================================
+  // Estado narrativo
+  // ======================================
 
-  // ==================================
-  // Eventos importantes
-  // ==================================
+  situation:string
+
+  tension:number
+
+  dominantEmotion?:string
+
+
+  // ======================================
+  // Estrutura dramática
+  // ======================================
+
+  storyPhase?:
+    | "opening"
+    | "development"
+    | "climax"
+    | "ending"
+
+
+  narrativeFocus?:
+    | "character"
+    | "conflict"
+    | "mystery"
+    | "exploration"
+    | "relationship"
+
+
+
+  // ======================================
+  // Eventos relevantes
+  // ======================================
 
   majorEvents:SummaryEvent[]
 
 
 
-  // ==================================
+  // ======================================
   // Desenvolvimento narrativo
-  // ==================================
+  // ======================================
 
   relationships:string[]
 
@@ -37,21 +67,45 @@ export interface SummaryData {
 
   objectives:string[]
 
+  quests:string[]
 
 
-  // ==================================
-  // Personagens envolvidos
-  // ==================================
+
+  // ======================================
+  // Personagens
+  // ======================================
 
   characters:string[]
 
+  focusedCharacter?:string
 
 
-  // ==================================
-  // Consequências narrativas
-  // ==================================
+
+  // ======================================
+  // Continuidade
+  // ======================================
+
+  unresolvedThreads:string[]
+
+  unansweredQuestions:string[]
+
+
+
+  // ======================================
+  // Consequências
+  // ======================================
 
   consequences:string[]
+
+
+
+  // ======================================
+  // Elementos de escrita
+  // ======================================
+
+  themes:string[]
+
+  narrativeHooks:string[]
 
 
 }
