@@ -328,11 +328,11 @@ private static composeEvents(
 
     case "alliance":
 
-      groups.alliance.push(
-        text,
-      )
+  groups.alliance.push(
+    text,
+  )
 
-      break
+  break
 
 
 
@@ -340,58 +340,54 @@ private static composeEvents(
     // Relações
     // ==================================
 
-    case "relationship":
+   case "relationship":
 
-      groups.relationship.push(
-        text,
-      )
-
-      break
-
-
-
-    // ==================================
-    // Descobertas
-    // ==================================
-
-case "discovery": {
-
-  const ignoredLocations = [
-
-    "gondor",
-
-    "mordor",
-
-    "condado",
-
-    "rivendell",
-
-  ]
-
-
-
-  if(
-
-    text.length > 5
-
-    &&
-
-    !ignoredLocations.includes(
-      text.toLowerCase(),
-    )
-
-  ){
-
-    groups.discovery.push(
-      text,
-    )
-
-  }
-
+  groups.relationship.push(
+    text,
+  )
 
   break
 
-}
+
+       // ==================================
+    // Descobertas
+    // ==================================
+
+    case "discovery": {
+
+      const ignoredLocations = new Set([
+        "gondor",
+        "mordor",
+        "condado",
+        "rivendell",
+      ])
+
+
+      const normalized =
+        text
+          .toLowerCase()
+          .trim()
+
+
+
+      if(
+        text.length > 5
+        &&
+        !ignoredLocations.has(
+          normalized,
+        )
+      ){
+
+        groups.discovery.push(
+          text,
+        )
+
+      }
+
+
+      break
+
+    }
     // ==================================
     // Conflitos
     // ==================================
@@ -412,13 +408,11 @@ case "discovery": {
 
     case "dialogue":
 
-      groups.dialogue.push(
-        text,
-      )
+  groups.dialogue.push(
+    text,
+  )
 
-      break
-
-
+  break
 
     // ==================================
     // Progressão
