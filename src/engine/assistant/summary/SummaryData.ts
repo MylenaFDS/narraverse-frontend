@@ -6,25 +6,24 @@ import type {
 
 export interface SummaryData {
 
-
   // ======================================
   // Identidade da cena
   // ======================================
 
-  location:string | null
+  location: string | null
 
-  atmosphere:string | null
+  atmosphere: string | null
 
 
   // ======================================
   // Estado narrativo
   // ======================================
 
-  situation:string
+  situation: string
 
-  tension:number
+  tension: number
 
-  dominantEmotion?:string
+  dominantEmotion?: string
 
 
   // ======================================
@@ -37,7 +36,6 @@ export interface SummaryData {
     | "climax"
     | "ending"
 
-
   narrativeFocus?:
     | "character"
     | "conflict"
@@ -46,66 +44,59 @@ export interface SummaryData {
     | "relationship"
 
 
-
   // ======================================
   // Eventos relevantes
   // ======================================
 
-  majorEvents:SummaryEvent[]
-
+  majorEvents: SummaryEvent[]
 
 
   // ======================================
   // Desenvolvimento narrativo
   // ======================================
 
-  relationships:string[]
+  relationships: string[]
 
-  revelations:string[]
+  revelations: string[]
 
-  conflicts:string[]
+  conflicts: string[]
 
-  objectives:string[]
+  objectives: string[]
 
-  quests:string[]
-
+  quests: string[]
 
 
   // ======================================
   // Personagens
   // ======================================
 
-  characters:string[]
+  characters: string[]
 
-  focusedCharacter?:string
-
+  focusedCharacter?: string
 
 
   // ======================================
   // Continuidade
   // ======================================
 
-  unresolvedThreads:string[]
+  unresolvedThreads: string[]
 
-  unansweredQuestions:string[]
-
+  unansweredQuestions: string[]
 
 
   // ======================================
   // Consequências
   // ======================================
 
-  consequences:string[]
-
+  consequences: string[]
 
 
   // ======================================
   // Elementos de escrita
   // ======================================
 
-  themes:string[]
+  themes: string[]
 
-  narrativeHooks:string[]
-
+  narrativeHooks: string[]
 
 }

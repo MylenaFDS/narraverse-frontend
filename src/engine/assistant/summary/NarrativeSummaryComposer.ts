@@ -25,6 +25,20 @@ static compose(
 
 
 
+ if(
+  data.atmosphere
+ ){
+
+  paragraphs.push(
+
+   `O ambiente é marcado por ${data.atmosphere}, criando o cenário emocional que envolve os acontecimentos recentes.`
+
+  )
+
+ }
+
+
+
  const importantEvents =
 
   data.majorEvents
@@ -71,17 +85,11 @@ static compose(
 
   paragraphs.push(
 
-   `O clima atual da narrativa é marcado por ${data.dominantEmotion}, influenciando as escolhas e reações dos personagens.`
+   `O clima atual da narrativa é marcado por ${data.dominantEmotion}, influenciando as escolhas, reações e decisões dos personagens.`
 
   )
 
  }
-
-
-
-
-
-
 
 
 
@@ -107,22 +115,22 @@ static compose(
 
 
  if(
- data.consequences.length &&
- !importantEvents.some(
-  event =>
-   event.type === "death"
- )
-){
+  data.consequences.length &&
+  !importantEvents.some(
+   event =>
+    event.type === "death"
+  )
+ ){
 
- paragraphs.push(
+  paragraphs.push(
 
-  this.unique(
-   data.consequences,
-  ).join(" ")
+   this.unique(
+    data.consequences,
+   ).join(" ")
 
- )
+  )
 
-}
+ }
 
 
 
@@ -162,19 +170,31 @@ static compose(
 
  return paragraphs
 
+  .map(
+    text =>
+      text.trim()
+  )
+
   .filter(
-   text =>
-    text.trim().length > 0
+    text =>
+      text.length > 0
+  )
+
+  .filter(
+    (text,index,array)=>
+      array.indexOf(text) === index
   )
 
   .join(
 
-   "\n\n"
+    "\n\n"
 
   )
 
 
 }
+
+
 
 
 
@@ -277,12 +297,18 @@ private static composeEvents(
 
 
 
+  if(
+    !text
+  ){
+
+    continue
+
+  }
+
+
+
   switch(event.type){
 
-
-    // ==================================
-    // Perdas irreversíveis
-    // ==================================
 
     case "death":
 
@@ -294,10 +320,6 @@ private static composeEvents(
 
 
 
-    // ==================================
-    // Traições
-    // ==================================
-
     case "betrayal":
 
       groups.betrayal.push(
@@ -307,10 +329,6 @@ private static composeEvents(
       break
 
 
-
-    // ==================================
-    // Revelações
-    // ==================================
 
     case "prophecy":
 
@@ -322,48 +340,42 @@ private static composeEvents(
 
 
 
-    // ==================================
-    // Alianças
-    // ==================================
-
     case "alliance":
 
-  groups.alliance.push(
-    text,
-  )
+      groups.alliance.push(
+        text,
+      )
 
-  break
-
-
-
-    // ==================================
-    // Relações
-    // ==================================
-
-   case "relationship":
-
-  groups.relationship.push(
-    text,
-  )
-
-  break
+      break
 
 
-       // ==================================
-    // Descobertas
-    // ==================================
+
+    case "relationship":
+
+      groups.relationship.push(
+        text,
+      )
+
+      break
+
+
 
     case "discovery": {
 
+
       const ignoredLocations = new Set([
+
         "gondor",
         "mordor",
         "condado",
         "rivendell",
+
       ])
 
 
+
       const normalized =
+
         text
           .toLowerCase()
           .trim()
@@ -371,11 +383,15 @@ private static composeEvents(
 
 
       if(
+
         text.length > 5
+
         &&
+
         !ignoredLocations.has(
           normalized,
         )
+
       ){
 
         groups.discovery.push(
@@ -385,12 +401,12 @@ private static composeEvents(
       }
 
 
+
       break
 
     }
-    // ==================================
-    // Conflitos
-    // ==================================
+
+
 
     case "combat":
 
@@ -402,21 +418,15 @@ private static composeEvents(
 
 
 
-    // ==================================
-    // Conversas
-    // ==================================
-
     case "dialogue":
 
-  groups.dialogue.push(
-    text,
-  )
+      groups.dialogue.push(
+        text,
+      )
 
-  break
+      break
 
-    // ==================================
-    // Progressão
-    // ==================================
+
 
     case "quest":
 
@@ -470,7 +480,15 @@ private static composeEvents(
 
   result.push(
 
-   `${this.unique(groups.death).join(", ")}. Essa perda representa uma ruptura significativa na história, alterando escolhas, relações e caminhos futuros.`
+    this.narrativeSentence(
+
+      this.unique(
+        groups.death,
+      ).join(", "),
+
+      "Essa perda representa uma ruptura significativa na história, alterando escolhas, relações e caminhos futuros."
+
+    )
 
   )
 
@@ -490,7 +508,15 @@ private static composeEvents(
 
   result.push(
 
-   `${this.unique(groups.betrayal).join(", ")}. Essa traição alterou a confiança entre os envolvidos e poderá gerar novos conflitos.`
+    this.narrativeSentence(
+
+      this.unique(
+        groups.betrayal,
+      ).join(", "),
+
+      "Essa traição abalou a confiança entre os envolvidos e poderá gerar novos conflitos."
+
+    )
 
   )
 
@@ -510,7 +536,15 @@ private static composeEvents(
 
   result.push(
 
-   `${this.unique(groups.prophecy).join(", ")}. A revelação indica que acontecimentos atuais podem estar ligados a forças maiores ou destinos ainda desconhecidos.`
+    this.narrativeSentence(
+
+      this.unique(
+        groups.prophecy,
+      ).join(", "),
+
+      "A revelação amplia o mistério da campanha e sugere que os acontecimentos atuais fazem parte de um destino maior ainda desconhecido."
+
+    )
 
   )
 
@@ -530,7 +564,15 @@ private static composeEvents(
 
   result.push(
 
-   `${this.unique(groups.alliance).join(", ")}. Novas alianças foram estabelecidas, alterando o equilíbrio de forças da campanha.`
+    this.narrativeSentence(
+
+      this.unique(
+        groups.alliance,
+      ).join(", "),
+
+      "Essa aliança alterou o equilíbrio de forças da campanha e ampliou as possibilidades de cooperação entre os envolvidos."
+
+    )
 
   )
 
@@ -550,7 +592,15 @@ private static composeEvents(
 
   result.push(
 
-   `${this.unique(groups.relationship).join(", ")}. Essas mudanças influenciam os vínculos e decisões futuras dos personagens.`
+    this.narrativeSentence(
+
+      this.unique(
+        groups.relationship,
+      ).join(", "),
+
+      "Essa evolução fortaleceu os vínculos entre os personagens e poderá influenciar decisões importantes nos próximos acontecimentos."
+
+    )
 
   )
 
@@ -570,7 +620,15 @@ private static composeEvents(
 
   result.push(
 
-   `${this.unique(groups.discovery).join(", ")}. Essas descobertas adicionam novos elementos capazes de mudar o rumo da campanha.`
+    this.narrativeSentence(
+
+      this.unique(
+        groups.discovery,
+      ).join(", "),
+
+      "Essas descobertas ampliam o conhecimento sobre o mundo e podem transformar completamente os rumos da campanha."
+
+    )
 
   )
 
@@ -590,7 +648,15 @@ private static composeEvents(
 
   result.push(
 
-   `${this.unique(groups.combat).join(", ")}. Esses conflitos aumentaram a tensão da campanha e podem alterar os próximos acontecimentos.`
+    this.narrativeSentence(
+
+      this.unique(
+        groups.combat,
+      ).join(", "),
+
+      "Esses conflitos elevaram a tensão da narrativa e poderão desencadear novos acontecimentos."
+
+    )
 
   )
 
@@ -609,29 +675,24 @@ private static composeEvents(
  ){
 
   const dialogues =
- this.unique(
-  groups.dialogue,
- )
 
-
-.filter(
- text =>
-  text.length > 0
-)
+    this.unique(
+      groups.dialogue,
+    )
 
 
 
-if(
- dialogues.length
-){
+  result.push(
 
- result.push(
+    this.narrativeSentence(
 
-  `${dialogues.join(", ")}. Essas conversas revelaram novas perspectivas entre os envolvidos.`
+      dialogues.join(", "),
 
- )
+      "Esses diálogos revelaram novas perspectivas entre os personagens e poderão influenciar os acontecimentos seguintes da jornada."
 
-}
+    )
+
+  )
 
  }
 
@@ -650,10 +711,15 @@ if(
 
   result.push(
 
-   `Novos avanços foram realizados: ${this.unique([
-    ...groups.quest,
-    ...groups.achievement,
-   ]).join(", ")}.`
+    `Novos avanços foram realizados: ${
+      
+      this.unique([
+        ...groups.quest,
+        ...groups.achievement,
+      ])
+      .join(", ")
+
+    }.`
 
   )
 
@@ -673,9 +739,10 @@ if(
 
   result.push(
 
-   this.unique(
-    groups.other,
-   ).join(", ")
+    this.unique(
+      groups.other,
+    )
+    .join(", ")
 
   )
 
@@ -685,7 +752,7 @@ if(
 
 
 
- return result.join(" ")
+ return result.join("\n\n")
 
 
 }
@@ -754,6 +821,10 @@ private static composeObjectives(
 // Limpeza de eventos
 // ======================================
 
+// ======================================
+// Limpeza de eventos
+// ======================================
+
 private static cleanEvent(
   text:string,
 ):string{
@@ -761,7 +832,15 @@ private static cleanEvent(
 
  return text
 
-  // remove eventos genéricos de diálogo
+  // remove prefixos automáticos
+
+  .replace(
+    /^Evento identificado:\s*/i,
+    "",
+  )
+
+
+  // remove eventos genéricos
 
   .replace(
     /^Um diálogo importante ocorreu\.?/i,
@@ -769,7 +848,19 @@ private static cleanEvent(
   )
 
 
-  // remove prefixos de localização
+  .replace(
+    /^Uma relação pessoal evoluiu\.?/i,
+    "Uma relação pessoal evoluiu",
+  )
+
+
+  .replace(
+    /^Uma aliança foi fortalecida\.?/i,
+    "Uma aliança foi fortalecida",
+  )
+
+
+  // remove localização criada pelo sistema
 
   .replace(
     /^Local importante identificado:\s*/i,
@@ -777,19 +868,11 @@ private static cleanEvent(
   )
 
 
-  // remove frases vazias de sistema
+  // normaliza profecia
 
   .replace(
     /^Uma profecia ou destino foi revelado\.?/i,
     "Uma profecia ou destino foi revelado",
-  )
-
-
-  // remove vírgulas antes de pontuação
-
-  .replace(
-    /,\s*\./g,
-    ".",
   )
 
 
@@ -801,10 +884,18 @@ private static cleanEvent(
   )
 
 
-  // remove pontos repetidos
+  // remove pontuação duplicada
 
   .replace(
     /\.{2,}/g,
+    ".",
+  )
+
+
+  // corrige vírgulas antes de ponto
+
+  .replace(
+    /,\s*\./g,
     ".",
   )
 
@@ -876,5 +967,17 @@ private static capitalize(
 
 }
 
+// ======================================
+// Construção narrativa
+// ======================================
+
+private static narrativeSentence(
+  text:string,
+  context:string,
+):string{
+
+  return `${text}. ${context}`
+
+}
 
 }
