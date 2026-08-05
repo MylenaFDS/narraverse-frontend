@@ -204,6 +204,7 @@ export default function AssistantModal({
                     className="
                       leading-relaxed
                       text-neutral-200
+                      whitespace-pre-wrap
                     "
                   >
 
@@ -338,6 +339,7 @@ export default function AssistantModal({
                 className="
                   leading-relaxed
                   text-neutral-200
+                  whitespace-pre-wrap
                 "
               >
 
