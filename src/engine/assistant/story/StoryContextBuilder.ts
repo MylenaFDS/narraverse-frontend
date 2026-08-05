@@ -80,7 +80,7 @@ export class StoryContextBuilder {
         recentTexts,
       )
 
-    return {
+        return {
 
       // ======================================
       // Histórico
@@ -95,8 +95,26 @@ export class StoryContextBuilder {
 
       lastDialogues,
 
+
       // ======================================
-      // Situação
+      // Continuidade narrativa
+      // ======================================
+
+      previousSummary:
+        undefined,
+
+      previousScene:
+        undefined,
+
+      previousLocation:
+        undefined,
+
+      previousMood:
+        undefined,
+
+
+      // ======================================
+      // Situação atual
       // ======================================
 
       currentSituation:
@@ -105,9 +123,11 @@ export class StoryContextBuilder {
           campaign,
         ),
 
+
       currentLocation:
 
         campaign.discoveredLocations.at(-1),
+
 
       sceneMood:
 
@@ -115,15 +135,113 @@ export class StoryContextBuilder {
           campaign,
         ),
 
+
       activeEvents: [
-  ...campaign.activeEvents,
-  ...campaign.history.map(
-    event => event.description,
-  ),
-],
+
+        ...campaign.activeEvents,
+
+        ...campaign.history.map(
+          event =>
+            event.description,
+        ),
+
+      ],
+
+
 
       // ======================================
-      // Narrativa
+      // Estrutura narrativa
+      // ======================================
+
+      storyArc:
+        undefined,
+
+      chapter:
+        undefined,
+
+      sceneNumber:
+        undefined,
+
+      storyPhase:
+        "development",
+
+      storyTempo:
+        "normal",
+
+
+
+      // ======================================
+      // Dramaturgia
+      // ======================================
+
+      narrativeTension:
+
+        this.calculateNarrativeTension(
+          campaign,
+        ),
+
+
+      dominantEmotion:
+
+        this.detectMood(
+          campaign,
+        ),
+
+
+      dramaticQuestion:
+
+        unansweredQuestions.at(0),
+
+
+      expectedClimax:
+        undefined,
+
+
+      lastMajorEvent:
+
+        campaign.history
+          .at(-1)
+          ?.description,
+
+
+      lastTurningPoint:
+
+        campaign.history
+          .at(-1)
+          ?.description,
+
+
+      currentConflict:
+
+        campaign.activeEvents
+          .at(0),
+
+
+      currentGoal:
+
+        campaign.activeQuests
+          .at(0),
+
+
+      currentMystery:
+
+        unansweredQuestions
+          .at(0),
+
+
+      recentConsequences:
+
+        campaign.history
+          .slice(-5)
+          .map(
+            event =>
+              event.description,
+          ),
+
+
+
+      // ======================================
+      // Continuidade
       // ======================================
 
       unresolvedThreads,
@@ -131,6 +249,8 @@ export class StoryContextBuilder {
       unansweredQuestions,
 
       topics,
+
+
 
       // ======================================
       // Personagens
@@ -143,6 +263,7 @@ export class StoryContextBuilder {
             character.name,
         ),
 
+
       focusedCharacter:
 
         this.detectFocusedCharacter(
@@ -150,22 +271,84 @@ export class StoryContextBuilder {
           recentTexts,
         ),
 
+
       lastDialogue:
 
         lastDialogues.at(-1),
+
+
+
+      // ======================================
+      // Mundo
+      // ======================================
+
+      discoveredLocations:
+
+        [
+          ...campaign.discoveredLocations,
+        ],
+
+
+      discoveredFactions:
+
+        [],
+
+
+      discoveredItems:
+
+        [],
+
+
 
       // ======================================
       // Objetivos
       // ======================================
 
       activeObjectives:
-        [...campaign.activeQuests],
 
-      discoveredLocations:
-        [...campaign.discoveredLocations],
+        [
+          ...campaign.activeQuests,
+        ],
+
 
       activeQuests:
-        [...campaign.activeQuests],
+
+        [
+          ...campaign.activeQuests,
+        ],
+
+
+      completedObjectives:
+
+        [],
+
+
+      completedQuests:
+
+        [],
+
+
+
+      // ======================================
+      // Resumo dinâmico
+      // ======================================
+
+      keywords:
+
+        this.extractKeywords(
+          recentTexts,
+        ),
+
+
+      themes:
+
+        topics,
+
+
+      narrativeHooks:
+
+        unresolvedThreads,
+
 
     }
 
@@ -324,6 +507,99 @@ export class StoryContextBuilder {
           .toLowerCase()
           .includes("encerrado"),
     )
+
+  }
+
+    private static calculateNarrativeTension(
+    campaign: CampaignState,
+  ): number {
+
+
+    let tension = 0
+
+
+
+    tension +=
+      campaign.activeEvents.length * 10
+
+
+
+    tension +=
+      campaign.deadCharacters.length * 15
+
+
+
+    if(
+      campaign.activeQuests.length > 0
+    ){
+
+      tension += 10
+
+    }
+
+
+
+    return Math.min(
+      tension,
+      100,
+    )
+
+  }
+
+
+
+
+
+  private static extractKeywords(
+    turns:string[],
+  ):string[] {
+
+
+    const keywords =
+      new Set<string>()
+
+
+
+    for(
+      const turn of turns
+    ){
+
+      const words =
+        turn
+          .toLowerCase()
+          .split(/\s+/)
+
+
+
+      for(
+        const word of words
+      ){
+
+        if(
+          word.length > 5
+        ){
+
+          keywords.add(
+            word.replace(
+              /[.,!?]/g,
+              "",
+            ),
+          )
+
+        }
+
+      }
+
+    }
+
+
+    return [
+      ...keywords,
+    ].slice(
+      0,
+      20,
+    )
+
 
   }
 
