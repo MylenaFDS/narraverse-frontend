@@ -26,16 +26,28 @@ static compose(
 
 
  if(
-  data.atmosphere
- ){
+  data.atmosphere ||
+  data.dominantEmotion
+){
+
+  const atmosphere =
+    data.atmosphere ??
+    data.dominantEmotion
+
+  const emotion =
+    data.dominantEmotion
 
   paragraphs.push(
 
-   `O ambiente é marcado por ${data.atmosphere}, criando o cenário emocional que envolve os acontecimentos recentes.`
+    emotion
+
+      ? `A narrativa assume um tom ${atmosphere}, criando uma atmosfera de ${emotion} que influencia diretamente as escolhas e reações dos personagens.`
+
+      : `A narrativa assume um tom ${atmosphere}, envolvendo os personagens em um cenário emocional que intensifica os acontecimentos recentes.`
 
   )
 
- }
+}
 
 
 
@@ -74,26 +86,6 @@ static compose(
   )
 
  }
-
-
-
-
-
- if(
-  data.dominantEmotion
- ){
-
-  paragraphs.push(
-
-   `O clima atual da narrativa é marcado por ${data.dominantEmotion}, influenciando as escolhas, reações e decisões dos personagens.`
-
-  )
-
- }
-
-
-
-
 
  if(
   data.objectives.length ||
@@ -137,32 +129,37 @@ static compose(
 
 
  if(
-  data.characters.length
- ){
+ data.characters.length
+){
 
-  paragraphs.push(
-
-   `Entre os personagens envolvidos estão ${this.unique(data.characters).slice(0,5).join(", ")}, cujas escolhas poderão influenciar diretamente o futuro da campanha.`
-
+ const chars =
+  this.unique(
+    data.characters
   )
 
- }
+ paragraphs.push(
+
+   `Os acontecimentos recentes colocam ${chars.slice(0,5).join(", ")} no centro da narrativa, tornando suas próximas escolhas decisivas para o futuro da campanha.`
+
+ )
+
+}
 
 
 
 
 
- if(
+if(
   data.narrativeHooks.length
- ){
+){
 
   paragraphs.push(
 
-   `Novos caminhos podem surgir a partir de ${this.unique(data.narrativeHooks).join(", ")}.`
+    `Os acontecimentos recentes indicam que a campanha entrou em uma nova fase. Questões como ${this.unique(data.narrativeHooks).join(", ")} poderão definir os próximos rumos da jornada.`
 
   )
 
- }
+}
 
 
 
@@ -213,26 +210,31 @@ private static composeOpening(
 ):string{
 
 
- const location =
+const phase = {
 
-  data.location
+ opening:
+ "A jornada começa a revelar seus primeiros grandes desafios",
 
-   ?
+ development:
+ "A campanha entra em uma fase de transformações profundas",
 
-   ` em ${this.capitalize(data.location)}`
+ climax:
+ "A campanha alcança um ponto decisivo onde cada escolha pode alterar o destino da jornada",
 
-   :
+ ending:
+ "Os acontecimentos finais começam a definir o legado desta história",
 
-   ""
+}[data.storyPhase ?? "development"]
 
 
 
+return (
 
- return (
+ `${phase}${data.location 
+ ? ` em ${this.capitalize(data.location)}`
+ : ""}.`
 
-  `A campanha atravessa um momento decisivo${location}, onde acontecimentos recentes começam a transformar profundamente o destino da jornada.`
-
- )
+)
 
 
 }
@@ -752,7 +754,12 @@ private static composeEvents(
 
 
 
- return result.join("\n\n")
+ return result
+ .filter(Boolean)
+ .map(
+   text => text.trim()
+ )
+ .join("\n\n")
 
 
 }
