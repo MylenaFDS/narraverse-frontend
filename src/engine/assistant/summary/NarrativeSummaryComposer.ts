@@ -41,9 +41,9 @@ static compose(
 
     emotion
 
-      ? `A narrativa assume um tom ${atmosphere}, criando uma atmosfera de ${emotion} que influencia diretamente as escolhas e reações dos personagens.`
+      ? `A narrativa assume um tom ${atmosphere}, criando um clima de ${emotion} que influencia diretamente as escolhas, reações e decisões dos personagens.`
 
-      : `A narrativa assume um tom ${atmosphere}, envolvendo os personagens em um cenário emocional que intensifica os acontecimentos recentes.`
+      : `A narrativa assume um tom ${atmosphere}, intensificando a tensão e envolvendo os personagens em um cenário de mudanças decisivas.`
 
   )
 
@@ -129,19 +129,19 @@ static compose(
 
 
  if(
- data.characters.length
+  data.characters.length
 ){
 
- const chars =
-  this.unique(
-    data.characters
+  const chars =
+    this.unique(
+      data.characters,
+    ).slice(0, 5)
+
+  paragraphs.push(
+
+    `Os acontecimentos recentes colocam ${this.naturalList(chars)} no centro da narrativa, tornando suas próximas escolhas decisivas para o futuro da campanha.`
+
   )
-
- paragraphs.push(
-
-   `Os acontecimentos recentes colocam ${chars.slice(0,5).join(", ")} no centro da narrativa, tornando suas próximas escolhas decisivas para o futuro da campanha.`
-
- )
 
 }
 
@@ -191,61 +191,65 @@ if(
 
 }
 
-
-
-
-
-
-
-
-
-
-
 // ======================================
 // Abertura
 // ======================================
 
 private static composeOpening(
- data:SummaryData,
-):string{
+  data: SummaryData,
+): string {
+
+  const location =
+    data.location
+      ? ` em ${this.capitalize(data.location)}`
+      : ""
+
+  const phase = {
+
+    opening:
+      "A jornada começa a revelar seus primeiros grandes desafios",
+
+    development:
+      "A campanha entra em uma fase de profundas transformações",
+
+    climax:
+      "A campanha alcança um momento decisivo, em que cada escolha pode alterar o destino da jornada",
+
+    ending:
+      "Os acontecimentos finais começam a definir o legado desta história",
+
+  }[data.storyPhase ?? "development"]
 
 
-const phase = {
+  switch(data.storyPhase){
 
- opening:
- "A jornada começa a revelar seus primeiros grandes desafios",
+    case "opening":
 
- development:
- "A campanha entra em uma fase de transformações profundas",
-
- climax:
- "A campanha alcança um ponto decisivo onde cada escolha pode alterar o destino da jornada",
-
- ending:
- "Os acontecimentos finais começam a definir o legado desta história",
-
-}[data.storyPhase ?? "development"]
+      return `${phase}${location}, enquanto os primeiros acontecimentos começam a moldar o mundo e o destino dos personagens.`
 
 
+    case "development":
 
-return (
+      return `${phase}${location}, onde acontecimentos recentes passam a alterar profundamente o rumo da jornada.`
 
- `${phase}${data.location 
- ? ` em ${this.capitalize(data.location)}`
- : ""}.`
 
-)
+    case "climax":
 
+      return `${phase}${location}. As decisões tomadas neste momento poderão definir o futuro de todos os envolvidos.`
+
+
+    case "ending":
+
+      return `${phase}${location}. As consequências das escolhas feitas ao longo da campanha começam a revelar seus desfechos.`
+
+
+    default:
+
+      return `${phase}${location}, onde acontecimentos recentes passam a alterar profundamente o rumo da jornada.`
+
+  }
 
 }
-
-
-
-
-
-
-
-
 
 // ======================================
 // Eventos
@@ -473,12 +477,12 @@ private static composeEvents(
 
 
  // ==================================
- // Mortes
- // ==================================
+// Mortes
+// ==================================
 
- if(
+if(
   groups.death.length
- ){
+){
 
   result.push(
 
@@ -488,25 +492,23 @@ private static composeEvents(
         groups.death,
       ).join(", "),
 
-      "Essa perda representa uma ruptura significativa na história, alterando escolhas, relações e caminhos futuros."
+      "A perda representa uma ruptura significativa na história, alterando escolhas, relações e caminhos futuros."
 
     )
 
   )
 
- }
+}
 
 
 
+// ==================================
+// Traições
+// ==================================
 
-
- // ==================================
- // Traições
- // ==================================
-
- if(
+if(
   groups.betrayal.length
- ){
+){
 
   result.push(
 
@@ -516,25 +518,23 @@ private static composeEvents(
         groups.betrayal,
       ).join(", "),
 
-      "Essa traição abalou a confiança entre os envolvidos e poderá gerar novos conflitos."
+      "O ato de traição abalou a confiança entre os envolvidos e poderá desencadear novos conflitos."
 
     )
 
   )
 
- }
+}
 
 
 
+// ==================================
+// Profecias
+// ==================================
 
-
- // ==================================
- // Profecias
- // ==================================
-
- if(
+if(
   groups.prophecy.length
- ){
+){
 
   result.push(
 
@@ -550,19 +550,17 @@ private static composeEvents(
 
   )
 
- }
+}
 
 
 
+// ==================================
+// Alianças
+// ==================================
 
-
- // ==================================
- // Alianças
- // ==================================
-
- if(
+if(
   groups.alliance.length
- ){
+){
 
   result.push(
 
@@ -572,25 +570,23 @@ private static composeEvents(
         groups.alliance,
       ).join(", "),
 
-      "Essa aliança alterou o equilíbrio de forças da campanha e ampliou as possibilidades de cooperação entre os envolvidos."
+      "O fortalecimento dessa união alterou o equilíbrio de forças da campanha e ampliou as possibilidades de cooperação entre os envolvidos."
 
     )
 
   )
 
- }
+}
 
 
 
+// ==================================
+// Relações
+// ==================================
 
-
- // ==================================
- // Relações
- // ==================================
-
- if(
+if(
   groups.relationship.length
- ){
+){
 
   result.push(
 
@@ -600,25 +596,23 @@ private static composeEvents(
         groups.relationship,
       ).join(", "),
 
-      "Essa evolução fortaleceu os vínculos entre os personagens e poderá influenciar decisões importantes nos próximos acontecimentos."
+      "O desenvolvimento desse vínculo fortaleceu os laços entre os personagens e poderá influenciar decisões importantes nos próximos acontecimentos."
 
     )
 
   )
 
- }
+}
 
 
 
+// ==================================
+// Descobertas
+// ==================================
 
-
- // ==================================
- // Descobertas
- // ==================================
-
- if(
+if(
   groups.discovery.length
- ){
+){
 
   result.push(
 
@@ -628,25 +622,23 @@ private static composeEvents(
         groups.discovery,
       ).join(", "),
 
-      "Essas descobertas ampliam o conhecimento sobre o mundo e podem transformar completamente os rumos da campanha."
+      "As descobertas ampliam o conhecimento sobre o mundo e podem transformar completamente os rumos da campanha."
 
     )
 
   )
 
- }
+}
 
 
 
+// ==================================
+// Combates
+// ==================================
 
-
- // ==================================
- // Combates
- // ==================================
-
- if(
+if(
   groups.combat.length
- ){
+){
 
   result.push(
 
@@ -656,25 +648,23 @@ private static composeEvents(
         groups.combat,
       ).join(", "),
 
-      "Esses conflitos elevaram a tensão da narrativa e poderão desencadear novos acontecimentos."
+      "Os confrontos elevaram a tensão da narrativa e poderão desencadear novos acontecimentos."
 
     )
 
   )
 
- }
+}
 
 
 
+// ==================================
+// Diálogos
+// ==================================
 
-
- // ==================================
- // Diálogos
- // ==================================
-
- if(
+if(
   groups.dialogue.length
- ){
+){
 
   const dialogues =
 
@@ -682,21 +672,19 @@ private static composeEvents(
       groups.dialogue,
     )
 
-
-
   result.push(
 
     this.narrativeSentence(
 
       dialogues.join(", "),
 
-      "Esses diálogos revelaram novas perspectivas entre os personagens e poderão influenciar os acontecimentos seguintes da jornada."
+      "As conversas revelaram novas perspectivas entre os personagens e poderão influenciar os acontecimentos seguintes da jornada."
 
     )
 
   )
 
- }
+}
 
 
 
@@ -987,4 +975,31 @@ private static narrativeSentence(
 
 }
 
+private static naturalList(
+  items: string[],
+): string {
+
+  if(
+    items.length === 0
+  ){
+    return ""
+  }
+
+  if(
+    items.length === 1
+  ){
+    return items[0]
+  }
+
+  if(
+    items.length === 2
+  ){
+    return `${items[0]} e ${items[1]}`
+  }
+
+  return (
+    `${items.slice(0, -1).join(", ")} e ${items.at(-1)}`
+  )
+
+}
 }
