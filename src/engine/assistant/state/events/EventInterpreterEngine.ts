@@ -421,7 +421,6 @@ export class EventInterpreterEngine {
 
 
       case "combat":
-
       case "attack":
 
         return 75
