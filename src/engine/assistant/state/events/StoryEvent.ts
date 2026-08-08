@@ -2,119 +2,204 @@ import type {
   EventType,
 } from "../../types/EventType"
 
+
+
+// ======================================
+// Subtipos narrativos
+// ======================================
+
+export type StoryEventSubtype =
+
+
+// ======================================
+// Relações
+// ======================================
+
+  | "marriage"
+  | "romantic"
+  | "friendship"
+  | "family"
+  | "rivalry"
+  | "trust"
+
+
+
+// ======================================
+// Alianças
+// ======================================
+
+  | "treaty"
+  | "oath"
+  | "military"
+  | "political"
+
+
+
+// ======================================
+// Conflitos
+// ======================================
+
+  | "betrayal"
+
+
+
+// ======================================
+// Outros
+// ======================================
+
+  | "unknown"
+
+
+
 export interface StoryEvent {
+
 
   // ======================================
   // Identificação
   // ======================================
 
-  id?: string
+  id?:string
 
-  type: EventType
+  type:EventType
+
+  subtype?:StoryEventSubtype
+
+
 
   // ======================================
   // Personagem principal
   // ======================================
 
-  actorId?: number
+  actorId?:number
 
-  actorName?: string
+  actorName?:string
+
+
 
   // ======================================
   // Alvo
   // ======================================
 
-  targetId?: number
+  targetId?:number
 
-  targetName?: string
+  targetName?:string
+
+
 
   // ======================================
   // Outros participantes
   // ======================================
 
-  participants?: string[]
+  participants?:string[]
+
+
 
   // ======================================
   // Mundo
   // ======================================
 
-  faction?: string
+  faction?:string
 
-  location?: string
+  location?:string
 
-  item?: string
+  item?:string
+
+
 
   // ======================================
   // Emoções
   // ======================================
 
-  emotion?: string
+  emotion?:string
+
+
 
   // ======================================
   // Narrativa
   // ======================================
 
-  description: string
+  description:string
 
-  consequence?: string
+  consequence?:string
 
-  sourceText?: string
+  sourceText?:string
 
-  summary?: string
+  summary?:string
+
+
 
   // ======================================
   // Dramaturgia
   // ======================================
 
-  importance?: number
+  importance?:number
 
-  dramaticWeight?: number
+  dramaticWeight?:number
 
-  tensionDelta?: number
+  tensionDelta?:number
 
   plotImpact?:
     | "low"
     | "medium"
     | "high"
 
+
+
   // ======================================
   // Continuidade
   // ======================================
 
-  createsThread?: boolean
+  createsThread?:boolean
 
-  resolvesThread?: boolean
+  resolvesThread?:boolean
 
-  opensMystery?: boolean
+  opensMystery?:boolean
 
-  closesMystery?: boolean
+  closesMystery?:boolean
+
+
 
   // ======================================
   // Consequências
   // ======================================
 
-  consequences?: string[]
+  consequences?:string[]
+
+
 
   // ======================================
-  // Classificação
-  // ======================================
+// Classificação
+// ======================================
 
-  tags?: string[]
+tags?: string[]
+
+relationshipType?:
+  | "marriage"
+  | "romance"
+  | "engagement"
+  | "alliance"
+  | "betrayal"
+  | "friendship"
+  | "other"
+
+
 
   // ======================================
   // Tempo
   // ======================================
 
-  turnId?: number
+  turnId?:number
 
-  timestamp?: number
+  timestamp?:number
+
+
 
   // ======================================
   // Reputação
   // ======================================
 
-  reputationTarget?: string
+  reputationTarget?:string
 
-  reputationValue?: number
+  reputationValue?:number
 
 }

@@ -260,495 +260,634 @@ private static composeEvents(
 ):string{
 
 
- const groups = {
+  const groups = {
 
 
-  death:[] as string[],
+    death:[] as string[],
 
-  betrayal:[] as string[],
+    betrayal:[] as string[],
 
-  prophecy:[] as string[],
+    prophecy:[] as string[],
 
-  alliance:[] as string[],
+    alliance:[] as string[],
 
-  relationship:[] as string[],
+    relationship:[] as string[],
 
-  discovery:[] as string[],
+    discovery:[] as string[],
 
-  combat:[] as string[],
+    combat:[] as string[],
 
-  dialogue:[] as string[],
+    dialogue:[] as string[],
 
-  quest:[] as string[],
+    quest:[] as string[],
 
-  achievement:[] as string[],
+    achievement:[] as string[],
 
-  other:[] as string[],
+    other:[] as string[],
 
-
- }
-
-
-
- for(
-  const event of events
- ){
-
-
-  const text =
-
-    this.cleanEvent(
-      event.description,
-    )
-
-
-
-  if(
-    !text
-  ){
-
-    continue
 
   }
 
 
 
-  switch(event.type){
 
 
-    case "death":
+  // ======================================
+  // Classificar eventos
+  // ======================================
 
-      groups.death.push(
-        text,
+  for(
+    const event of events
+  ){
+
+
+    const text =
+
+      this.cleanEvent(
+        event.description,
       )
 
-      break
 
 
+    if(
+      !text
+    ){
 
-    case "betrayal":
-
-      groups.betrayal.push(
-        text,
-      )
-
-      break
-
-
-
-    case "prophecy":
-
-      groups.prophecy.push(
-        text,
-      )
-
-      break
-
-
-
-    case "alliance":
-
-      groups.alliance.push(
-        text,
-      )
-
-      break
-
-
-
-    case "relationship":
-
-      groups.relationship.push(
-        text,
-      )
-
-      break
-
-
-
-    case "discovery": {
-
-
-      const ignoredLocations = new Set([
-
-        "gondor",
-        "mordor",
-        "condado",
-        "rivendell",
-
-      ])
-
-
-
-      const normalized =
-
-        text
-          .toLowerCase()
-          .trim()
-
-
-
-      if(
-
-        text.length > 5
-
-        &&
-
-        !ignoredLocations.has(
-          normalized,
-        )
-
-      ){
-
-        groups.discovery.push(
-          text,
-        )
-
-      }
-
-
-
-      break
+      continue
 
     }
 
 
 
-    case "combat":
-
-      groups.combat.push(
-        text,
-      )
-
-      break
+    switch(
+      event.type
+    ){
 
 
+      // ==================================
+      // Morte
+      // ==================================
 
-    case "dialogue":
+      case "death":
 
-      groups.dialogue.push(
-        text,
-      )
+        groups.death.push(
+          text,
+        )
 
-      break
-
-
-
-    case "quest":
-
-      groups.quest.push(
-        text,
-      )
-
-      break
+        break
 
 
 
-    case "achievement":
+      // ==================================
+      // Traição
+      // ==================================
 
-      groups.achievement.push(
-        text,
-      )
+      case "betrayal":
 
-      break
+        groups.betrayal.push(
+          text,
+        )
+
+        break
 
 
 
-    default:
+      // ==================================
+      // Profecia
+      // ==================================
 
-      groups.other.push(
-        text,
-      )
+      case "prophecy":
 
+        groups.prophecy.push(
+          text,
+        )
+
+        break
+
+
+
+      // ==================================
+      // Aliança
+      // ==================================
+
+      case "alliance": {
+
+
+        // --------------------------------
+        // Casamento
+        // --------------------------------
+
+        if(
+          event.subtype === "marriage"
+        ){
+
+
+          const marriageText =
+
+            this.composeMarriageEvent(
+              event,
+            )
+
+
+
+          if(
+            marriageText
+          ){
+
+            groups.alliance.push(
+              marriageText,
+            )
+
+          }
+
+
+        }
+
+
+        // --------------------------------
+        // Outras alianças
+        // --------------------------------
+
+        else{
+
+
+          groups.alliance.push(
+            text,
+          )
+
+        }
+
+
+
+        break
+
+      }
+
+
+
+      // ==================================
+      // Relação
+      // ==================================
+
+      case "relationship":
+
+        groups.relationship.push(
+          text,
+        )
+
+        break
+
+
+
+      // ==================================
+      // Descoberta
+      // ==================================
+
+      case "discovery": {
+
+
+        const ignoredLocations =
+          new Set([
+
+            "gondor",
+            "mordor",
+            "condado",
+            "rivendell",
+
+          ])
+
+
+
+        const normalized =
+
+          text
+            .toLowerCase()
+            .trim()
+
+
+
+        if(
+
+          text.length > 5
+
+          &&
+
+          !ignoredLocations.has(
+            normalized,
+          )
+
+        ){
+
+          groups.discovery.push(
+            text,
+          )
+
+        }
+
+
+
+        break
+
+      }
+
+
+
+      // ==================================
+      // Combate
+      // ==================================
+
+      case "combat":
+
+        groups.combat.push(
+          text,
+        )
+
+        break
+
+
+
+      // ==================================
+      // Diálogo
+      // ==================================
+
+      case "dialogue":
+
+        groups.dialogue.push(
+          text,
+        )
+
+        break
+
+
+
+      // ==================================
+      // Missão
+      // ==================================
+
+      case "quest":
+
+        groups.quest.push(
+          text,
+        )
+
+        break
+
+
+
+      // ==================================
+      // Conquista
+      // ==================================
+
+      case "achievement":
+
+        groups.achievement.push(
+          text,
+        )
+
+        break
+
+
+
+      // ==================================
+      // Outros
+      // ==================================
+
+      default:
+
+        groups.other.push(
+          text,
+        )
+
+        break
+
+    }
 
   }
 
 
- }
+
+
+
+  const result:string[] = []
 
 
 
 
 
- const result:string[]=[]
+  // ======================================
+  // Mortes
+  // ======================================
+
+  if(
+    groups.death.length
+  ){
+
+    result.push(
+
+      this.narrativeSentence(
+
+        this.unique(
+          groups.death,
+        ).join(", "),
+
+        "A perda representa uma ruptura significativa na história, alterando escolhas, relações e caminhos futuros."
+
+      )
+
+    )
+
+  }
 
 
 
 
 
- // ==================================
-// Mortes
-// ==================================
+  // ======================================
+  // Traições
+  // ======================================
 
-if(
-  groups.death.length
-){
+  if(
+    groups.betrayal.length
+  ){
 
-  result.push(
+    result.push(
 
-    this.narrativeSentence(
+      this.narrativeSentence(
+
+        this.unique(
+          groups.betrayal,
+        ).join(", "),
+
+        "O ato de traição abalou a confiança entre os envolvidos e poderá desencadear novos conflitos."
+
+      )
+
+    )
+
+  }
+
+
+
+
+
+  // ======================================
+  // Profecias
+  // ======================================
+
+  if(
+    groups.prophecy.length
+  ){
+
+    result.push(
+
+      this.narrativeSentence(
+
+        this.unique(
+          groups.prophecy,
+        ).join(", "),
+
+        "A revelação amplia o mistério da campanha e sugere que os acontecimentos atuais fazem parte de um destino maior ainda desconhecido."
+
+      )
+
+    )
+
+  }
+
+
+
+
+
+  // ======================================
+  // Alianças
+  // ======================================
+
+  if(
+    groups.alliance.length
+  ){
+
+    result.push(
+
+      this.narrativeSentence(
+
+        this.unique(
+          groups.alliance,
+        ).join(", "),
+
+        "O fortalecimento dessa união alterou o equilíbrio de forças da campanha e ampliou as possibilidades de cooperação entre os envolvidos."
+
+      )
+
+    )
+
+  }
+
+
+
+
+
+  // ======================================
+  // Relações
+  // ======================================
+
+  if(
+    groups.relationship.length
+  ){
+
+    result.push(
+
+      this.narrativeSentence(
+
+        this.unique(
+          groups.relationship,
+        ).join(", "),
+
+        "O desenvolvimento desse vínculo fortaleceu os laços entre os personagens e poderá influenciar decisões importantes nos próximos acontecimentos."
+
+      )
+
+    )
+
+  }
+
+
+
+
+
+  // ======================================
+  // Descobertas
+  // ======================================
+
+  if(
+    groups.discovery.length
+  ){
+
+    result.push(
+
+      this.narrativeSentence(
+
+        this.unique(
+          groups.discovery,
+        ).join(", "),
+
+        "As descobertas ampliam o conhecimento sobre o mundo e podem transformar completamente os rumos da campanha."
+
+      )
+
+    )
+
+  }
+
+
+
+
+
+  // ======================================
+  // Combates
+  // ======================================
+
+  if(
+    groups.combat.length
+  ){
+
+    result.push(
+
+      this.narrativeSentence(
+
+        this.unique(
+          groups.combat,
+        ).join(", "),
+
+        "Os confrontos elevaram a tensão da narrativa e poderão desencadear novos acontecimentos."
+
+      )
+
+    )
+
+  }
+
+
+
+
+
+  // ======================================
+  // Diálogos
+  // ======================================
+
+  if(
+    groups.dialogue.length
+  ){
+
+    const dialogues =
 
       this.unique(
-        groups.death,
-      ).join(", "),
-
-      "A perda representa uma ruptura significativa na história, alterando escolhas, relações e caminhos futuros."
-
-    )
-
-  )
-
-}
+        groups.dialogue,
+      )
 
 
 
-// ==================================
-// Traições
-// ==================================
+    result.push(
 
-if(
-  groups.betrayal.length
-){
+      this.narrativeSentence(
 
-  result.push(
+        dialogues.join(", "),
 
-    this.narrativeSentence(
+        "As conversas revelaram novas perspectivas entre os personagens e poderão influenciar os acontecimentos seguintes da jornada."
 
-      this.unique(
-        groups.betrayal,
-      ).join(", "),
-
-      "O ato de traição abalou a confiança entre os envolvidos e poderá desencadear novos conflitos."
+      )
 
     )
 
-  )
+  }
 
-}
 
 
 
-// ==================================
-// Profecias
-// ==================================
 
-if(
-  groups.prophecy.length
-){
+  // ======================================
+  // Missões
+  // ======================================
 
-  result.push(
+  if(
+    groups.quest.length ||
+    groups.achievement.length
+  ){
 
-    this.narrativeSentence(
+    const advances =
 
-      this.unique(
-        groups.prophecy,
-      ).join(", "),
-
-      "A revelação amplia o mistério da campanha e sugere que os acontecimentos atuais fazem parte de um destino maior ainda desconhecido."
-
-    )
-
-  )
-
-}
-
-
-
-// ==================================
-// Alianças
-// ==================================
-
-if(
-  groups.alliance.length
-){
-
-  result.push(
-
-    this.narrativeSentence(
-
-      this.unique(
-        groups.alliance,
-      ).join(", "),
-
-      "O fortalecimento dessa união alterou o equilíbrio de forças da campanha e ampliou as possibilidades de cooperação entre os envolvidos."
-
-    )
-
-  )
-
-}
-
-
-
-// ==================================
-// Relações
-// ==================================
-
-if(
-  groups.relationship.length
-){
-
-  result.push(
-
-    this.narrativeSentence(
-
-      this.unique(
-        groups.relationship,
-      ).join(", "),
-
-      "O desenvolvimento desse vínculo fortaleceu os laços entre os personagens e poderá influenciar decisões importantes nos próximos acontecimentos."
-
-    )
-
-  )
-
-}
-
-
-
-// ==================================
-// Descobertas
-// ==================================
-
-if(
-  groups.discovery.length
-){
-
-  result.push(
-
-    this.narrativeSentence(
-
-      this.unique(
-        groups.discovery,
-      ).join(", "),
-
-      "As descobertas ampliam o conhecimento sobre o mundo e podem transformar completamente os rumos da campanha."
-
-    )
-
-  )
-
-}
-
-
-
-// ==================================
-// Combates
-// ==================================
-
-if(
-  groups.combat.length
-){
-
-  result.push(
-
-    this.narrativeSentence(
-
-      this.unique(
-        groups.combat,
-      ).join(", "),
-
-      "Os confrontos elevaram a tensão da narrativa e poderão desencadear novos acontecimentos."
-
-    )
-
-  )
-
-}
-
-
-
-// ==================================
-// Diálogos
-// ==================================
-
-if(
-  groups.dialogue.length
-){
-
-  const dialogues =
-
-    this.unique(
-      groups.dialogue,
-    )
-
-  result.push(
-
-    this.narrativeSentence(
-
-      dialogues.join(", "),
-
-      "As conversas revelaram novas perspectivas entre os personagens e poderão influenciar os acontecimentos seguintes da jornada."
-
-    )
-
-  )
-
-}
-
-
-
-
-
- // ==================================
- // Missões
- // ==================================
-
- if(
-  groups.quest.length ||
-  groups.achievement.length
- ){
-
-  result.push(
-
-    `Novos avanços foram realizados: ${
-      
       this.unique([
+
         ...groups.quest,
+
         ...groups.achievement,
+
       ])
-      .join(", ")
-
-    }.`
-
-  )
-
- }
 
 
 
+    if(
+      advances.length
+    ){
+
+      result.push(
+
+        `Novos avanços foram realizados: ${advances.join(", ")}.`
+
+      )
+
+    }
+
+  }
 
 
- // ==================================
- // Outros
- // ==================================
 
- if(
-  groups.other.length
- ){
 
-  result.push(
 
-    this.unique(
-      groups.other,
+  // ======================================
+  // Outros
+  // ======================================
+
+  if(
+    groups.other.length
+  ){
+
+    result.push(
+
+      this.unique(
+        groups.other,
+      ).join(", ")
+
     )
-    .join(", ")
 
-  )
-
- }
+  }
 
 
 
 
 
- return result
- .filter(Boolean)
- .map(
-   text => text.trim()
- )
- .join("\n\n")
+  // ======================================
+  // Resultado
+  // ======================================
 
+  return result
+
+    .filter(
+      Boolean,
+    )
+
+    .map(
+      text =>
+        text.trim()
+    )
+
+    .filter(
+      text =>
+        text.length > 0
+    )
+
+    .join(
+      "\n\n",
+    )
 
 }
 
@@ -756,9 +895,108 @@ if(
 
 
 
+// ======================================
+// Evento de casamento
+// ======================================
+
+private static composeMarriageEvent(
+  event:SummaryData["majorEvents"][number],
+):string{
+
+
+  // ------------------------------------
+  // Participantes explícitos
+  // ------------------------------------
+
+  if(
+    event.participants
+  ){
+
+    const participants =
+      event.participants.trim()
 
 
 
+    if(
+      participants.length
+    ){
+
+      return (
+        `Uma união por casamento foi estabelecida entre ${participants}`
+      )
+
+    }
+
+  }
+
+
+
+
+
+  // ------------------------------------
+  // Actor + target
+  // ------------------------------------
+
+  if(
+    event.actor &&
+    event.target
+  ){
+
+    return (
+      `${event.actor} se casou com ${event.target}`
+    )
+
+  }
+
+
+
+
+
+  // ------------------------------------
+  // Somente target
+  // ------------------------------------
+
+  if(
+    event.target
+  ){
+
+    return (
+      `O personagem se casou com ${event.target}`
+    )
+
+  }
+
+
+
+
+
+  // ------------------------------------
+  // Somente actor
+  // ------------------------------------
+
+  if(
+    event.actor
+  ){
+
+    return (
+      `${event.actor} se casou`
+    )
+
+  }
+
+
+
+
+
+  // ------------------------------------
+  // Fallback
+  // ------------------------------------
+
+  return (
+    "Um casamento foi realizado"
+  )
+
+}
 
 // ======================================
 // Objetivos

@@ -1,53 +1,82 @@
 export type SummaryEventType =
 
 
-  // ======================================
-  // Conflitos e ações
-  // ======================================
+// ======================================
+// Conflitos e ações
+// ======================================
 
   | "combat"
-
   | "death"
-
   | "betrayal"
-
   | "movement"
 
 
 
-  // ======================================
-  // Relações e sociedade
-  // ======================================
+// ======================================
+// Relações e sociedade
+// ======================================
 
   | "relationship"
-
   | "alliance"
-
   | "political"
 
 
 
-  // ======================================
-  // Informação e narrativa
-  // ======================================
+// ======================================
+// Informação e narrativa
+// ======================================
 
   | "dialogue"
-
   | "discovery"
-
   | "prophecy"
-
   | "emotion"
 
 
 
-  // ======================================
-  // Progressão
-  // ======================================
+// ======================================
+// Progressão
+// ======================================
 
   | "quest"
-
   | "achievement"
+
+
+
+
+
+export type SummaryEventSubtype =
+
+
+// ======================================
+// Alianças
+// ======================================
+
+  | "marriage"
+  | "treaty"
+  | "oath"
+  | "military"
+  | "political"
+
+
+
+// ======================================
+// Relações
+// ======================================
+
+  | "romantic"
+  | "friendship"
+  | "family"
+  | "rivalry"
+  | "trust"
+  | "betrayal"
+
+
+
+// ======================================
+// Outros
+// ======================================
+
+  | "unknown"
 
 
 
@@ -55,13 +84,9 @@ export type SummaryEventType =
 
 export type SummaryEventImportance =
 
-
   | "low"
-
   | "medium"
-
   | "high"
-
   | "critical"
 
 
@@ -71,108 +96,64 @@ export type SummaryEventImportance =
 export interface SummaryEvent {
 
 
+// ======================================
+// Classificação narrativa
+// ======================================
 
-  // ======================================
-  // Classificação narrativa
-  // ======================================
+  type:SummaryEventType
 
+  subtype?:SummaryEventSubtype
 
-  type: SummaryEventType
+  importance:SummaryEventImportance
 
-
-
-  importance: SummaryEventImportance
-
-
-
-
-  /**
-   * Peso usado pelo compositor
-   *
-   * Quanto maior:
-   * - aparece primeiro no resumo
-   * - possui maior impacto narrativo
-   *
-   * Exemplos:
-   *
-   * morte: 100
-   * traição: 90
-   * revelação: 80
-   * diálogo: 20
-   */
   narrativeWeight:number
 
 
 
-
-
-  // ======================================
-  // Conteúdo narrativo
-  // ======================================
-
+// ======================================
+// Conteúdo narrativo
+// ======================================
 
   description:string
 
 
 
-
-
-  // ======================================
-  // Participantes
-  // ======================================
-
+// ======================================
+// Participantes
+// ======================================
 
   actor?:string
 
-
   target?:string
 
-
-  participants?:string[]
-
+  participants?:string
 
 
 
-
-  // ======================================
-  // Mundo
-  // ======================================
-
+// ======================================
+// Mundo
+// ======================================
 
   location?:string
 
-
   faction?:string
-
 
   item?:string
 
 
 
-
-
-  // ======================================
-  // Impacto
-  // ======================================
-
+// ======================================
+// Impacto
+// ======================================
 
   consequence?:string
 
 
 
-  /**
-   * Marcadores narrativos
-   *
-   * Exemplos:
-   *
-   * [
-   *  "turning_point",
-   *  "major_loss",
-   *  "hidden_truth"
-   * ]
-   */
-  tags?:string[]
+// ======================================
+// Marcadores narrativos
+// ======================================
 
-
+  tags?:string
 
 }
