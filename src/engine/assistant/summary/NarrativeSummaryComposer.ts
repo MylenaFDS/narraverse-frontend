@@ -13,181 +13,252 @@ static compose(
 ):string{
 
 
- const paragraphs:string[]=[]
+  const paragraphs:string[] = []
 
 
 
- paragraphs.push(
-  this.composeOpening(
-    data,
+  // ======================================
+  // Abertura
+  // ======================================
+
+  paragraphs.push(
+
+    this.composeOpening(
+      data,
+    )
+
   )
- )
 
 
 
- if(
-  data.atmosphere ||
-  data.dominantEmotion
-){
+  // ======================================
+  // Atmosfera / emoção
+  // ======================================
 
   const atmosphere =
-    data.atmosphere ??
-    data.dominantEmotion
+    this.normalizeNarrativeValue(
+      data.atmosphere,
+    )
+
 
   const emotion =
-    data.dominantEmotion
+    this.normalizeNarrativeValue(
+      data.dominantEmotion,
+    )
 
-  paragraphs.push(
 
+
+  if(
+    atmosphere ||
     emotion
+  ){
 
-      ? `A narrativa assume um tom ${atmosphere}, criando um clima de ${emotion} que influencia diretamente as escolhas, reações e decisões dos personagens.`
+    paragraphs.push(
 
-      : `A narrativa assume um tom ${atmosphere}, intensificando a tensão e envolvendo os personagens em um cenário de mudanças decisivas.`
+      emotion
 
-  )
+        ? `A narrativa assume um tom ${atmosphere ?? emotion}, criando um clima de ${emotion} que influencia diretamente as escolhas, reações e decisões dos personagens.`
 
-}
+        : `A narrativa assume um tom ${atmosphere}, intensificando a tensão e envolvendo os personagens em um cenário de mudanças decisivas.`
 
+    )
 
+  }
 
- const importantEvents =
 
-  data.majorEvents
 
-   .filter(
+  // ======================================
+  // Eventos importantes
+  // ======================================
 
-    event =>
-      event.importance !== "low"
+  const importantEvents =
 
-   )
+    data.majorEvents
 
-   .sort(
+      .filter(
 
-    (a,b)=>
-      b.narrativeWeight -
-      a.narrativeWeight
+        event =>
+          event.importance !== "low"
 
-   )
+      )
 
+      .sort(
 
+        (a,b) =>
 
+          b.narrativeWeight -
+          a.narrativeWeight
 
- if(
-  importantEvents.length
- ){
+      )
 
-  paragraphs.push(
 
-   this.composeEvents(
-    importantEvents,
-   )
 
-  )
+  if(
+    importantEvents.length
+  ){
 
- }
+    paragraphs.push(
 
- if(
-  data.objectives.length ||
-  data.quests.length
- ){
+      this.composeEvents(
+        importantEvents,
+      )
 
-  paragraphs.push(
+    )
 
-   this.composeObjectives(
-    data,
-   )
+  }
 
-  )
 
- }
 
+  // ======================================
+  // Objetivos / missões
+  // ======================================
 
+  if(
+    data.objectives.length ||
+    data.quests.length
+  ){
 
+    paragraphs.push(
 
+      this.composeObjectives(
+        data,
+      )
 
- if(
-  data.consequences.length &&
-  !importantEvents.some(
-   event =>
-    event.type === "death"
-  )
- ){
+    )
 
-  paragraphs.push(
+  }
 
-   this.unique(
-    data.consequences,
-   ).join(" ")
 
-  )
 
- }
+  // ======================================
+  // Consequências
+  // ======================================
 
+  if(
+    data.consequences.length &&
+    !importantEvents.some(
 
+      event =>
+        event.type === "death"
 
+    )
+  ){
 
+    paragraphs.push(
 
- if(
-  data.characters.length
-){
+      this.unique(
+        data.consequences,
+      ).join(" ")
 
-  const chars =
-    this.unique(
-      data.characters,
-    ).slice(0, 5)
+    )
 
-  paragraphs.push(
+  }
 
-    `Os acontecimentos recentes colocam ${this.naturalList(chars)} no centro da narrativa, tornando suas próximas escolhas decisivas para o futuro da campanha.`
 
-  )
 
-}
+  // ======================================
+  // Personagens envolvidos
+  // ======================================
 
+  /*
+   * Personagens só devem ser apresentados
+   * como parte dos acontecimentos recentes
+   * quando realmente existem acontecimentos.
+   */
 
+  if(
+    data.characters.length &&
+    importantEvents.length
+  ){
 
+    const chars =
 
+      this.unique(
+        data.characters,
+      ).slice(0,5)
 
-if(
-  data.narrativeHooks.length
-){
 
-  paragraphs.push(
 
-    `Os acontecimentos recentes indicam que a campanha entrou em uma nova fase. Questões como ${this.unique(data.narrativeHooks).join(", ")} poderão definir os próximos rumos da jornada.`
+    if(
+      chars.length
+    ){
 
-  )
+      paragraphs.push(
 
-}
+        `Os acontecimentos recentes colocam ${this.naturalList(chars)} no centro da narrativa, tornando suas próximas escolhas decisivas para o futuro da campanha.`
 
+      )
 
+    }
 
+  }
 
 
- return paragraphs
 
-  .map(
-    text =>
-      text.trim()
-  )
+  // ======================================
+  // Ganchos narrativos
+  // ======================================
 
-  .filter(
-    text =>
-      text.length > 0
-  )
+  if(
+    data.narrativeHooks.length
+  ){
 
-  .filter(
-    (text,index,array)=>
-      array.indexOf(text) === index
-  )
+    const hooks =
 
-  .join(
+      this.unique(
+        data.narrativeHooks,
+      )
 
-    "\n\n"
 
-  )
 
+    if(
+      hooks.length
+    ){
+
+      paragraphs.push(
+
+        `Os acontecimentos recentes indicam que a campanha entrou em uma nova fase. Questões como ${this.naturalList(hooks)} poderão definir os próximos rumos da jornada.`
+
+      )
+
+    }
+
+  }
+
+
+
+  // ======================================
+  // Resultado final
+  // ======================================
+
+  return paragraphs
+
+    .map(
+
+      text =>
+        text.trim()
+
+    )
+
+    .filter(
+
+      text =>
+        text.length > 0
+
+    )
+
+    .filter(
+
+      (text,index,array) =>
+        array.indexOf(text) === index
+
+    )
+
+    .join(
+
+      "\n\n"
+
+    )
 
 }
 
@@ -998,6 +1069,7 @@ private static composeMarriageEvent(
 
 }
 
+
 // ======================================
 // Objetivos
 // ======================================
@@ -1238,6 +1310,57 @@ private static naturalList(
   return (
     `${items.slice(0, -1).join(", ")} e ${items.at(-1)}`
   )
+
+}
+// ======================================
+// Normalizar valores narrativos
+// ======================================
+
+private static normalizeNarrativeValue(
+  value?:string | null,
+):string | null{
+
+
+  if(
+    !value
+  ){
+
+    return null
+
+  }
+
+
+
+  const normalized =
+
+    value
+      .trim()
+      .toLowerCase()
+
+
+
+  if(
+    [
+      "neutral",
+      "neutra",
+      "neutro",
+      "unknown",
+      "desconhecido",
+      "desconhecida",
+      "undefined",
+      "null",
+    ].includes(
+      normalized,
+    )
+  ){
+
+    return null
+
+  }
+
+
+
+  return value.trim()
 
 }
 }
