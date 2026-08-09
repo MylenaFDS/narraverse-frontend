@@ -8,13 +8,23 @@ import type {
   StoryEvent,
 } from "../StoryEvent"
 
+
+
 type AllianceSubtype =
+
   | "marriage"
+
   | "treaty"
+
   | "oath"
+
   | "military"
+
   | "political"
+
   | "unknown"
+
+
 
 
 export class RelationshipInterpreter {
@@ -48,10 +58,20 @@ export class RelationshipInterpreter {
 
 
 
-    const targetName =
-      this.extractMention(
+    const mentionedCharacters =
+      this.extractMentions(
         originalText,
       )
+
+
+
+    const actorName =
+      mentionedCharacters[0]
+
+
+
+    const targetName =
+      mentionedCharacters[1]
 
 
 
@@ -88,16 +108,16 @@ export class RelationshipInterpreter {
 
         actorId,
 
+        actorName,
+
         targetName,
 
         participants:
-          this.buildParticipants(
-            targetName,
-          ),
+          mentionedCharacters,
 
         description:
           this.buildMarriageDescription(
-            targetName,
+            mentionedCharacters,
           ),
 
         sourceText:
@@ -160,17 +180,17 @@ export class RelationshipInterpreter {
 
         actorId,
 
+        actorName,
+
         targetName,
 
         participants:
-          this.buildParticipants(
-            targetName,
-          ),
+          mentionedCharacters,
 
         description:
           this.buildRelationshipDescription(
             "Uma relação romântica se desenvolveu",
-            targetName,
+            mentionedCharacters,
           ),
 
         sourceText:
@@ -231,17 +251,17 @@ export class RelationshipInterpreter {
 
         actorId,
 
+        actorName,
+
         targetName,
 
         participants:
-          this.buildParticipants(
-            targetName,
-          ),
+          mentionedCharacters,
 
         description:
           this.buildRelationshipDescription(
             "Um vínculo de confiança se fortaleceu",
-            targetName,
+            mentionedCharacters,
           ),
 
         sourceText:
@@ -301,17 +321,17 @@ export class RelationshipInterpreter {
 
         actorId,
 
+        actorName,
+
         targetName,
 
         participants:
-          this.buildParticipants(
-            targetName,
-          ),
+          mentionedCharacters,
 
         description:
           this.buildRelationshipDescription(
             "Uma relação pessoal evoluiu",
-            targetName,
+            mentionedCharacters,
           ),
 
         sourceText:
@@ -377,17 +397,17 @@ export class RelationshipInterpreter {
 
         actorId,
 
+        actorName,
+
         targetName,
 
         participants:
-          this.buildParticipants(
-            targetName,
-          ),
+          mentionedCharacters,
 
         description:
           this.buildAllianceDescription(
             subtype,
-            targetName,
+            mentionedCharacters,
           ),
 
         sourceText:
@@ -444,16 +464,16 @@ export class RelationshipInterpreter {
 
         actorId,
 
+        actorName,
+
         targetName,
 
         participants:
-          this.buildParticipants(
-            targetName,
-          ),
+          mentionedCharacters,
 
         description:
           this.buildBetrayalDescription(
-            targetName,
+            mentionedCharacters,
           ),
 
         sourceText:
@@ -498,8 +518,8 @@ export class RelationshipInterpreter {
   // ======================================
 
   private static detectAllianceSubtype(
-  text:string,
-):AllianceSubtype {
+    text:string,
+  ):AllianceSubtype {
 
 
 
@@ -606,17 +626,41 @@ export class RelationshipInterpreter {
   // ======================================
 
   private static buildMarriageDescription(
-    targetName?:string,
+    participants:string[],
   ):string {
 
 
 
+    const names =
+      participants.filter(
+        (
+          name,
+        ) =>
+          Boolean(
+            name,
+          ),
+      )
+
+
+
     if(
-      targetName
+      names.length >= 2
     ){
 
       return (
-        `O personagem se casou com ${targetName}`
+        `${names[0]} e ${names[1]} se casaram`
+      )
+
+    }
+
+
+
+    if(
+      names.length === 1
+    ){
+
+      return (
+        `Um casamento envolvendo ${names[0]} foi realizado`
       )
 
     }
@@ -640,17 +684,41 @@ export class RelationshipInterpreter {
 
   private static buildRelationshipDescription(
     base:string,
-    targetName?:string,
+    participants:string[],
   ):string {
 
 
 
+    const names =
+      participants.filter(
+        (
+          name,
+        ) =>
+          Boolean(
+            name,
+          ),
+      )
+
+
+
     if(
-      targetName
+      names.length >= 2
     ){
 
       return (
-        `${base} com ${targetName}`
+        `${base} entre ${names[0]} e ${names[1]}`
+      )
+
+    }
+
+
+
+    if(
+      names.length === 1
+    ){
+
+      return (
+        `${base} com ${names[0]}`
       )
 
     }
@@ -671,16 +739,34 @@ export class RelationshipInterpreter {
   // ======================================
 
   private static buildAllianceDescription(
-  subtype:AllianceSubtype,
-  targetName?:string,
-):string{
+    subtype:AllianceSubtype,
+    participants:string[],
+  ):string {
+
+
+
+    const names =
+      participants.filter(
+        (
+          name,
+        ) =>
+          Boolean(
+            name,
+          ),
+      )
 
 
 
     const target =
-      targetName
-        ? ` com ${targetName}`
-        : ""
+      names.length >= 2
+
+        ? ` entre ${names[0]} e ${names[1]}`
+
+        : names.length === 1
+
+          ? ` com ${names[0]}`
+
+          : ""
 
 
 
@@ -748,17 +834,41 @@ export class RelationshipInterpreter {
   // ======================================
 
   private static buildBetrayalDescription(
-    targetName?:string,
+    participants:string[],
   ):string {
 
 
 
+    const names =
+      participants.filter(
+        (
+          name,
+        ) =>
+          Boolean(
+            name,
+          ),
+      )
+
+
+
     if(
-      targetName
+      names.length >= 2
     ){
 
       return (
-        `Uma traição envolvendo ${targetName} criou um novo conflito`
+        `Uma traição envolvendo ${names[0]} e ${names[1]} criou um novo conflito`
+      )
+
+    }
+
+
+
+    if(
+      names.length === 1
+    ){
+
+      return (
+        `Uma traição envolvendo ${names[0]} criou um novo conflito`
       )
 
     }
@@ -768,37 +878,6 @@ export class RelationshipInterpreter {
     return (
       "Uma traição criou um novo conflito"
     )
-
-  }
-
-
-
-
-
-
-  // ======================================
-  // Participantes
-  // ======================================
-
-  private static buildParticipants(
-    targetName?:string,
-  ):string[] {
-
-
-
-    if(
-      !targetName
-    ){
-
-      return []
-
-    }
-
-
-
-    return [
-      targetName,
-    ]
 
   }
 
@@ -835,26 +914,39 @@ export class RelationshipInterpreter {
 
 
   // ======================================
-  // Extrair @personagem
+  // Extrair todas as menções
   // ======================================
 
-  private static extractMention(
+  private static extractMentions(
     text:string,
-  ):string | undefined {
+  ):string[] {
 
 
 
-    const match =
-
-      text.match(
-        /@([A-Za-zÀ-ÿ0-9_]+)/,
+    const matches =
+      text.matchAll(
+        /@([A-Za-zÀ-ÿ0-9_]+)/g,
       )
 
 
 
-    return match
-      ? match[1]
-      : undefined
+    const mentions =
+      [
+        ...matches,
+      ].map(
+
+        match =>
+          match[1],
+
+      )
+
+
+
+    return [
+      ...new Set(
+        mentions,
+      ),
+    ]
 
   }
 
