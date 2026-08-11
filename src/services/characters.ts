@@ -57,11 +57,59 @@ export async function createCharacter(
 export async function getPublicCharacter(
   characterId: number
 ) {
+
   const res = await api.get(
     `/characters/${characterId}/public`
   )
 
-  return res.data
+  const character =
+    res.data
+
+
+  // ======================================
+  // Buscar ficha pública
+  // ======================================
+
+  let sheet:CharacterSheetValue[] = []
+
+
+  try {
+
+    const sheetResponse =
+      await fetch(
+        `${API}/character-sheets/${characterId}`
+      )
+
+
+    if(
+      sheetResponse.ok
+    ){
+
+      sheet =
+        await sheetResponse.json()
+
+    }
+
+  } catch(
+    error
+  ){
+
+    console.error(
+      "Erro ao buscar ficha pública:",
+      error,
+    )
+
+  }
+
+
+  return {
+
+    ...character,
+
+    sheet,
+
+  }
+
 }
 // ===============================
 // 🔥 FICHA

@@ -21,8 +21,13 @@ type CharacterData = {
   image_url?: string | null
   owner_username: string
   sheet?: {
-  field_name: string
+  id: number
   value: string
+  field: {
+    id: number
+    name: string
+    field_type: string
+  }
 }[]
   world_lore_id?: number | null
   world_lore?: {
@@ -70,24 +75,18 @@ export default function PublicCharacterOverlay({
   ])
     .then(([characterData, eventsData]) => {
 
-  const normalizedCharacter: CharacterData = {
-    ...characterData,
-
-    sheet:
-      Array.isArray(characterData?.sheet)
-        ? characterData.sheet
-        : [],
-  }
-
-  setCharacter(
-    normalizedCharacter,
+  console.log(
+    "PUBLIC CHARACTER:",
+    characterData,
   )
 
-  setTimelineEvents(
-    Array.isArray(eventsData)
-      ? eventsData
-      : [],
+  console.log(
+    "PUBLIC CHARACTER SHEET:",
+    characterData?.sheet,
   )
+
+  setCharacter(characterData)
+  setTimelineEvents(eventsData || [])
 
 })
     .catch(console.error)
@@ -329,35 +328,66 @@ export default function PublicCharacterOverlay({
   )}
 </div>
         <div>
-          <div className="text-sm uppercase tracking-[0.2em] text-[#e0a96d]/70 mb-4">
-            Atributos
-          </div>
+  <div className="
+    text-sm
+    uppercase
+    tracking-[0.2em]
+    text-[#e0a96d]/70
+    mb-4
+  ">
+    Atributos
+  </div>
 
-          <div className="grid md:grid-cols-2 gap-4">
-            {(character.sheet ?? []).map((field) => (
-              <div
-                key={field.field_name}
-                className="
-                  rounded-2xl
-                  border
-                  border-[#4a2329]
-                  bg-gradient-to-br
-                  from-[#1b0c10]
-                  to-[#12080a]
-                  p-4
-                "
-              >
-                <div className="text-[11px] uppercase tracking-[0.15em] text-[#e0a96d]/70 mb-3">
-                  {field.field_name}
-                </div>
+  {character.sheet?.length ? (
 
-                <div className="text-[#f5d7b2]">
-                  {field.value || "—"}
-                </div>
-              </div>
-            ))}
-          </div>
+  <div className="grid md:grid-cols-2 gap-4">
+
+    {character.sheet.map((field) => (
+
+      <div
+        key={field.id}
+        className="
+          rounded-2xl
+          border
+          border-[#4a2329]
+          bg-gradient-to-br
+          from-[#1b0c10]
+          to-[#12080a]
+          p-4
+        "
+      >
+
+        <div
+          className="
+            text-[11px]
+            uppercase
+            tracking-[0.15em]
+            text-[#e0a96d]/70
+            mb-3
+          "
+        >
+          {field.field.name}
         </div>
+
+        <div className="text-[#f5d7b2]">
+          {field.value || "—"}
+        </div>
+
+      </div>
+
+    ))}
+
+  </div>
+
+) : (
+
+  <p className="text-[#c9ada7]/70">
+    Nenhum atributo registrado.
+  </p>
+
+)}
+
+</div>
       </div>
     </div>
   </div>

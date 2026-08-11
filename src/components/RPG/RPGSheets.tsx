@@ -177,7 +177,7 @@ setFactions(factionsData || [])
     const formatted: Record<number, string> = {}
 
     sheet.forEach((item: CharacterSheetValue) => {
-      formatted[item.field_id] = item.value
+      formatted[item.field.id] = item.value
     })
 
     setSheetData(formatted)
