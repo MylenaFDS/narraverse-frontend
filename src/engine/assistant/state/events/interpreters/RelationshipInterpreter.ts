@@ -58,6 +58,10 @@ export class RelationshipInterpreter {
 
 
 
+    // ======================================
+    // Personagens mencionados
+    // ======================================
+
     const mentionedCharacters =
       this.extractMentions(
         originalText,
@@ -632,13 +636,8 @@ export class RelationshipInterpreter {
 
 
     const names =
-      participants.filter(
-        (
-          name,
-        ) =>
-          Boolean(
-            name,
-          ),
+      this.cleanParticipants(
+        participants,
       )
 
 
@@ -690,13 +689,8 @@ export class RelationshipInterpreter {
 
 
     const names =
-      participants.filter(
-        (
-          name,
-        ) =>
-          Boolean(
-            name,
-          ),
+      this.cleanParticipants(
+        participants,
       )
 
 
@@ -746,18 +740,14 @@ export class RelationshipInterpreter {
 
 
     const names =
-      participants.filter(
-        (
-          name,
-        ) =>
-          Boolean(
-            name,
-          ),
+      this.cleanParticipants(
+        participants,
       )
 
 
 
     const target =
+
       names.length >= 2
 
         ? ` entre ${names[0]} e ${names[1]}`
@@ -840,13 +830,8 @@ export class RelationshipInterpreter {
 
 
     const names =
-      participants.filter(
-        (
-          name,
-        ) =>
-          Boolean(
-            name,
-          ),
+      this.cleanParticipants(
+        participants,
       )
 
 
@@ -878,6 +863,40 @@ export class RelationshipInterpreter {
     return (
       "Uma traição criou um novo conflito"
     )
+
+  }
+
+
+
+
+
+
+  // ======================================
+  // Normalizar participantes
+  // ======================================
+
+  private static cleanParticipants(
+    participants:string[],
+  ):string[] {
+
+
+
+    return [
+      ...new Set(
+
+        participants
+
+          .map(
+            name =>
+              name.trim(),
+          )
+
+          .filter(
+            Boolean,
+          )
+
+      ),
+    ]
 
   }
 

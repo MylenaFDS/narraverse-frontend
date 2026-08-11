@@ -2,6 +2,7 @@ import type {
   SummaryData,
 } from "./SummaryData"
 
+import type {SummaryEvent} from "./SummaryEvent"
 
 
 export class NarrativeSummaryComposer {
@@ -166,32 +167,33 @@ static compose(
    * quando realmente existem acontecimentos.
    */
 
+  // ======================================
+// Personagens envolvidos nos acontecimentos
+// ======================================
+
+if(
+  importantEvents.length
+){
+
+  const recentCharacters =
+    this.extractEventCharacters(
+      importantEvents,
+    )
+
+
   if(
-    data.characters.length &&
-    importantEvents.length
+    recentCharacters.length
   ){
 
-    const chars =
+    paragraphs.push(
 
-      this.unique(
-        data.characters,
-      ).slice(0,5)
+      `Os acontecimentos recentes colocam ${this.naturalList(recentCharacters)} no centro da narrativa, tornando suas próximas escolhas decisivas para o futuro da campanha.`
 
-
-
-    if(
-      chars.length
-    ){
-
-      paragraphs.push(
-
-        `Os acontecimentos recentes colocam ${this.naturalList(chars)} no centro da narrativa, tornando suas próximas escolhas decisivas para o futuro da campanha.`
-
-      )
-
-    }
+    )
 
   }
+
+}
 
 
 
@@ -327,12 +329,11 @@ private static composeOpening(
 // ======================================
 
 private static composeEvents(
-  events:SummaryData["majorEvents"],
+  events:SummaryEvent[],
 ):string{
 
 
   const groups = {
-
 
     death:[] as string[],
 
@@ -356,10 +357,7 @@ private static composeEvents(
 
     other:[] as string[],
 
-
   }
-
-
 
 
 
@@ -373,7 +371,6 @@ private static composeEvents(
 
 
     const text =
-
       this.cleanEvent(
         event.description,
       )
@@ -382,6 +379,23 @@ private static composeEvents(
 
     if(
       !text
+    ){
+
+      continue
+
+    }
+
+
+
+    // ==================================
+    // Ignorar eventos genéricos
+    // ==================================
+
+    if(
+      this.isGenericEvent(
+        event,
+        text,
+      )
     ){
 
       continue
@@ -443,7 +457,6 @@ private static composeEvents(
 
       case "alliance": {
 
-
         // --------------------------------
         // Casamento
         // --------------------------------
@@ -452,9 +465,7 @@ private static composeEvents(
           event.subtype === "marriage"
         ){
 
-
           const marriageText =
-
             this.composeMarriageEvent(
               event,
             )
@@ -471,8 +482,8 @@ private static composeEvents(
 
           }
 
-
         }
+
 
 
         // --------------------------------
@@ -480,7 +491,6 @@ private static composeEvents(
         // --------------------------------
 
         else{
-
 
           groups.alliance.push(
             text,
@@ -516,32 +526,47 @@ private static composeEvents(
 
       case "discovery": {
 
-
-        const ignoredLocations =
-          new Set([
-
-            "gondor",
-            "mordor",
-            "condado",
-            "rivendell",
-
-          ])
-
-
-
         const normalized =
-
           text
             .toLowerCase()
             .trim()
 
 
 
+        const ignoredLocations =
+          new Set([
+
+            "gondor",
+
+            "mordor",
+
+            "condado",
+
+            "rivendell",
+
+            "castelo",
+
+            "castelos",
+
+            "floresta",
+
+            "cidade",
+
+            "vila",
+
+            "fortaleza",
+
+            "palácio",
+
+            "palacio",
+
+          ])
+
+
+
         if(
 
-          text.length > 5
-
-          &&
+          text.length > 5 &&
 
           !ignoredLocations.has(
             normalized,
@@ -637,11 +662,7 @@ private static composeEvents(
 
 
 
-
-
   const result:string[] = []
-
-
 
 
 
@@ -661,15 +682,13 @@ private static composeEvents(
           groups.death,
         ).join(", "),
 
-        "A perda representa uma ruptura significativa na história, alterando escolhas, relações e caminhos futuros."
+        "A perda representa uma ruptura significativa na história, alterando escolhas, relações e caminhos futuros.",
 
       )
 
     )
 
   }
-
-
 
 
 
@@ -689,15 +708,13 @@ private static composeEvents(
           groups.betrayal,
         ).join(", "),
 
-        "O ato de traição abalou a confiança entre os envolvidos e poderá desencadear novos conflitos."
+        "A traição abalou a confiança entre os envolvidos e abriu espaço para novos conflitos.",
 
       )
 
     )
 
   }
-
-
 
 
 
@@ -717,15 +734,13 @@ private static composeEvents(
           groups.prophecy,
         ).join(", "),
 
-        "A revelação amplia o mistério da campanha e sugere que os acontecimentos atuais fazem parte de um destino maior ainda desconhecido."
+        "A revelação amplia o mistério da campanha e poderá influenciar acontecimentos que ainda estão por vir.",
 
       )
 
     )
 
   }
-
-
 
 
 
@@ -737,23 +752,92 @@ private static composeEvents(
     groups.alliance.length
   ){
 
-    result.push(
+    const marriages =
+      events
+        .filter(
+          event =>
+            event.type === "alliance" &&
+            event.subtype === "marriage",
+        )
+        .map(
+          event =>
+            this.composeMarriageEvent(
+              event,
+            ),
+        )
+        .filter(
+          Boolean,
+        )
 
-      this.narrativeSentence(
+
+
+    const otherAlliances =
+      events
+        .filter(
+          event =>
+            event.type === "alliance" &&
+            event.subtype !== "marriage",
+        )
+        .map(
+          event =>
+            this.cleanEvent(
+              event.description,
+            ),
+        )
+        .filter(
+          text =>
+            Boolean(
+              text,
+            ),
+        )
+
+
+
+    // --------------------------------
+    // Casamentos
+    // --------------------------------
+
+    if(
+      marriages.length
+    ){
+
+      result.push(
 
         this.unique(
-          groups.alliance,
-        ).join(", "),
-
-        "O fortalecimento dessa união alterou o equilíbrio de forças da campanha e ampliou as possibilidades de cooperação entre os envolvidos."
+          marriages,
+        ).join(" ")
 
       )
 
-    )
+    }
+
+
+
+    // --------------------------------
+    // Outras alianças
+    // --------------------------------
+
+    if(
+      otherAlliances.length
+    ){
+
+      result.push(
+
+        this.narrativeSentence(
+
+          this.unique(
+            otherAlliances,
+          ).join(", "),
+
+          "Essas alianças poderão alterar as relações entre os envolvidos e influenciar os próximos acontecimentos.",
+
+        )
+
+      )
+
+    }
 
   }
-
-
 
 
 
@@ -773,15 +857,13 @@ private static composeEvents(
           groups.relationship,
         ).join(", "),
 
-        "O desenvolvimento desse vínculo fortaleceu os laços entre os personagens e poderá influenciar decisões importantes nos próximos acontecimentos."
+        "O desenvolvimento desses vínculos poderá influenciar as relações e decisões dos personagens nos acontecimentos seguintes.",
 
       )
 
     )
 
   }
-
-
 
 
 
@@ -801,15 +883,13 @@ private static composeEvents(
           groups.discovery,
         ).join(", "),
 
-        "As descobertas ampliam o conhecimento sobre o mundo e podem transformar completamente os rumos da campanha."
+        "As descobertas acrescentam novas informações à situação atual e podem alterar os rumos da campanha.",
 
       )
 
     )
 
   }
-
-
 
 
 
@@ -829,15 +909,13 @@ private static composeEvents(
           groups.combat,
         ).join(", "),
 
-        "Os confrontos elevaram a tensão da narrativa e poderão desencadear novos acontecimentos."
+        "Os confrontos aumentaram a tensão dos acontecimentos e poderão provocar novas consequências.",
 
       )
 
     )
 
   }
-
-
 
 
 
@@ -849,29 +927,21 @@ private static composeEvents(
     groups.dialogue.length
   ){
 
-    const dialogues =
-
-      this.unique(
-        groups.dialogue,
-      )
-
-
-
     result.push(
 
       this.narrativeSentence(
 
-        dialogues.join(", "),
+        this.unique(
+          groups.dialogue,
+        ).join(", "),
 
-        "As conversas revelaram novas perspectivas entre os personagens e poderão influenciar os acontecimentos seguintes da jornada."
+        "As conversas trouxeram novas perspectivas e poderão influenciar as decisões seguintes.",
 
       )
 
     )
 
   }
-
-
 
 
 
@@ -885,7 +955,6 @@ private static composeEvents(
   ){
 
     const advances =
-
       this.unique([
 
         ...groups.quest,
@@ -912,8 +981,6 @@ private static composeEvents(
 
 
 
-
-
   // ======================================
   // Outros
   // ======================================
@@ -934,35 +1001,144 @@ private static composeEvents(
 
 
 
-
-
   // ======================================
   // Resultado
   // ======================================
 
-  return result
+  return [
 
-    .filter(
-      Boolean,
-    )
+    ...new Set(
 
-    .map(
-      text =>
-        text.trim()
-    )
+      result
 
-    .filter(
-      text =>
-        text.length > 0
-    )
+        .map(
+          text =>
+            text.trim(),
+        )
 
-    .join(
-      "\n\n",
-    )
+        .filter(
+          text =>
+            text.length > 0,
+        )
+
+    ),
+
+  ].join(
+
+    "\n\n",
+
+  )
 
 }
 
+// ======================================
+// Identificar evento genérico
+// ======================================
 
+private static isGenericEvent(
+  event:SummaryEvent,
+  text:string,
+):boolean{
+
+
+  const normalized =
+    text
+      .toLowerCase()
+      .trim()
+
+
+
+  // ==================================
+  // Descrições genéricas
+  // ==================================
+
+  const genericDescriptions = [
+
+    "uma relação pessoal evoluiu",
+
+    "um vínculo de confiança se fortaleceu",
+
+    "uma informação importante foi descoberta",
+
+    "uma tarefa de busca ou investigação foi criada",
+
+    "um diálogo importante ocorreu",
+
+    "um conflito emergiu",
+
+    "uma emoção significativa foi registrada",
+
+    "um movimento importante ocorreu",
+
+  ]
+
+
+
+  if(
+    genericDescriptions.includes(
+      normalized,
+    )
+  ){
+
+    return true
+
+  }
+
+
+
+  // ==================================
+  // Descoberta que contém apenas local
+  // ==================================
+
+  if(
+    event.type === "discovery"
+  ){
+
+    const locations = [
+
+      "gondor",
+
+      "mordor",
+
+      "condado",
+
+      "rivendell",
+
+      "castelo",
+
+      "floresta",
+
+      "cidade",
+
+      "vila",
+
+      "fortaleza",
+
+      "palácio",
+
+      "palacio",
+
+    ]
+
+
+
+    if(
+      locations.includes(
+        normalized,
+      )
+    ){
+
+      return true
+
+    }
+
+  }
+
+
+
+  return false
+
+}
 
 
 
@@ -971,42 +1147,56 @@ private static composeEvents(
 // ======================================
 
 private static composeMarriageEvent(
-  event:SummaryData["majorEvents"][number],
+  event:SummaryEvent,
 ):string{
 
 
-  // ------------------------------------
-  // Participantes explícitos
-  // ------------------------------------
+  // ======================================
+  // Participantes
+  // ======================================
 
-  if(
-    event.participants
-  ){
+  const participants =
+    (event.participants ?? [])
 
-    const participants =
-      event.participants.trim()
-
-
-
-    if(
-      participants.length
-    ){
-
-      return (
-        `Uma união por casamento foi estabelecida entre ${participants}`
+      .map(
+        (
+          name:string,
+        ) =>
+          name.trim(),
       )
 
-    }
+      .filter(
+        (
+          name:string,
+        ) =>
+          Boolean(
+            name,
+          ),
+      )
+
+
+
+  // ======================================
+  // Dois ou mais participantes
+  // ======================================
+
+  if(
+    participants.length >= 2
+  ){
+
+    return (
+
+      `${participants[0]} e ${participants[1]} se casaram`
+
+    )
 
   }
 
 
 
-
-
-  // ------------------------------------
+  // ======================================
   // Actor + target
-  // ------------------------------------
+  // ======================================
 
   if(
     event.actor &&
@@ -1014,58 +1204,50 @@ private static composeMarriageEvent(
   ){
 
     return (
-      `${event.actor} se casou com ${event.target}`
+
+      `${event.actor} e ${event.target} se casaram`
+
     )
 
   }
 
 
 
-
-
-  // ------------------------------------
-  // Somente target
-  // ------------------------------------
+  // ======================================
+  // Um participante
+  // ======================================
 
   if(
-    event.target
+    participants.length === 1
   ){
 
     return (
-      `O personagem se casou com ${event.target}`
+
+      `Um casamento envolvendo ${participants[0]} foi realizado`
+
     )
 
   }
 
 
 
-
-
-  // ------------------------------------
-  // Somente actor
-  // ------------------------------------
+  // ======================================
+  // Descrição original
+  // ======================================
 
   if(
-    event.actor
+    event.description
   ){
 
-    return (
-      `${event.actor} se casou`
+    return this.cleanEvent(
+      event.description,
     )
 
   }
 
 
 
-
-
-  // ------------------------------------
-  // Fallback
-  // ------------------------------------
-
-  return (
-    "Um casamento foi realizado"
-  )
+  return ""
 
 }
 
@@ -1210,13 +1392,101 @@ private static cleanEvent(
 
 }
 
+// ======================================
+// Personagens dos eventos recentes
+// ======================================
+
+private static extractEventCharacters(
+  events:SummaryEvent[],
+):string[]{
+
+
+  const characters:string[] = []
 
 
 
+  for(
+    const event of events
+  ){
+
+
+    // ==================================
+    // Participantes
+    // ==================================
+
+    if(
+      event.participants?.length
+    ){
+
+      characters.push(
+        ...event.participants,
+      )
+
+    }
 
 
 
+    // ==================================
+    // Actor
+    // ==================================
 
+    if(
+      event.actor
+    ){
+
+      characters.push(
+        event.actor,
+      )
+
+    }
+
+
+
+    // ==================================
+    // Target
+    // ==================================
+
+    if(
+      event.target
+    ){
+
+      characters.push(
+        event.target,
+      )
+
+    }
+
+  }
+
+
+
+  return [
+
+    ...new Set(
+
+      characters
+
+        .map(
+          (
+            name:string,
+          ) =>
+            name.trim(),
+        )
+
+        .filter(
+          (
+            name:string,
+          ) =>
+            Boolean(
+              name,
+            ),
+        )
+
+    ),
+
+  ]
+
+}
 
 // ======================================
 // Utilidades

@@ -20,10 +20,10 @@ type CharacterData = {
   history?: string
   image_url?: string | null
   owner_username: string
-  sheet: {
-    field_name: string
-    value: string
-  }[]
+  sheet?: {
+  field_name: string
+  value: string
+}[]
   world_lore_id?: number | null
   world_lore?: {
   id: number
@@ -69,9 +69,27 @@ export default function PublicCharacterOverlay({
     getTimelineByCharacter(characterId),
   ])
     .then(([characterData, eventsData]) => {
-      setCharacter(characterData)
-      setTimelineEvents(eventsData || [])
-    })
+
+  const normalizedCharacter: CharacterData = {
+    ...characterData,
+
+    sheet:
+      Array.isArray(characterData?.sheet)
+        ? characterData.sheet
+        : [],
+  }
+
+  setCharacter(
+    normalizedCharacter,
+  )
+
+  setTimelineEvents(
+    Array.isArray(eventsData)
+      ? eventsData
+      : [],
+  )
+
+})
     .catch(console.error)
 }, [characterId])
 
@@ -316,7 +334,7 @@ export default function PublicCharacterOverlay({
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">
-            {character.sheet.map((field) => (
+            {(character.sheet ?? []).map((field) => (
               <div
                 key={field.field_name}
                 className="
