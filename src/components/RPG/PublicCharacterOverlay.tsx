@@ -342,7 +342,7 @@ export default function PublicCharacterOverlay({
 
   <div className="grid md:grid-cols-2 gap-4">
 
-    {character.sheet.map((field) => (
+    {(character.sheet ?? []).map((field) => (
 
       <div
         key={field.id}
