@@ -3,7 +3,7 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom"
-import { useState, useEffect } from "react"
+import { useMemo,useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import Turns from "../components/RPG/Turns"
 import Chat from "../components/RPG/Chat"
@@ -177,6 +177,31 @@ const [
   selectedFactionId,
   setSelectedFactionId,
 ] = useState<number | null>(null)
+
+const [characterSearch, setCharacterSearch] = useState("")
+const [showAllCharacters, setShowAllCharacters] = useState(false)
+
+const filteredPublicCharacters = useMemo(() => {
+
+  const search = characterSearch
+    .trim()
+    .toLowerCase()
+
+  if (!search) {
+    return publicCharacters
+  }
+
+  return publicCharacters.filter((char) =>
+    char.name
+      .toLowerCase()
+      .includes(search)
+  )
+
+}, [publicCharacters, characterSearch])
+
+const visiblePublicCharacters = showAllCharacters
+  ? filteredPublicCharacters
+  : filteredPublicCharacters.slice(0, 6)
 
 function handleFocusLore(
   loreId: number
@@ -712,45 +737,171 @@ const canRequestJoin =
   )}
 </div>
 <div className="rpg-panel">
-  <h3 className="text-xl font-display text-[#e0a96d] mb-4">
-    Personagens
-  </h3>
+
+  <div className="flex items-center justify-between mb-4">
+
+    <h3 className="text-xl font-display text-[#e0a96d]">
+      Personagens
+    </h3>
+
+    {publicCharacters.length > 6 && (
+      <span className="text-xs text-[#c9ada7]/50">
+        {publicCharacters.length} personagens
+      </span>
+    )}
+
+  </div>
+
 
   {publicCharacters.length > 0 ? (
-    <div className="space-y-2">
-      {publicCharacters.slice(0, 6).map((char) => (
-        <div
-          key={char.id}
+
+    <div className="space-y-3">
+
+      {/* Busca */}
+
+      {publicCharacters.length > 6 && (
+
+        <div className="relative">
+
+          <input
+            type="text"
+            value={characterSearch}
+            onChange={(e) =>
+              setCharacterSearch(e.target.value)
+            }
+            placeholder="Buscar personagem..."
+            className="
+              w-full
+              rounded-xl
+              border
+              border-[#e0a96d]/10
+              bg-black/20
+              px-4
+              py-2.5
+              pr-10
+              text-sm
+              text-[#f2e9e4]
+              placeholder:text-[#c9ada7]/40
+              outline-none
+              transition
+              focus:border-[#e0a96d]/40
+              focus:bg-black/30
+            "
+          />
+
+          <span
+            className="
+              pointer-events-none
+              absolute
+              right-3
+              top-1/2
+              -translate-y-1/2
+              text-[#c9ada7]/40
+            "
+          >
+            🔍
+          </span>
+
+        </div>
+
+      )}
+
+
+      {/* Lista */}
+
+      {visiblePublicCharacters.length > 0 ? (
+
+        <div className="space-y-2">
+
+          {visiblePublicCharacters.map((char) => (
+
+            <div
+              key={char.id}
+              className="
+                rounded-xl
+                border
+                border-[#e0a96d]/10
+                bg-black/20
+                px-3
+                py-2
+                text-[#f2e9e4]
+                transition
+                hover:border-[#e0a96d]/20
+                hover:bg-black/30
+              "
+            >
+
+              <button
+                type="button"
+                onClick={() =>
+                  setPublicCharacterId(char.id)
+                }
+                className="
+                  w-full
+                  text-left
+                  transition
+                  hover:text-[#e0a96d]
+                "
+              >
+                {char.name}
+              </button>
+
+            </div>
+
+          ))}
+
+        </div>
+
+      ) : (
+
+        <p className="py-2 text-sm text-[#c9ada7]/60">
+          Nenhum personagem encontrado.
+        </p>
+
+      )}
+
+
+      {/* Ver mais / Ver menos */}
+
+      {filteredPublicCharacters.length > 6 && (
+
+        <button
+          type="button"
+          onClick={() =>
+            setShowAllCharacters((current) => !current)
+          }
           className="
+            w-full
             rounded-xl
             border
             border-[#e0a96d]/10
-            bg-black/20
-            px-3
+            bg-black/10
+            px-4
             py-2
-            text-[#f2e9e4]
+            text-sm
+            text-[#e0a96d]
+            transition
+            hover:border-[#e0a96d]/30
+            hover:bg-[#e0a96d]/5
           "
         >
-          <button
-  type="button"
-  onClick={() =>
-    setPublicCharacterId(char.id)
-  }
-  className="
-    hover:text-[#e0a96d]
-    transition
-  "
->
-  {char.name}
-</button>
-        </div>
-      ))}
+          {showAllCharacters
+            ? "Ver menos"
+            : `Ver mais (${filteredPublicCharacters.length - 6})`}
+        </button>
+
+      )}
+
     </div>
+
   ) : (
+
     <p className="text-[#c9ada7]/60">
       Nenhum personagem criado ainda.
     </p>
+
   )}
+
 </div>
 {isOwner && (
   <div className="rpg-panel">
