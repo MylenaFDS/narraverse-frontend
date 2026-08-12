@@ -13,15 +13,12 @@ type TimelineCategory,
 
 import {
   getCharacters,
-  getCharacterSheet,
   getMyCharacters
 } from "../../services/characters"
 
 import type { RPGTurn } from "../../types/turn"
 import type {
   Character,
-  CharacterSheetValue,
-  RPGSheetField,
 } from "../../types/character"
 import type { Lore } from "../../types/lore"
 
@@ -81,9 +78,9 @@ const [showReplyDropdown, setShowReplyDropdown] = useState(false)
 const [filteredReply, setFilteredReply] = useState<Character[]>([])
   const [mentions, setMentions] = useState<number[]>([])
 
-  const [sheetFields, setSheetFields] = useState<RPGSheetField[]>([])
-  const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null)
-  const [sheetData, setSheetData] = useState<Record<number, string>>({})
+  
+
+  
   const [collapsed, setCollapsed] =useState<Record<number, boolean>>({})
   const [newTurnIds, setNewTurnIds] =useState<number[]>([])
   const [timelineLoading, setTimelineLoading] =
@@ -131,7 +128,6 @@ const [showAIModal, setShowAIModal] =
   turnsData,
   allChars,
   myChars,
-  fields,
   loreData,
   timelineCategoriesData,
 ] = await Promise.all([
@@ -146,7 +142,6 @@ const [showAIModal, setShowAIModal] =
 setTurns(turnsData)
 setAllCharacters(allChars)
 setMyCharacters(myChars)
-setSheetFields(fields)
 setLore(loreData)
 setTimelineCategories(
   timelineCategoriesData
@@ -440,50 +435,34 @@ useEffect(() => {
     setTimelineLoading(null)
   }
 }
-  // ===============================
-  // FICHA
-  // ===============================
-  async function handleOpenCharacter(name: string) {
-    const char = allCharacters.find(
-      (c) => c.name.toLowerCase() === name.toLowerCase()
-    )
-
-    if (!char) return
-
-    setSelectedCharacter(char)
-
-    const sheet = await getCharacterSheet(char.id)
-
-    const formatted: Record<number, string> = {}
-
-    sheet.forEach((item: CharacterSheetValue) => {
-      formatted[item.field.id] = item.value
-    })
-
-    setSheetData(formatted)
-  }
+  
 
   function renderContent(content: string) {
-    const parts = content.split(/(@\w+)/g)
 
-    return parts.map((part, i) => {
-      if (part.startsWith("@")) {
-        const name = part.slice(1)
+  const parts = content.split(/(@\w+)/g)
 
-        return (
-          <span
-            key={i}
-            onClick={() => handleOpenCharacter(name)}
-            className="text-blue-400 cursor-pointer hover:underline"
-          >
-            {part}
-          </span>
-        )
-      }
+  return parts.map((part, i) => {
 
-      return part
-    })
-  }
+    if (part.startsWith("@")) {
+
+      return (
+        <span
+          key={i}
+          className="
+            text-blue-400
+            hover:text-[#e0a96d]
+            transition
+          "
+        >
+          {part}
+        </span>
+      )
+
+    }
+
+    return part
+  })
+}
 
   function getCharacterName(characterId?: number | null) {
     if (!characterId) return null
@@ -927,76 +906,8 @@ async function handleGenerateWithAI() {
 </div>
       </div>
 
-      {/* MODAL */}
-{selectedCharacter && (
-  <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-    <div
-      className="
-        bg-gradient-to-br
-        from-[#211616]
-        to-[#161010]
-        border border-[#4a2f2f]
-        p-6
-        rounded-3xl
-        shadow-2xl
-        w-[450px]
-        max-h-[80vh]
-        overflow-y-auto
-      "
-    >
-      <h2
-        className="
-          text-2xl
-          font-display
-          text-[#e0a96d]
-          mb-5
-        "
-      >
-        {selectedCharacter.name}
-      </h2>
+      
 
-      <div className="space-y-3">
-        {Object.entries(sheetData).map(
-          ([fieldId, value]) => {
-            const fieldName =
-              sheetFields.find(
-                (f) =>
-                  f.id === Number(fieldId)
-              )?.name ||
-              `Campo ${fieldId}`
-
-            return (
-              <div
-                key={fieldId}
-                className="
-                  bg-black/20
-                  border border-[#3a2a2a]
-                  rounded-xl
-                  p-3
-                "
-              >
-                <span className="text-gray-400">
-                  {fieldName}:
-                </span>
-
-                <p>{value}</p>
-              </div>
-            )
-          }
-        )}
-      </div>
-
-      <button
-        onClick={() =>
-          setSelectedCharacter(null)
-        }
-        className="mt-5 rpg-btn w-full"
-      >
-        Fechar
-      </button>
-    </div>
-  </div>
-)}
 {timelineDraft && (
   <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
     <div className="bg-[#18181b] border border-[#2b2b31] rounded-2xl p-6 w-[460px]">
