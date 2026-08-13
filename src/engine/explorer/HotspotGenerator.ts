@@ -6,6 +6,7 @@ import type {
 
 export class HotspotGenerator {
 
+
   // ==========================================
   // Gerar hotspots
   // ==========================================
@@ -15,10 +16,21 @@ export class HotspotGenerator {
   ): ExplorerHotspotSuggestion[] {
 
     return entities
+
+      // ----------------------------------------
+      // Apenas entidades interativas
+      // ----------------------------------------
+
       .filter(
         entity =>
           entity.interactive,
       )
+
+
+      // ----------------------------------------
+      // Mais relevantes primeiro
+      // ----------------------------------------
+
       .sort(
         (
           a,
@@ -27,6 +39,12 @@ export class HotspotGenerator {
           b.score -
           a.score,
       )
+
+
+      // ----------------------------------------
+      // Converter entidade em hotspot
+      // ----------------------------------------
+
       .map(
         entity => ({
 
@@ -36,14 +54,37 @@ export class HotspotGenerator {
           description:
             entity.description,
 
+
+          // ====================================
+          // Identidade da entidade
+          // ====================================
+
+          entityId:
+            entity.id,
+
+
+          // ====================================
+          // Classificação
+          // ====================================
+
           type:
             entity.type,
 
           importance:
             entity.importance,
 
+
+          // ====================================
+          // Relevância
+          // ====================================
+
           score:
             entity.score,
+
+
+          // ====================================
+          // Palavras encontradas
+          // ====================================
 
           keywords:
             entity.matchedKeywords,
@@ -59,8 +100,11 @@ export class HotspotGenerator {
   // ==========================================
 
   static limit(
-    hotspots: ExplorerHotspotSuggestion[],
+    hotspots:
+      ExplorerHotspotSuggestion[],
+
     maximum = 8,
+
   ): ExplorerHotspotSuggestion[] {
 
     return hotspots.slice(

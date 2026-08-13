@@ -106,15 +106,41 @@ export interface ExplorerScene {
 
 export interface ExplorerHotspotSuggestion {
 
+  // ==========================================
+  // Identidade
+  // ==========================================
+
   name: string
 
   description: string
+
+
+  // ==========================================
+  // Entidade de origem
+  // ==========================================
+
+  entityId: string
+
+
+  // ==========================================
+  // Classificação
+  // ==========================================
 
   type: ExplorerEntityType
 
   importance: ExplorerImportance
 
+
+  // ==========================================
+  // Relevância
+  // ==========================================
+
   score: number
+
+
+  // ==========================================
+  // Termos encontrados
+  // ==========================================
 
   keywords: string[]
 
