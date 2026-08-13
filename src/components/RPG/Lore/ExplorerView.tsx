@@ -8,10 +8,11 @@ import {
   createRegionScene,
   updateSceneLocation,
   uploadRegionSceneImage,
-  generateHotspots,
   type RegionScene,
   type SceneLocation,
 } from "../../../services/api"
+
+import { ExplorerAI } from "../../../engine/explorer/ExplorerAI"
 
 type Props = {
   scene: RegionScene
@@ -342,28 +343,78 @@ async function saveLocationPosition(
 }
 
 async function handleGenerateHotspots() {
+
   try {
+
     const hotspots =
-      await generateHotspots(
+  ExplorerAI.generateHotspots(
+    currentScene.id,
     currentScene.title,
     currentScene.description ?? "",
   )
 
-    for (const hotspot of hotspots) {
+    if (!hotspots.length) {
+
+      alert(
+        "A IA não encontrou elementos suficientes para sugerir hotspots nesta cena."
+      )
+
+      return
+
+    }
+
+    const existingNames =
+      new Set(
+        locations.map(
+          location =>
+            location.name.toLowerCase()
+        )
+      )
+
+    const newHotspots =
+      hotspots.filter(
+        hotspot =>
+          !existingNames.has(
+            hotspot.name.toLowerCase()
+          )
+      )
+
+    if (!newHotspots.length) {
+
+      alert(
+        "Os hotspots identificados já existem nesta cena."
+      )
+
+      return
+
+    }
+
+    for (const hotspot of newHotspots) {
+
       await createSceneLocation(
         currentScene.id,
         {
-  name: hotspot.name,
-  description: hotspot.description,
-  pos_x: Math.round(
-    Math.random() * 80 + 10
+          name:
+            hotspot.name,
+
+          description:
+            hotspot.description,
+
+          pos_x:
+  Math.round(
+    hotspot.position.x
   ),
-  pos_y: Math.round(
-    Math.random() * 80 + 10
+
+pos_y:
+  Math.round(
+    hotspot.position.y
   ),
-  target_scene_id: null,
-}
+
+          target_scene_id:
+            null,
+        }
       )
+
     }
 
     const updated =
@@ -374,12 +425,15 @@ async function handleGenerateHotspots() {
     setLocations(updated)
 
   } catch (err) {
+
     console.error(err)
 
     alert(
       "Erro ao gerar hotspots."
     )
+
   }
+
 }
   return (
     <div

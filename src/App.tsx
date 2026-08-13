@@ -11,6 +11,8 @@ import Register from "./pages/Register"
 import Profile from "./pages/Profile"
 import PublicProfile from "./pages/PublicProfile"
 import RPGInvites from "./components/RPG/RPGInvites"
+import ExplorerAITest
+  from "./engine/explorer/ExplorerAITest"
 
 export default function App() {
   return (
@@ -66,6 +68,12 @@ export default function App() {
             />
         </Route>
       </Route>
+      <Route
+  path="/explorer-ai-test"
+  element={
+    <ExplorerAITest />
+  }
+/>
         
     </Routes>
   )
