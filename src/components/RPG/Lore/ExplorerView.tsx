@@ -14,6 +14,14 @@ import {
 
 import { ExplorerAI } from "../../../engine/explorer/ExplorerAI"
 
+import {
+  ExplorationMemoryEngine,
+} from "../../../engine/explorer/ExplorationMemory"
+
+import {
+  ExplorationStateEngine,
+} from "../../../engine/explorer/ExplorationStateEngine"
+
 type Props = {
   scene: RegionScene
   onClose: () => void
@@ -92,11 +100,55 @@ const [
 ] = useState<SceneLocation | null>(
   null
 )
+useEffect(() => {
+
+  ExplorationStateEngine.start(
+    scene.id,
+  )
+
+  return () => {
+
+    ExplorationStateEngine.stop()
+
+  }
+
+}, [scene.id])
 
   useEffect(() => {
-  getSceneLocations(currentScene.id)
-    .then(setLocations)
-    .catch(console.error)
+
+  async function loadLocations() {
+
+    try {
+
+      const result =
+        await getSceneLocations(
+          currentScene.id,
+        )
+
+
+      setLocations(
+        result,
+      )
+
+
+      ExplorationStateEngine
+        .setHotspots(
+          result,
+        )
+
+    } catch (error) {
+
+      console.error(
+        error,
+      )
+
+    }
+
+  }
+
+
+  void loadLocations()
+
 }, [currentScene.id])
 
 useEffect(() => {
@@ -132,45 +184,188 @@ useEffect(() => {
     : null
 
   async function handleLocationClick(
-    location: SceneLocation
+  location: SceneLocation,
+) {
+
+  // ========================================
+  // Registrar descoberta
+  // ========================================
+
+  ExplorationStateEngine
+    .discoverHotspot(
+      location.id,
+    )
+
+
+  // ========================================
+  // Registrar interação
+  // ========================================
+
+  ExplorationStateEngine
+    .interactHotspot(
+      location.id,
+    )
+
+
+  ExplorationMemoryEngine
+    .interact(
+      `location-${location.id}`,
+    )
+
+
+  // ========================================
+  // Sem destino
+  // ========================================
+
+  if (
+    !location.target_scene_id
   ) {
-    if (!location.target_scene_id) return
 
-    setIsTransitioning(true)
+    return
 
-    try {
-      const nextScene =
-        await getRegionSceneById(
-          location.target_scene_id
-        )
-
-      setSceneHistory((prev) => [
-  ...prev,
-  currentScene,
-])
-
-      setCurrentScene(nextScene)
-
-      setTimeout(() => {
-        setIsTransitioning(false)
-      }, 200)
-    } catch (err) {
-      console.error(err)
-      setIsTransitioning(false)
-    }
   }
-function handleBack() {
-  const previousScene =
-    sceneHistory[sceneHistory.length - 1]
 
-  if (!previousScene) return
 
-  setCurrentScene(previousScene)
+  // ========================================
+  // Começar transição
+  // ========================================
 
-  setSceneHistory((prev) =>
-    prev.slice(0, -1)
+  ExplorationStateEngine
+    .beginTransition()
+
+
+  setIsTransitioning(
+    true,
   )
+
+
+  try {
+
+    const nextScene =
+      await getRegionSceneById(
+        location.target_scene_id,
+      )
+
+
+    // ======================================
+    // Histórico visual
+    // ======================================
+
+    setSceneHistory(
+      prev => [
+
+        ...prev,
+
+        currentScene,
+
+      ],
+    )
+
+
+    // ======================================
+    // Atualizar estado da exploração
+    // ======================================
+
+    ExplorationStateEngine
+      .enterScene(
+        nextScene.id,
+      )
+
+
+    // ======================================
+    // Atualizar cena
+    // ======================================
+
+    setCurrentScene(
+      nextScene,
+    )
+
+
+    setTimeout(() => {
+
+      setIsTransitioning(
+        false,
+      )
+
+      ExplorationStateEngine
+        .finishTransition()
+
+    }, 200)
+
+
+  } catch (error) {
+
+    console.error(
+      error,
+    )
+
+
+    setIsTransitioning(
+      false,
+    )
+
+
+    ExplorationStateEngine
+      .finishTransition()
+
+  }
+
 }
+
+function handleBack() {
+
+  const previousScene =
+    sceneHistory[
+      sceneHistory.length - 1
+    ]
+
+
+  if (!previousScene) {
+
+    return
+
+  }
+
+
+  ExplorationStateEngine
+    .beginTransition()
+
+
+  setCurrentScene(
+    previousScene,
+  )
+
+
+  ExplorationStateEngine
+    .enterScene(
+      previousScene.id,
+    )
+
+
+  setSceneHistory(
+    prev =>
+      prev.slice(0, -1),
+  )
+
+
+  setIsTransitioning(
+    true,
+  )
+
+
+  setTimeout(() => {
+
+    setIsTransitioning(
+      false,
+    )
+
+    ExplorationStateEngine
+      .finishTransition()
+
+  }, 200)
+
+}
+
 const scenePath = [
   ...sceneHistory,
   currentScene,
@@ -1055,6 +1250,34 @@ onMouseUp={async () => {
 >
   ✨ IA
 </button>
+      {/* ==========================================
+          DEBUG — ESTADO DA EXPLORAÇÃO
+          ========================================== */}
+
+      <pre
+        className="
+          absolute
+          bottom-4
+          right-4
+          z-[200]
+          max-w-[400px]
+          max-h-[300px]
+          overflow-auto
+          bg-black/80
+          text-green-300
+          text-xs
+          p-4
+          rounded-xl
+        "
+      >
+        {JSON.stringify(
+          ExplorationStateEngine.getState(),
+          null,
+          2,
+        )}
+      </pre>
+
+
       <button
         onClick={onClose}
         className={`

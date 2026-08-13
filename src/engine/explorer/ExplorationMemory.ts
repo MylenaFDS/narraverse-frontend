@@ -7,24 +7,34 @@ const STORAGE_KEY =
   "narraverse_explorer_memory"
 
 
-const DEFAULT_MEMORY:
-  ExplorationMemory = {
-
-  visitedScenes: [],
-
-  discoveredEntities: [],
-
-  discoveredSecrets: [],
-
-  interactedEntities: [],
-
-}
-
 
 export class ExplorationMemoryEngine {
 
+
   // ==========================================
-  // Carregar memória
+  // Memória padrão
+  // ==========================================
+
+  private static createDefault():
+    ExplorationMemory {
+
+    return {
+
+      visitedScenes: [],
+
+      discoveredEntities: [],
+
+      discoveredSecrets: [],
+
+      interactedEntities: [],
+
+    }
+
+  }
+
+
+  // ==========================================
+  // Carregar
   // ==========================================
 
   static load(): ExplorationMemory {
@@ -36,16 +46,17 @@ export class ExplorationMemoryEngine {
           STORAGE_KEY,
         )
 
+
       if (!raw) {
 
-        return {
-          ...DEFAULT_MEMORY,
-        }
+        return this.createDefault()
 
       }
 
+
       const parsed =
         JSON.parse(raw)
+
 
       return {
 
@@ -86,9 +97,7 @@ export class ExplorationMemoryEngine {
         error,
       )
 
-      return {
-        ...DEFAULT_MEMORY,
-      }
+      return this.createDefault()
 
     }
 
@@ -135,6 +144,7 @@ export class ExplorationMemoryEngine {
     const memory =
       this.load()
 
+
     if (
       !memory.visitedScenes.includes(
         sceneId,
@@ -147,9 +157,11 @@ export class ExplorationMemoryEngine {
 
     }
 
+
     this.save(
       memory,
     )
+
 
     return memory
 
@@ -167,6 +179,7 @@ export class ExplorationMemoryEngine {
     const memory =
       this.load()
 
+
     if (
       !memory.discoveredEntities.includes(
         entityId,
@@ -179,9 +192,11 @@ export class ExplorationMemoryEngine {
 
     }
 
+
     this.save(
       memory,
     )
+
 
     return memory
 
@@ -199,6 +214,7 @@ export class ExplorationMemoryEngine {
     const memory =
       this.load()
 
+
     if (
       !memory.discoveredSecrets.includes(
         entityId,
@@ -211,9 +227,26 @@ export class ExplorationMemoryEngine {
 
     }
 
-    return this.discoverEntity(
-      entityId,
+
+    if (
+      !memory.discoveredEntities.includes(
+        entityId,
+      )
+    ) {
+
+      memory.discoveredEntities.push(
+        entityId,
+      )
+
+    }
+
+
+    this.save(
+      memory,
     )
+
+
+    return memory
 
   }
 
@@ -229,6 +262,7 @@ export class ExplorationMemoryEngine {
     const memory =
       this.load()
 
+
     if (
       !memory.interactedEntities.includes(
         entityId,
@@ -241,9 +275,24 @@ export class ExplorationMemoryEngine {
 
     }
 
+
+    if (
+      !memory.discoveredEntities.includes(
+        entityId,
+      )
+    ) {
+
+      memory.discoveredEntities.push(
+        entityId,
+      )
+
+    }
+
+
     this.save(
       memory,
     )
+
 
     return memory
 
@@ -318,6 +367,18 @@ export class ExplorationMemoryEngine {
       .includes(
         entityId,
       )
+
+  }
+
+
+  // ==========================================
+  // Obter memória
+  // ==========================================
+
+  static getMemory():
+    ExplorationMemory {
+
+    return this.load()
 
   }
 
