@@ -880,13 +880,42 @@ export async function getRegionScenes(
 }
 
 export type SceneLocation = {
+
+  // ==========================================
+  // Identidade
+  // ==========================================
+
   id: number
+
   name: string
+
   description?: string | null
+
+
+  // ==========================================
+  // Entidade Explorer
+  // ==========================================
+
+  entity_id?: string | null
+
+
+  // ==========================================
+  // Posição
+  // ==========================================
+
   pos_x: number
+
   pos_y: number
+
+
+  // ==========================================
+  // Relacionamentos
+  // ==========================================
+
   scene_id: number
+
   target_scene_id?: number | null
+
 }
 
 export async function getSceneLocations(
@@ -912,11 +941,19 @@ export async function getRegionSceneById(
 export async function createSceneLocation(
   sceneId: number,
   data: {
+
     name: string
+
     description?: string | null
+
+    entity_id?: string | null
+
     pos_x: number
+
     pos_y: number
+
     target_scene_id?: number | null
+
   }
 ): Promise<SceneLocation> {
   const res = await api.post(

@@ -187,35 +187,61 @@ useEffect(() => {
   location: SceneLocation,
 ) {
 
-  // ========================================
-  // Registrar descoberta
-  // ========================================
+  // ==========================================
+  // Registrar descoberta/interação
+  // ==========================================
 
-  ExplorationStateEngine
-    .discoverHotspot(
-      location.id,
-    )
-
-
-  // ========================================
-  // Registrar interação
-  // ========================================
-
-  ExplorationStateEngine
-    .interactHotspot(
-      location.id,
-    )
+  const entityId =
+    (location as SceneLocation & {
+      entityId?: string
+    }).entityId
 
 
-  ExplorationMemoryEngine
-    .interact(
-      `location-${location.id}`,
-    )
+  if (entityId) {
+
+    // ----------------------------------------
+    // Descoberta
+    // ----------------------------------------
+
+    ExplorationMemoryEngine
+      .discoverEntity(
+        entityId,
+      )
 
 
-  // ========================================
-  // Sem destino
-  // ========================================
+    // ----------------------------------------
+    // Interação
+    // ----------------------------------------
+
+    ExplorationMemoryEngine
+      .interact(
+        entityId,
+      )
+
+
+    // ----------------------------------------
+    // Segredo
+    // ----------------------------------------
+
+    if (
+      entityId.startsWith(
+        "secret-",
+      )
+    ) {
+
+      ExplorationMemoryEngine
+        .discoverSecret(
+          entityId,
+        )
+
+    }
+
+  }
+
+
+  // ==========================================
+  // Sem destino = apenas interação
+  // ==========================================
 
   if (
     !location.target_scene_id
@@ -226,13 +252,9 @@ useEffect(() => {
   }
 
 
-  // ========================================
-  // Começar transição
-  // ========================================
-
-  ExplorationStateEngine
-    .beginTransition()
-
+  // ==========================================
+  // Transição
+  // ==========================================
 
   setIsTransitioning(
     true,
@@ -247,66 +269,39 @@ useEffect(() => {
       )
 
 
-    // ======================================
-    // Histórico visual
-    // ======================================
-
     setSceneHistory(
       prev => [
-
         ...prev,
-
         currentScene,
-
       ],
     )
 
-
-    // ======================================
-    // Atualizar estado da exploração
-    // ======================================
-
-    ExplorationStateEngine
-      .enterScene(
-        nextScene.id,
-      )
-
-
-    // ======================================
-    // Atualizar cena
-    // ======================================
 
     setCurrentScene(
       nextScene,
     )
 
 
-    setTimeout(() => {
+    setTimeout(
+      () => {
 
-      setIsTransitioning(
-        false,
-      )
+        setIsTransitioning(
+          false,
+        )
 
-      ExplorationStateEngine
-        .finishTransition()
-
-    }, 200)
-
-
-  } catch (error) {
-
-    console.error(
-      error,
+      },
+      200,
     )
 
+  } catch (err) {
+
+    console.error(
+      err,
+    )
 
     setIsTransitioning(
       false,
     )
-
-
-    ExplorationStateEngine
-      .finishTransition()
 
   }
 
@@ -455,21 +450,31 @@ async function handleSaveLocation() {
     )
   } else {
     await createSceneLocation(
-      currentScene.id,
-      {
-        name: newLocationName,
-        description:
-          newLocationDescription,
-        pos_x: Math.round(
-          newLocationPos.x
-        ),
-        pos_y: Math.round(
-          newLocationPos.y
-        ),
-        target_scene_id:
-          targetSceneId,
-      }
-    )
+  currentScene.id,
+  {
+    name:
+      newLocationName,
+
+    description:
+      newLocationDescription,
+
+    entity_id:
+      null,
+
+    pos_x:
+      Math.round(
+        newLocationPos.x
+      ),
+
+    pos_y:
+      Math.round(
+        newLocationPos.y
+      ),
+
+    target_scene_id:
+      targetSceneId,
+  }
+)
   }
 
   const updatedLocations =
@@ -542,11 +547,16 @@ async function handleGenerateHotspots() {
   try {
 
     const hotspots =
-  ExplorerAI.generateHotspots(
-    currentScene.id,
-    currentScene.title,
-    currentScene.description ?? "",
-  )
+      ExplorerAI.generateHotspots(
+        currentScene.id,
+        currentScene.title,
+        currentScene.description ?? "",
+      )
+
+
+    // ==========================================
+    // Nenhum hotspot encontrado
+    // ==========================================
 
     if (!hotspots.length) {
 
@@ -558,21 +568,32 @@ async function handleGenerateHotspots() {
 
     }
 
+
+    // ==========================================
+    // Hotspots que já existem
+    // ==========================================
+
     const existingNames =
       new Set(
         locations.map(
           location =>
-            location.name.toLowerCase()
-        )
+            location.name.toLowerCase(),
+        ),
       )
+
+
+    // ==========================================
+    // Apenas novos hotspots
+    // ==========================================
 
     const newHotspots =
       hotspots.filter(
         hotspot =>
           !existingNames.has(
-            hotspot.name.toLowerCase()
-          )
+            hotspot.name.toLowerCase(),
+          ),
       )
+
 
     if (!newHotspots.length) {
 
@@ -584,44 +605,82 @@ async function handleGenerateHotspots() {
 
     }
 
-    for (const hotspot of newHotspots) {
+
+    // ==========================================
+    // Criar hotspots
+    // ==========================================
+
+    for (
+      const hotspot
+      of newHotspots
+    ) {
 
       await createSceneLocation(
         currentScene.id,
         {
+
+          // ------------------------------------
+          // Identidade
+          // ------------------------------------
+
           name:
             hotspot.name,
 
           description:
             hotspot.description,
 
-          pos_x:
-  Math.round(
-    hotspot.position.x
-  ),
+          entity_id:
+            hotspot.entityId,
 
-pos_y:
-  Math.round(
-    hotspot.position.y
-  ),
+
+          // ------------------------------------
+          // Posição calculada pela IA
+          // ------------------------------------
+
+          pos_x:
+            Math.round(
+              hotspot.position.x,
+            ),
+
+          pos_y:
+            Math.round(
+              hotspot.position.y,
+            ),
+
+
+          // ------------------------------------
+          // Destino
+          // ------------------------------------
 
           target_scene_id:
             null,
-        }
+
+        },
       )
 
     }
 
+
+    // ==========================================
+    // Atualizar hotspots na tela
+    // ==========================================
+
     const updated =
       await getSceneLocations(
-        currentScene.id
+        currentScene.id,
       )
 
-    setLocations(updated)
+
+    setLocations(
+      updated,
+    )
+
 
   } catch (err) {
 
-    console.error(err)
+    console.error(
+      err,
+    )
 
     alert(
       "Erro ao gerar hotspots."
