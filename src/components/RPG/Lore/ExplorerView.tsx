@@ -1044,7 +1044,6 @@ onMouseUp={async () => {
         <button
           key={location.id}
           type="button"
-          disabled={!location.target_scene_id}
           onMouseDown={(e) => {
   if (!isEditing) return
 
