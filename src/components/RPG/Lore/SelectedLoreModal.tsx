@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react"
 
 import type { Lore } from "../../../types/lore"
@@ -11,14 +12,13 @@ import {
   getCharactersByLore,
   getFactionsByLore,
   getRegionPlaces,
-  getRegionScenes,
   type RPGFaction,
   type RegionPlace,
+  getRegionScenes,
   type RegionScene,
 } from "../../../services/api"
 
 import RegionSceneModal from "./RegionSceneModal"
-
 
 type Props = {
   selectedLore: Lore | null
@@ -44,14 +44,10 @@ type Props = {
   >
 }
 
-
 type RelatedTimelineEvent = {
   id: number
-
   title: string
-
   content?: string
-
   date_label?: string
 
   category?: {
@@ -70,19 +66,13 @@ type RelatedTimelineEvent = {
   }[]
 }
 
-
 type RelatedCharacter = {
   id: number
-
   name: string
-
   history?: string | null
-
   image_url?: string | null
-
   world_lore_id?: number | null
 }
-
 
 export default function SelectedLoreModal({
   selectedLore,
@@ -93,7 +83,6 @@ export default function SelectedLoreModal({
   setSelectedFactionId,
   onClose,
 }: Props) {
-
   const [relations, setRelations] =
     useState<LoreRelation[]>([])
 
@@ -118,43 +107,23 @@ export default function SelectedLoreModal({
   const [selectedScene, setSelectedScene] =
     useState<RegionScene | null>(null)
 
-
-  // ==========================================
+  // =====================================================
   // Carregar dados da Lore
-  // ==========================================
+  // =====================================================
 
   useEffect(() => {
-
     if (!selectedLore) {
       return
     }
 
     Promise.all([
-      getLoreRelations(
-        selectedLore.id,
-      ),
-
-      getTimelineByLore(
-        selectedLore.id,
-      ),
-
-      getCharactersByLore(
-        selectedLore.id,
-      ),
-
-      getFactionsByLore(
-        selectedLore.id,
-      ),
-
-      getRegionPlaces(
-        selectedLore.id,
-      ),
-
-      getRegionScenes(
-        selectedLore.id,
-      ),
+      getLoreRelations(selectedLore.id),
+      getTimelineByLore(selectedLore.id),
+      getCharactersByLore(selectedLore.id),
+      getFactionsByLore(selectedLore.id),
+      getRegionPlaces(selectedLore.id),
+      getRegionScenes(selectedLore.id),
     ])
-
       .then(
         ([
           relationsData,
@@ -164,63 +133,57 @@ export default function SelectedLoreModal({
           placesData,
           scenesData,
         ]) => {
-
           setRelations(
-            relationsData,
+            relationsData || []
           )
 
           setTimelineEvents(
-            eventsData,
+            eventsData || []
           )
 
           setCharacters(
-            charactersData,
+            charactersData || []
           )
 
           setFactions(
-            factionsData || [],
+            factionsData || []
           )
 
           setPlaces(
-            placesData || [],
+            placesData || []
           )
 
           setScenes(
-            scenesData || [],
+            scenesData || []
           )
-
-        },
+        }
       )
-
-      .catch(
-        console.error,
-      )
-
+      .catch((error) => {
+        console.error(
+          "Erro ao carregar dados da Lore:",
+          error
+        )
+      })
   }, [selectedLore])
 
-
-  // ==========================================
+  // =====================================================
   // Lores disponíveis para relacionamento
-  // ==========================================
+  // =====================================================
 
-  const availableLore =
-    lore.filter(
-      (item) =>
-        item.id !== selectedLore?.id &&
-        !relations.some(
-          (relation) =>
-            relation.target_lore.id ===
-            item.id,
-        ),
-    )
+  const availableLore = lore.filter(
+    (item) =>
+      item.id !== selectedLore?.id &&
+      !relations.some(
+        (relation) =>
+          relation.target_lore.id === item.id
+      )
+  )
 
-
-  // ==========================================
+  // =====================================================
   // Adicionar relação
-  // ==========================================
+  // =====================================================
 
   async function handleAddRelation() {
-
     if (
       !selectedLore ||
       targetLoreId === ""
@@ -229,97 +192,94 @@ export default function SelectedLoreModal({
     }
 
     try {
-
       const created =
         await createLoreRelation(
           selectedLore.id,
-          Number(targetLoreId),
+          Number(targetLoreId)
         )
 
-      setRelations(
-        (prev) => [
-          ...prev,
-          created,
-        ],
-      )
+      setRelations((prev) => [
+        ...prev,
+        created,
+      ])
 
       setTargetLoreId("")
-
     } catch (error) {
-
       console.error(
-        error,
+        "Erro ao adicionar relação:",
+        error
       )
-
     }
-
   }
 
-
-  // ==========================================
+  // =====================================================
   // Remover relação
-  // ==========================================
+  // =====================================================
 
   async function handleDeleteRelation(
-    relationId: number,
+    relationId: number
   ) {
-
     try {
-
       await deleteLoreRelation(
-        relationId,
+        relationId
       )
 
-      setRelations(
-        (prev) =>
-          prev.filter(
-            (relation) =>
-              relation.id !==
-              relationId,
-          ),
+      setRelations((prev) =>
+        prev.filter(
+          (relation) =>
+            relation.id !== relationId
+        )
       )
-
     } catch (error) {
-
       console.error(
-        error,
+        "Erro ao remover relação:",
+        error
       )
-
     }
-
   }
 
-
-  // ==========================================
+  // =====================================================
   // Entrar na região
-  // ==========================================
+  // =====================================================
 
   function handleEnterRegion(
-    scene: RegionScene,
+    scene: RegionScene
   ) {
-
     console.log(
       "Abrindo região:",
-      scene,
+      scene
     )
 
-    setSelectedScene(
-      scene,
-    )
-
+    /*
+     * Não fechamos o SelectedLoreModal aqui.
+     *
+     * O RegionSceneModal precisa continuar montado
+     * para conseguir abrir o ExplorerView.
+     */
+    setSelectedScene(scene)
   }
 
+  // =====================================================
+  // Fechar Explorer / cena selecionada
+  // =====================================================
+
+  function handleCloseRegion() {
+    setSelectedScene(null)
+  }
+
+  // =====================================================
+  // Nada selecionado
+  // =====================================================
 
   if (!selectedLore) {
     return null
   }
 
-
   return (
     <>
-      {/* ======================================
+      {/* =================================================
           MODAL DA LORE
-          ====================================== */}
+          ================================================= */}
 
       <div
         className="
@@ -337,10 +297,9 @@ export default function SelectedLoreModal({
           z-50
         "
       >
-
-        {/* ====================================
-            IDENTIDADE DA LORE
-            ==================================== */}
+        {/* =================================================
+            TÍTULO
+            ================================================= */}
 
         <h2
           className="
@@ -353,6 +312,9 @@ export default function SelectedLoreModal({
           {selectedLore.title}
         </h2>
 
+        {/* =================================================
+            CONTEÚDO
+            ================================================= */}
 
         <p
           className="
@@ -363,10 +325,9 @@ export default function SelectedLoreModal({
           {selectedLore.content}
         </p>
 
-
-        {/* ====================================
+        {/* =================================================
             RELACIONADOS
-            ==================================== */}
+            ================================================= */}
 
         <div
           className="
@@ -376,7 +337,6 @@ export default function SelectedLoreModal({
             pt-4
           "
         >
-
           <h4
             className="
               text-[#e0a96d]
@@ -387,14 +347,10 @@ export default function SelectedLoreModal({
             Relacionados
           </h4>
 
-
           {relations.length > 0 ? (
-
             <div className="space-y-2">
-
               {relations.map(
                 (relation) => (
-
                   <div
                     key={relation.id}
                     className="
@@ -404,30 +360,26 @@ export default function SelectedLoreModal({
                       text-sm
                     "
                   >
-
                     <button
                       type="button"
                       onClick={() => {
-
                         const loreItem =
                           lore.find(
                             (item) =>
                               item.id ===
                               relation
                                 .target_lore
-                                .id,
+                                .id
                           )
 
                         if (loreItem) {
-
                           setSelectedLore(
-                            loreItem,
+                            loreItem
                           )
-
                         }
-
                       }}
                       className="
+                        flex-1
                         text-left
                         text-[#f2e9e4]
                         hover:text-[#e0a96d]
@@ -442,24 +394,21 @@ export default function SelectedLoreModal({
                       }
                     </button>
 
-
                     <button
                       type="button"
                       onClick={() => {
-
-                        const confirmed =
+                        const confirmDelete =
                           window.confirm(
-                            `Remover relação com "${relation.target_lore.title}"?`,
+                            `Remover relação com "${relation.target_lore.title}"?`
                           )
 
-                        if (!confirmed) {
+                        if (!confirmDelete) {
                           return
                         }
 
                         void handleDeleteRelation(
-                          relation.id,
+                          relation.id
                         )
-
                       }}
                       title="Remover relacionado"
                       className="
@@ -473,16 +422,11 @@ export default function SelectedLoreModal({
                     >
                       🗑
                     </button>
-
                   </div>
-
-                ),
+                )
               )}
-
             </div>
-
           ) : (
-
             <p
               className="
                 text-sm
@@ -491,50 +435,39 @@ export default function SelectedLoreModal({
             >
               Nenhum relacionado ainda.
             </p>
-
           )}
 
+          {/* Adicionar relacionado */}
 
-          <div
-            className="
-              mt-4
-              space-y-2
-            "
-          >
-
+          <div className="mt-4 space-y-2">
             <select
               value={targetLoreId}
               onChange={(e) =>
                 setTargetLoreId(
                   e.target.value
                     ? Number(
-                        e.target.value,
+                        e.target.value
                       )
-                    : "",
+                    : ""
                 )
               }
               className="rpg-input"
             >
-
               <option value="">
                 Adicionar relacionado
               </option>
 
               {availableLore.map(
                 (item) => (
-
                   <option
                     key={item.id}
                     value={item.id}
                   >
                     {item.title}
                   </option>
-
-                ),
+                )
               )}
-
             </select>
-
 
             <button
               type="button"
@@ -553,15 +486,12 @@ export default function SelectedLoreModal({
             >
               Adicionar
             </button>
-
           </div>
-
         </div>
 
-
-        {/* ====================================
+        {/* =================================================
             TIMELINE
-            ==================================== */}
+            ================================================= */}
 
         <div
           className="
@@ -571,7 +501,6 @@ export default function SelectedLoreModal({
             pt-4
           "
         >
-
           <h4
             className="
               text-[#e0a96d]
@@ -582,95 +511,92 @@ export default function SelectedLoreModal({
             Eventos da Timeline
           </h4>
 
-
           {timelineEvents.length > 0 ? (
-
             <div className="space-y-2">
-
               {timelineEvents.map(
                 (event) => (
-
                   <div
                     key={event.id}
                     className="
+                      w-full
+                      text-left
                       rounded-xl
                       border
                       border-[#e0a96d]/10
                       bg-black/20
                       p-3
+                      text-sm
+                      hover:border-[#e0a96d]/40
+                      hover:bg-[#e0a96d]/10
+                      transition
                     "
                   >
+                    {/* Evento */}
 
                     <button
                       type="button"
                       onClick={() => {
-
                         setHighlightedTimelineEventId(
-                          event.id,
+                          event.id
                         )
 
                         onClose()
 
                         setTimeout(
                           () => {
-
                             document
                               .getElementById(
-                                `timeline-event-${event.id}`,
+                                `timeline-event-${event.id}`
                               )
-                              ?.scrollIntoView({
-                                behavior:
-                                  "smooth",
-                                block:
-                                  "center",
-                              })
-
+                              ?.scrollIntoView(
+                                {
+                                  behavior:
+                                    "smooth",
+                                  block:
+                                    "center",
+                                }
+                              )
                           },
-                          100,
+                          100
                         )
-
                       }}
                       className="
                         w-full
                         text-left
-                        text-sm
                       "
                     >
-
                       <p
                         className="
                           text-[#f2e9e4]
                           font-semibold
                         "
                       >
-                        📜 {event.title}
+                        📜{" "}
+                        {event.title}
                       </p>
-
 
                       <p
                         className="
                           text-xs
                           text-[#c9ada7]/60
-                          mt-1
                         "
                       >
-                        {
-                          event.date_label ||
-                          "Sem data"
-                        }
+                        {event.date_label ||
+                          "Sem data"}
 
-                        {event.category?.name
+                        {event.category
+                          ?.name
                           ? ` • ${event.category.name}`
                           : ""}
                       </p>
-
                     </button>
 
+                    {/* Personagens */}
 
                     {event.characters &&
-                      event.characters.length >
+                      event.characters
+                        .length >
                         0 && (
-
                         <div
                           className="
                             mt-2
@@ -679,23 +605,19 @@ export default function SelectedLoreModal({
                             gap-2
                           "
                         >
-
                           {event.characters.map(
                             (character) => (
-
                               <button
                                 key={
                                   character.id
                                 }
                                 type="button"
                                 onClick={() => {
-
                                   setPublicCharacterId(
-                                    character.id,
+                                    character.id
                                   )
 
                                   onClose()
-
                                 }}
                                 className="
                                   px-2
@@ -715,19 +637,17 @@ export default function SelectedLoreModal({
                                   character.name
                                 }
                               </button>
-
-                            ),
+                            )
                           )}
-
                         </div>
-
                       )}
 
+                    {/* Facções */}
 
                     {event.factions &&
-                      event.factions.length >
+                      event.factions
+                        .length >
                         0 && (
-
                         <div
                           className="
                             mt-2
@@ -736,23 +656,19 @@ export default function SelectedLoreModal({
                             gap-2
                           "
                         >
-
                           {event.factions.map(
                             (faction) => (
-
                               <button
                                 key={
                                   faction.id
                                 }
                                 type="button"
                                 onClick={() => {
-
                                   setSelectedFactionId(
-                                    faction.id,
+                                    faction.id
                                   )
 
                                   onClose()
-
                                 }}
                                 className="
                                   px-2
@@ -772,40 +688,30 @@ export default function SelectedLoreModal({
                                   faction.name
                                 }
                               </button>
-
-                            ),
+                            )
                           )}
-
                         </div>
-
                       )}
-
                   </div>
-
-                ),
+                )
               )}
-
             </div>
-
           ) : (
-
             <p
               className="
                 text-sm
                 text-[#c9ada7]/60
               "
             >
-              Nenhum evento ligado a esta Lore.
+              Nenhum evento ligado a esta
+              Lore.
             </p>
-
           )}
-
         </div>
 
-
-        {/* ====================================
+        {/* =================================================
             REGIÃO
-            ==================================== */}
+            ================================================= */}
 
         <div
           className="
@@ -815,7 +721,6 @@ export default function SelectedLoreModal({
             pt-4
           "
         >
-
           <h4
             className="
               text-[#e0a96d]
@@ -826,18 +731,14 @@ export default function SelectedLoreModal({
             Região
           </h4>
 
-
           {scenes.length > 0 ? (
-
             <div className="space-y-2">
+              {/* Mantém a primeira cena como entrada principal */}
 
               {scenes.slice(0, 1).map(
-                (regionScene) => (
-
+                (scene) => (
                   <div
-                    key={
-                      regionScene.id
-                    }
+                    key={scene.id}
                     className="
                       rounded-xl
                       border
@@ -846,7 +747,6 @@ export default function SelectedLoreModal({
                       p-3
                     "
                   >
-
                     <p
                       className="
                         text-[#f2e9e4]
@@ -854,14 +754,10 @@ export default function SelectedLoreModal({
                       "
                     >
                       🖼️{" "}
-                      {
-                        regionScene.title
-                      }
+                      {scene.title}
                     </p>
 
-
-                    {regionScene.description && (
-
+                    {scene.description && (
                       <p
                         className="
                           text-xs
@@ -871,25 +767,18 @@ export default function SelectedLoreModal({
                         "
                       >
                         {
-                          regionScene.description
+                          scene.description
                         }
                       </p>
-
                     )}
 
+                    {/* Imagem */}
 
-                    {regionScene.image_url && (
-
+                    {scene.image_url && (
                       <img
-                        src={
-                          regionScene.image_url.startsWith(
-                            "http",
-                          )
-                            ? regionScene.image_url
-                            : `http://127.0.0.1:8001/${regionScene.image_url}`
-                        }
+                        src={`http://127.0.0.1:8001/${scene.image_url}`}
                         alt={
-                          regionScene.title
+                          scene.title
                         }
                         className="
                           mt-3
@@ -901,71 +790,61 @@ export default function SelectedLoreModal({
                           border-[#e0a96d]/20
                         "
                       />
-
                     )}
 
-
-                    {/* =================================
+                    {/* =================================================
                         ENTRAR NA REGIÃO
-                        ================================= */}
+                        ================================================= */}
 
                     <button
                       type="button"
                       onClick={(e) => {
-
-                        e.preventDefault()
                         e.stopPropagation()
 
                         handleEnterRegion(
-                          regionScene,
+                          scene
                         )
-
                       }}
                       className="
+                        relative
+                        z-[60]
                         mt-3
                         w-full
                         text-sm
                         text-[#e0a96d]
+                        hover:text-[#f2c078]
+                        hover:bg-[#e0a96d]/10
                         border
                         border-[#e0a96d]/20
                         rounded-xl
                         px-4
                         py-2
-                        hover:text-[#f2c078]
-                        hover:bg-[#e0a96d]/10
-                        hover:border-[#e0a96d]/40
                         transition
+                        cursor-pointer
                       "
                     >
-                      Entrar na região
+                      🗺️ Entrar na região
                     </button>
-
                   </div>
-
-                ),
+                )
               )}
-
             </div>
-
           ) : (
-
             <p
               className="
                 text-sm
                 text-[#c9ada7]/60
               "
             >
-              Nenhuma cena explorável criada para esta região.
+              Nenhuma cena explorável criada
+              para esta região.
             </p>
-
           )}
-
         </div>
 
-
-        {/* ====================================
+        {/* =================================================
             LOCAIS EXPLORÁVEIS
-            ==================================== */}
+            ================================================= */}
 
         <div
           className="
@@ -975,7 +854,6 @@ export default function SelectedLoreModal({
             pt-4
           "
         >
-
           <h4
             className="
               text-[#e0a96d]
@@ -986,14 +864,10 @@ export default function SelectedLoreModal({
             Locais exploráveis
           </h4>
 
-
           {places.length > 0 ? (
-
             <div className="space-y-2">
-
               {places.map(
                 (place) => (
-
                   <div
                     key={place.id}
                     className="
@@ -1005,19 +879,17 @@ export default function SelectedLoreModal({
                       text-sm
                     "
                   >
-
                     <p
                       className="
                         text-[#f2e9e4]
                         font-semibold
                       "
                     >
-                      🏰 {place.name}
+                      🏰{" "}
+                      {place.name}
                     </p>
 
-
                     {place.description && (
-
                       <p
                         className="
                           text-xs
@@ -1030,35 +902,27 @@ export default function SelectedLoreModal({
                           place.description
                         }
                       </p>
-
                     )}
-
                   </div>
-
-                ),
+                )
               )}
-
             </div>
-
           ) : (
-
             <p
               className="
                 text-sm
                 text-[#c9ada7]/60
               "
             >
-              Nenhum local explorável criado para esta região.
+              Nenhum local explorável criado
+              para esta região.
             </p>
-
           )}
-
         </div>
 
-
-        {/* ====================================
+        {/* =================================================
             FACÇÕES
-            ==================================== */}
+            ================================================= */}
 
         <div
           className="
@@ -1068,7 +932,6 @@ export default function SelectedLoreModal({
             pt-4
           "
         >
-
           <h4
             className="
               text-[#e0a96d]
@@ -1079,25 +942,19 @@ export default function SelectedLoreModal({
             Facções relacionadas
           </h4>
 
-
           {factions.length > 0 ? (
-
             <div className="space-y-2">
-
               {factions.map(
                 (faction) => (
-
                   <button
                     key={faction.id}
                     type="button"
                     onClick={() => {
-
                       setSelectedFactionId(
-                        faction.id,
+                        faction.id
                       )
 
                       onClose()
-
                     }}
                     className="
                       w-full
@@ -1113,7 +970,6 @@ export default function SelectedLoreModal({
                       transition
                     "
                   >
-
                     <p
                       className="
                         text-[#f2e9e4]
@@ -1123,7 +979,6 @@ export default function SelectedLoreModal({
                       🛡️{" "}
                       {faction.name}
                     </p>
-
 
                     <p
                       className="
@@ -1142,9 +997,7 @@ export default function SelectedLoreModal({
                         : "s"}
                     </p>
 
-
                     {faction.description && (
-
                       <p
                         className="
                           text-xs
@@ -1157,35 +1010,27 @@ export default function SelectedLoreModal({
                           faction.description
                         }
                       </p>
-
                     )}
-
                   </button>
-
-                ),
+                )
               )}
-
             </div>
-
           ) : (
-
             <p
               className="
                 text-sm
                 text-[#c9ada7]/60
               "
             >
-              Nenhuma facção relacionada a esta Lore.
+              Nenhuma facção relacionada a
+              esta Lore.
             </p>
-
           )}
-
         </div>
 
-
-        {/* ====================================
+        {/* =================================================
             PERSONAGENS
-            ==================================== */}
+            ================================================= */}
 
         <div
           className="
@@ -1195,7 +1040,6 @@ export default function SelectedLoreModal({
             pt-4
           "
         >
-
           <h4
             className="
               text-[#e0a96d]
@@ -1206,27 +1050,19 @@ export default function SelectedLoreModal({
             Personagens
           </h4>
 
-
           {characters.length > 0 ? (
-
             <div className="space-y-2">
-
               {characters.map(
                 (character) => (
-
                   <button
                     type="button"
-                    key={
-                      character.id
-                    }
+                    key={character.id}
                     onClick={() => {
-
                       setPublicCharacterId(
-                        character.id,
+                        character.id
                       )
 
                       onClose()
-
                     }}
                     className="
                       w-full
@@ -1234,26 +1070,20 @@ export default function SelectedLoreModal({
                       items-center
                       gap-3
                       text-left
-                      hover:border-[#e0a96d]/40
-                      transition
                       rounded-xl
                       border
                       border-[#e0a96d]/10
                       bg-black/20
                       p-3
+                      hover:border-[#e0a96d]/40
+                      transition
                     "
                   >
+                    {/* Imagem */}
 
                     {character.image_url ? (
-
                       <img
-                        src={
-                          character.image_url.startsWith(
-                            "http",
-                          )
-                            ? character.image_url
-                            : `http://127.0.0.1:8001/${character.image_url}`
-                        }
+                        src={`http://127.0.0.1:8001/${character.image_url}`}
                         alt={
                           character.name
                         }
@@ -1266,9 +1096,7 @@ export default function SelectedLoreModal({
                           border-[#e0a96d]/30
                         "
                       />
-
                     ) : (
-
                       <div
                         className="
                           w-10
@@ -1280,22 +1108,17 @@ export default function SelectedLoreModal({
                           justify-center
                           text-[#e0a96d]
                           font-bold
+                          shrink-0
                         "
                       >
-                        {
-                          character.name[0]
-                        }
+                        {character.name?.[0] ??
+                          "?"}
                       </div>
-
                     )}
 
+                    {/* Informações */}
 
-                    <div
-                      className="
-                        flex-1
-                      "
-                    >
-
+                    <div className="flex-1 min-w-0">
                       <div
                         className="
                           text-[#f2e9e4]
@@ -1307,9 +1130,7 @@ export default function SelectedLoreModal({
                         }
                       </div>
 
-
                       {character.history && (
-
                         <div
                           className="
                             text-xs
@@ -1322,37 +1143,28 @@ export default function SelectedLoreModal({
                             character.history
                           }
                         </div>
-
                       )}
-
                     </div>
-
                   </button>
-
-                ),
+                )
               )}
-
             </div>
-
           ) : (
-
             <p
               className="
                 text-sm
                 text-[#c9ada7]/60
               "
             >
-              Nenhum personagem ligado a esta Lore.
+              Nenhum personagem ligado a
+              esta Lore.
             </p>
-
           )}
-
         </div>
 
-
-        {/* ====================================
+        {/* =================================================
             FECHAR
-            ==================================== */}
+            ================================================= */}
 
         <button
           type="button"
@@ -1360,38 +1172,40 @@ export default function SelectedLoreModal({
           className="
             mt-6
             bg-red-600
+            hover:bg-red-500
+            text-white
             px-4
             py-2
             rounded-xl
-            text-white
-            hover:bg-red-500
             transition
           "
         >
           Fechar
         </button>
-
       </div>
 
+      {/* ===================================================
+          REGION SCENE MODAL
 
-      {/* ======================================
-          MODAL DA REGIÃO
-          
           IMPORTANTE:
-          fica FORA do div do SelectedLoreModal.
-          ====================================== */}
+          Fica fora do container principal do modal da Lore.
+
+          selectedScene:
+          null -> não renderiza
+
+          cena -> abre RegionSceneModal
+
+          RegionSceneModal:
+          visualização da cena -> Explorar -> ExplorerView
+          =================================================== */}
 
       {selectedScene && (
-
         <RegionSceneModal
           scene={selectedScene}
-          onClose={() =>
-            setSelectedScene(null)
-          }
+          onClose={handleCloseRegion}
         />
-
       )}
-
     </>
   )
 }
+
