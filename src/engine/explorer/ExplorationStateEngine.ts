@@ -3,15 +3,104 @@ import type {
 } from "../../services/api"
 
 
-// ==========================================
-// Estado da exploração
-// ==========================================
+// ============================================================
+// CONDIÇÕES DE ACESSO
+// ============================================================
+
+export type ExplorationAccessCondition = {
+
+  // ----------------------------------------------------------
+  // Segredo
+  // ----------------------------------------------------------
+
+  requiresSecret?:
+    string
+
+  // ----------------------------------------------------------
+  // Entidade
+  // ----------------------------------------------------------
+
+  requiresEntity?:
+    string
+
+  // ----------------------------------------------------------
+  // Hotspot descoberto
+  // ----------------------------------------------------------
+
+  requiresHotspot?:
+    number
+
+  // ----------------------------------------------------------
+  // Hotspot interagido
+  // ----------------------------------------------------------
+
+  requiresInteraction?:
+    number
+
+  // ----------------------------------------------------------
+  // Flag narrativa
+  // ----------------------------------------------------------
+
+  requiresFlag?:
+    string
+
+  // ----------------------------------------------------------
+  // Item
+  // ----------------------------------------------------------
+
+  requiresItem?:
+    string
+
+  // ----------------------------------------------------------
+  // Relacionamento
+  // ----------------------------------------------------------
+
+  requiresRelationship?:
+    string
+
+}
+
+
+// ============================================================
+// RESULTADO DO ACESSO
+// ============================================================
+
+export interface ExplorationAccessResult {
+
+  allowed:
+    boolean
+
+  reason:
+    string | null
+
+}
+
+
+// ============================================================
+// LOCATION COM CONDIÇÕES DE EXPLORAÇÃO
+// ============================================================
+
+export type ExplorationLocation =
+  SceneLocation &
+  ExplorationAccessCondition & {
+
+    entity_id?:
+      string | null
+
+    entityId?:
+      string | null
+  }
+
+
+// ============================================================
+// ESTADO DA EXPLORAÇÃO
+// ============================================================
 
 export interface ExplorationState {
 
-  // ========================================
+  // ==========================================================
   // Cena
-  // ========================================
+  // ==========================================================
 
   currentSceneId:
     number | null
@@ -23,9 +112,9 @@ export interface ExplorationState {
     number[]
 
 
-  // ========================================
+  // ==========================================================
   // Hotspots
-  // ========================================
+  // ==========================================================
 
   availableHotspots:
     number[]
@@ -37,9 +126,9 @@ export interface ExplorationState {
     number[]
 
 
-  // ========================================
+  // ==========================================================
   // Caminhos
-  // ========================================
+  // ==========================================================
 
   unlockedPaths:
     number[]
@@ -48,30 +137,61 @@ export interface ExplorationState {
     number[]
 
 
-  // ========================================
+  // ==========================================================
   // Segredos
-  // ========================================
+  // ==========================================================
 
   discoveredSecrets:
     string[]
 
 
-  // ========================================
+  // ==========================================================
+  // Flags
+  // ==========================================================
+
+  flags:
+    string[]
+
+
+  // ==========================================================
+  // Entidades descobertas
+  // ==========================================================
+
+  discoveredEntities:
+    string[]
+
+
+  // ==========================================================
+  // Itens
+  // ==========================================================
+
+  discoveredItems:
+    string[]
+
+
+  // ==========================================================
+  // Relacionamentos
+  // ==========================================================
+
+  relationships:
+    string[]
+
+
+  // ==========================================================
   // Estado geral
-  // ========================================
+  // ==========================================================
 
   isExploring:
     boolean
 
   isTransitioning:
     boolean
-
 }
 
 
-// ==========================================
-// Estado inicial
-// ==========================================
+// ============================================================
+// ESTADO INICIAL
+// ============================================================
 
 function createDefaultState():
   ExplorationState {
@@ -105,20 +225,30 @@ function createDefaultState():
     discoveredSecrets:
       [],
 
+    flags:
+      [],
+
+    discoveredEntities:
+      [],
+
+    discoveredItems:
+      [],
+
+    relationships:
+      [],
+
     isExploring:
       false,
 
     isTransitioning:
       false,
-
   }
-
 }
 
 
-// ==========================================
-// Engine
-// ==========================================
+// ============================================================
+// ENGINE
+// ============================================================
 
 export class ExplorationStateEngine {
 
@@ -128,9 +258,9 @@ export class ExplorationStateEngine {
       createDefaultState()
 
 
-  // ========================================
-  // Estado atual
-  // ========================================
+  // ==========================================================
+  // ESTADO ATUAL
+  // ==========================================================
 
   static getState():
     ExplorationState {
@@ -174,14 +304,32 @@ export class ExplorationStateEngine {
           ...this.state.discoveredSecrets,
         ],
 
-    }
+      flags:
+        [
+          ...this.state.flags,
+        ],
 
+      discoveredEntities:
+        [
+          ...this.state.discoveredEntities,
+        ],
+
+      discoveredItems:
+        [
+          ...this.state.discoveredItems,
+        ],
+
+      relationships:
+        [
+          ...this.state.relationships,
+        ],
+    }
   }
 
 
-  // ========================================
-  // Iniciar exploração
-  // ========================================
+  // ==========================================================
+  // INICIAR EXPLORAÇÃO
+  // ==========================================================
 
   static start(
     sceneId: number,
@@ -189,7 +337,6 @@ export class ExplorationStateEngine {
 
     this.state =
       createDefaultState()
-
 
     this.state.currentSceneId =
       sceneId
@@ -203,15 +350,13 @@ export class ExplorationStateEngine {
     this.state.isTransitioning =
       false
 
-
     return this.getState()
-
   }
 
 
-  // ========================================
-  // Entrar em uma cena
-  // ========================================
+  // ==========================================================
+  // ENTRAR EM UMA CENA
+  // ==========================================================
 
   static enterScene(
     sceneId: number,
@@ -220,77 +365,63 @@ export class ExplorationStateEngine {
     const current =
       this.state.currentSceneId
 
-
     if (
       current === sceneId
     ) {
-
       return this.getState()
-
     }
-
 
     this.state.previousSceneId =
       current
 
-
     this.state.currentSceneId =
       sceneId
-
 
     if (
       !this.state.sceneHistory.includes(
         sceneId,
       )
     ) {
-
       this.state.sceneHistory.push(
         sceneId,
       )
-
     }
-
 
     this.state.isExploring =
       true
 
-
     this.state.isTransitioning =
       false
 
-
     return this.getState()
-
   }
 
 
-  // ========================================
-  // Começar transição
-  // ========================================
+  // ==========================================================
+  // COMEÇAR TRANSIÇÃO
+  // ==========================================================
 
   static beginTransition(): void {
 
     this.state.isTransitioning =
       true
-
   }
 
 
-  // ========================================
-  // Finalizar transição
-  // ========================================
+  // ==========================================================
+  // FINALIZAR TRANSIÇÃO
+  // ==========================================================
 
   static finishTransition(): void {
 
     this.state.isTransitioning =
       false
-
   }
 
 
-  // ========================================
-  // Registrar hotspots
-  // ========================================
+  // ==========================================================
+  // REGISTRAR HOTSPOTS
+  // ==========================================================
 
   static setHotspots(
     locations: SceneLocation[],
@@ -302,12 +433,47 @@ export class ExplorationStateEngine {
           location.id,
       )
 
+    // --------------------------------------------------------
+    // Inicialmente, caminhos que possuem destino são tratados
+    // como disponíveis, a menos que uma condição os bloqueie.
+    // --------------------------------------------------------
+
+    for (
+      const location
+      of locations
+    ) {
+
+      if (
+        location.target_scene_id ===
+        null
+      ) {
+        continue
+      }
+
+      const access =
+        this.canAccessPath(
+          location as ExplorationLocation,
+        )
+
+      if (access.allowed) {
+
+        this.unlockPath(
+          location.id,
+        )
+
+      } else {
+
+        this.lockPath(
+          location.id,
+        )
+      }
+    }
   }
 
 
-  // ========================================
-  // Registrar descoberta
-  // ========================================
+  // ==========================================================
+  // REGISTRAR DESCOBERTA
+  // ==========================================================
 
   static discoverHotspot(
     locationId: number,
@@ -322,15 +488,13 @@ export class ExplorationStateEngine {
       this.state.discoveredHotspots.push(
         locationId,
       )
-
     }
-
   }
 
 
-  // ========================================
-  // Registrar interação
-  // ========================================
+  // ==========================================================
+  // REGISTRAR INTERAÇÃO
+  // ==========================================================
 
   static interactHotspot(
     locationId: number,
@@ -339,7 +503,6 @@ export class ExplorationStateEngine {
     this.discoverHotspot(
       locationId,
     )
-
 
     if (
       !this.state.interactedHotspots.includes(
@@ -350,15 +513,13 @@ export class ExplorationStateEngine {
       this.state.interactedHotspots.push(
         locationId,
       )
-
     }
-
   }
 
 
-  // ========================================
-  // Desbloquear caminho
-  // ========================================
+  // ==========================================================
+  // DESBLOQUEAR CAMINHO
+  // ==========================================================
 
   static unlockPath(
     locationId: number,
@@ -373,22 +534,19 @@ export class ExplorationStateEngine {
       this.state.unlockedPaths.push(
         locationId,
       )
-
     }
-
 
     this.state.lockedPaths =
       this.state.lockedPaths.filter(
         id =>
           id !== locationId,
       )
-
   }
 
 
-  // ========================================
-  // Bloquear caminho
-  // ========================================
+  // ==========================================================
+  // BLOQUEAR CAMINHO
+  // ==========================================================
 
   static lockPath(
     locationId: number,
@@ -403,22 +561,19 @@ export class ExplorationStateEngine {
       this.state.lockedPaths.push(
         locationId,
       )
-
     }
-
 
     this.state.unlockedPaths =
       this.state.unlockedPaths.filter(
         id =>
           id !== locationId,
       )
-
   }
 
 
-  // ========================================
-  // Registrar segredo
-  // ========================================
+  // ==========================================================
+  // REGISTRAR SEGREDO
+  // ==========================================================
 
   static discoverSecret(
     secretId: string,
@@ -433,15 +588,185 @@ export class ExplorationStateEngine {
       this.state.discoveredSecrets.push(
         secretId,
       )
-
     }
 
+    // --------------------------------------------------------
+    // Ao descobrir um segredo, alguns caminhos podem ser
+    // reavaliados pelo ExplorerView quando necessário.
+    // --------------------------------------------------------
   }
 
 
+  // ==========================================================
+  // REGISTRAR ENTIDADE
+  // ==========================================================
+
+  static discoverEntity(
+    entityId: string,
+  ): void {
+
+    if (
+      !this.state.discoveredEntities.includes(
+        entityId,
+      )
+    ) {
+
+      this.state.discoveredEntities.push(
+        entityId,
+      )
+    }
+  }
+
+
+  // ==========================================================
+  // REGISTRAR ITEM
+  // ==========================================================
+
+  static discoverItem(
+    itemId: string,
+  ): void {
+
+    if (
+      !this.state.discoveredItems.includes(
+        itemId,
+      )
+    ) {
+
+      this.state.discoveredItems.push(
+        itemId,
+      )
+    }
+  }
+
+
+  // ==========================================================
+  // REGISTRAR FLAG
+  // ==========================================================
+
+  static setFlag(
+    flag: string,
+  ): void {
+
+    if (
+      !this.state.flags.includes(
+        flag,
+      )
+    ) {
+
+      this.state.flags.push(
+        flag,
+      )
+    }
+  }
+
+
+  // ==========================================================
+  // REMOVER FLAG
+  // ==========================================================
+
+  static removeFlag(
+    flag: string,
+  ): void {
+
+    this.state.flags =
+      this.state.flags.filter(
+        item =>
+          item !== flag,
+      )
+  }
+
+
+  // ==========================================================
+  // REGISTRAR RELACIONAMENTO
+  // ==========================================================
+
+  static setRelationship(
+    relationship: string,
+  ): void {
+
+    if (
+      !this.state.relationships.includes(
+        relationship,
+      )
+    ) {
+
+      this.state.relationships.push(
+        relationship,
+      )
+    }
+  }
+
+
+    // ========================================
+  // Verificar acesso ao caminho
   // ========================================
-  // Verificar hotspot
-  // ========================================
+
+  static canAccessPath(
+    location: SceneLocation,
+  ): {
+    allowed: boolean
+    reason: string | null
+  } {
+
+    // ----------------------------------------
+    // Hotspot sem destino
+    // ----------------------------------------
+
+    if (
+      !location.target_scene_id
+    ) {
+      return {
+        allowed: true,
+        reason: null,
+      }
+    }
+
+    // ----------------------------------------
+    // Caminho explicitamente desbloqueado
+    // ----------------------------------------
+
+    if (
+      this.state.unlockedPaths.includes(
+        location.id,
+      )
+    ) {
+      return {
+        allowed: true,
+        reason: null,
+      }
+    }
+
+    // ----------------------------------------
+    // Caminho explicitamente bloqueado
+    // ----------------------------------------
+
+    if (
+      this.state.lockedPaths.includes(
+        location.id,
+      )
+    ) {
+      return {
+        allowed: false,
+        reason:
+          "Este caminho ainda está bloqueado.",
+      }
+    }
+
+    // ----------------------------------------
+    // Por padrão, caminhos não registrados
+    // permanecem acessíveis.
+    // ----------------------------------------
+
+    return {
+      allowed: true,
+      reason: null,
+    }
+  }
+
+
+  // ==========================================================
+  // VERIFICAR SE HOTSPOT FOI INTERAGIDO
+  // ==========================================================
 
   static hasInteracted(
     locationId: number,
@@ -451,13 +776,27 @@ export class ExplorationStateEngine {
       .includes(
         locationId,
       )
-
   }
 
 
-  // ========================================
-  // Verificar caminho
-  // ========================================
+  // ==========================================================
+  // VERIFICAR SE HOTSPOT FOI DESCOBERTO
+  // ==========================================================
+
+  static hasDiscoveredHotspot(
+    locationId: number,
+  ): boolean {
+
+    return this.state.discoveredHotspots
+      .includes(
+        locationId,
+      )
+  }
+
+
+  // ==========================================================
+  // VERIFICAR CAMINHO
+  // ==========================================================
 
   static isPathUnlocked(
     locationId: number,
@@ -467,13 +806,12 @@ export class ExplorationStateEngine {
       .includes(
         locationId,
       )
-
   }
 
 
-  // ========================================
-  // Encerrar exploração
-  // ========================================
+  // ==========================================================
+  // ENCERRAR EXPLORAÇÃO
+  // ==========================================================
 
   static stop(): void {
 
@@ -482,19 +820,16 @@ export class ExplorationStateEngine {
 
     this.state.isTransitioning =
       false
-
   }
 
 
-  // ========================================
-  // Resetar
-  // ========================================
+  // ==========================================================
+  // RESETAR
+  // ==========================================================
 
   static reset(): void {
 
     this.state =
       createDefaultState()
-
   }
-
 }

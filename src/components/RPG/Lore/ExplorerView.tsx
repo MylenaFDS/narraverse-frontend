@@ -62,6 +62,9 @@ export default function ExplorerView({
     setSelectedHotspot,
   ] = useState<ExplorerLocation | null>(null)
 
+  const [discoveredHotspots, setDiscoveredHotspots] =
+  useState<Set<string>>(new Set())
+
   const [isTransitioning, setIsTransitioning] =
     useState(false)
 
@@ -134,6 +137,8 @@ export default function ExplorerView({
     draggingLocation,
     setDraggingLocation,
   ] = useState<SceneLocation | null>(null)
+
+  
 
   // ============================================================
   // INICIALIZAÇÃO DO EXPLORADOR
@@ -253,46 +258,235 @@ export default function ExplorerView({
     )
   }
 
-  // ============================================================
-  // TIPO DO HOTSPOT
-  // ============================================================
+// ============================================================
+// TIPO DO HOTSPOT
+// ============================================================
 
-  function getHotspotType(
-    location: SceneLocation,
+function getHotspotType(
+  location: SceneLocation,
+) {
+  const entityId =
+    getEntityId(location)
+
+  const text = `
+    ${location.name}
+    ${location.description ?? ""}
+  `.toLowerCase()
+
+  // ==========================================================
+  // SEGREDO
+  // ==========================================================
+
+  if (
+    entityId?.startsWith("secret-") ||
+    text.includes("segredo") ||
+    text.includes("oculto") ||
+    text.includes("escondido") ||
+    text.includes("secreto")
   ) {
-    const entityId =
-      getEntityId(location)
-
-    if (
-      entityId?.startsWith(
-        "secret-",
-      )
-    ) {
-      return {
-        icon: "🔮",
-        label: "Segredo",
-      }
-    }
-
-    if (location.target_scene_id) {
-      return {
-        icon: "🗺️",
-        label: "Passagem",
-      }
-    }
-
-    if (entityId) {
-      return {
-        icon: "✨",
-        label: "Interação",
-      }
-    }
-
     return {
-      icon: "🔎",
-      label: "Ponto de interesse",
+      icon: "🔮",
+      label: "Segredo",
+      type: "secret",
     }
   }
+
+  // ==========================================================
+  // PASSAGEM
+  // ==========================================================
+
+  if (
+    location.target_scene_id ||
+    text.includes("passagem") ||
+    text.includes("portal") ||
+    text.includes("porta") ||
+    text.includes("caminho") ||
+    text.includes("ponte") ||
+    text.includes("entrada") ||
+    text.includes("saída") ||
+    text.includes("saida") ||
+    text.includes("corredor") ||
+    text.includes("estrada")
+  ) {
+    return {
+      icon: "🗺️",
+      label: "Passagem",
+      type: "passage",
+    }
+  }
+
+  // ==========================================================
+  // PERSONAGEM
+  // ==========================================================
+
+  if (
+    text.includes("personagem") ||
+    text.includes("homem") ||
+    text.includes("mulher") ||
+    text.includes("guerreiro") ||
+    text.includes("guerreira") ||
+    text.includes("rei") ||
+    text.includes("rainha") ||
+    text.includes("soldado") ||
+    text.includes("mago") ||
+    text.includes("maga")
+  ) {
+    return {
+      icon: "👤",
+      label: "Personagem",
+      type: "character",
+    }
+  }
+
+  // ==========================================================
+  // OBJETO
+  // ==========================================================
+
+  if (
+    text.includes("espada") ||
+    text.includes("livro") ||
+    text.includes("chave") ||
+    text.includes("artefato") ||
+    text.includes("objeto") ||
+    text.includes("relíquia") ||
+    text.includes("reliquia") ||
+    text.includes("baú") ||
+    text.includes("bau")
+  ) {
+    return {
+      icon: "⚔️",
+      label: "Objeto",
+      type: "object",
+    }
+  }
+
+  // ==========================================================
+  // INTERAÇÃO
+  // ==========================================================
+
+  if (entityId) {
+    return {
+      icon: "✨",
+      label: "Interação",
+      type: "interaction",
+    }
+  }
+
+  // ==========================================================
+  // PADRÃO
+  // ==========================================================
+
+  return {
+    icon: "🔎",
+    label: "Ponto de interesse",
+    type: "interest",
+  }
+}
+
+// ============================================================
+// VERIFICAR SE HOTSPOT ESTÁ BLOQUEADO
+// ============================================================
+
+function isHotspotLocked(
+  location: SceneLocation,
+): boolean {
+  const entityId =
+    getEntityId(location)
+
+  const text = `
+    ${location.name}
+    ${location.description ?? ""}
+  `.toLowerCase()
+
+  // ----------------------------------------------------------
+  // HOTSPOT explicitamente marcado como bloqueado
+  // ----------------------------------------------------------
+
+  if (
+    entityId?.startsWith("locked-")
+  ) {
+    return true
+  }
+
+  // ----------------------------------------------------------
+  // DESCRIÇÃO INDICA BLOQUEIO
+  // ----------------------------------------------------------
+
+  if (
+    text.includes("bloqueado") ||
+    text.includes("trancado") ||
+    text.includes("selado") ||
+    text.includes("inacessível") ||
+    text.includes("inacessivel")
+  ) {
+    return true
+  }
+
+  return false
+}
+
+// ============================================================
+// VERIFICAR SE HOTSPOT PODE SER DESBLOQUEADO
+// ============================================================
+
+function canUnlockHotspot(
+  location: SceneLocation,
+): boolean {
+  const entityId =
+    getEntityId(location)
+
+  if (!entityId) {
+    return false
+  }
+
+  const state =
+    ExplorationStateEngine.getState()
+
+  // ----------------------------------------------------------
+  // EXEMPLO:
+  //
+  // locked-crypt
+  // depende de:
+  // secret-symbol
+  // ----------------------------------------------------------
+
+  if (
+    entityId ===
+    "locked-crypt"
+  ) {
+    return state.discoveredSecrets.includes(
+      "secret-symbol",
+    )
+  }
+
+  return false
+}
+
+// ============================================================
+// ESTADO DO HOTSPOT
+// ============================================================
+
+function getHotspotAccessState(
+  location: SceneLocation,
+) {
+  const locked =
+    isHotspotLocked(location)
+
+  if (!locked) {
+    return {
+      locked: false,
+      unlocked: true,
+    }
+  }
+
+  const canUnlock =
+    canUnlockHotspot(location)
+
+  return {
+    locked: !canUnlock,
+    unlocked: canUnlock,
+  }
+}
 
 // ============================================================
 // INTERAÇÃO COM HOTSPOT
@@ -301,41 +495,117 @@ export default function ExplorerView({
 async function handleLocationClick(
   location: SceneLocation,
 ) {
+  // ========================================================
+  // IMPEDIR INTERAÇÃO DURANTE TRANSIÇÃO
+  // ========================================================
+
   if (isTransitioning) {
     return
   }
 
+  // ========================================================
+  // CONVERTER PARA LOCAL DO EXPLORADOR
+  // ========================================================
+
   const explorerLocation =
     location as ExplorerLocation
+
+  // ========================================================
+  // VERIFICAR ACESSO
+  // ========================================================
+
+  const access =
+    getHotspotAccessState(
+      location,
+    )
+
+  // ========================================================
+  // CAMINHO BLOQUEADO
+  // ========================================================
+
+  if (access.locked) {
+    setSelectedHotspot(
+      explorerLocation,
+    )
+
+    return
+  }
+
+  // ========================================================
+  // IDENTIFICAR ENTITY
+  // ========================================================
 
   const entityId =
     getEntityId(location)
 
+  const hotspotKey =
+    entityId ??
+    `location-${location.id}`
+
   // ========================================================
-  // REGISTRAR DESCOBERTA
+  // REGISTRAR DESCOBERTA NO ESTADO VISUAL
+  // ========================================================
+
+  setDiscoveredHotspots(
+    (prev) => {
+      const next =
+        new Set(prev)
+
+      next.add(hotspotKey)
+
+      return next
+    },
+  )
+
+  // ========================================================
+  // REGISTRAR DESCOBERTA NO ENGINE
+  // ========================================================
+
+  ExplorationStateEngine
+    .discoverHotspot(
+      location.id,
+    )
+
+  // ========================================================
+  // MEMÓRIA DA EXPLORAÇÃO
   // ========================================================
 
   if (entityId) {
+
+    // ------------------------------------------------------
+    // Descobrir entidade
+    // ------------------------------------------------------
+
     ExplorationMemoryEngine
       .discoverEntity(
         entityId,
       )
+
+    // ------------------------------------------------------
+    // Registrar interação
+    // ------------------------------------------------------
 
     ExplorationMemoryEngine
       .interact(
         entityId,
       )
 
-    // ======================================================
+    // ------------------------------------------------------
     // SEGREDO
-    // ======================================================
+    // ------------------------------------------------------
 
     if (
       entityId.startsWith(
         "secret-",
       )
     ) {
+
       ExplorationMemoryEngine
+        .discoverSecret(
+          entityId,
+        )
+
+      ExplorationStateEngine
         .discoverSecret(
           entityId,
         )
@@ -343,10 +613,21 @@ async function handleLocationClick(
   }
 
   // ========================================================
+  // REGISTRAR INTERAÇÃO COM HOTSPOT
+  // ========================================================
+
+  ExplorationStateEngine
+    .interactHotspot(
+      location.id,
+    )
+
+  // ========================================================
   // SEM DESTINO
   //
-  // O hotspot continua selecionado.
-  // Apenas não ocorre transição.
+  // O hotspot foi explorado, mas não possui
+  // uma cena de destino.
+  //
+  // Apenas abre o painel de informações.
   // ========================================================
 
   if (
@@ -363,17 +644,31 @@ async function handleLocationClick(
   // TRANSIÇÃO PARA OUTRA CENA
   // ========================================================
 
-  setSelectedHotspot(null)
+  setSelectedHotspot(
+    null,
+  )
 
-  setIsTransitioning(true)
+  setIsTransitioning(
+    true,
+  )
 
-  ExplorationStateEngine.beginTransition()
+  ExplorationStateEngine
+    .beginTransition()
 
   try {
+
+    // ======================================================
+    // CARREGAR CENA DE DESTINO
+    // ======================================================
+
     const nextScene =
       await getRegionSceneById(
         location.target_scene_id,
       )
+
+    // ======================================================
+    // SALVAR CENA ATUAL NO HISTÓRICO
+    // ======================================================
 
     setSceneHistory(
       (prev) => [
@@ -382,36 +677,61 @@ async function handleLocationClick(
       ],
     )
 
+    // ======================================================
+    // ALTERAR CENA ATUAL
+    // ======================================================
+
     setCurrentScene(
       nextScene,
     )
 
-    ExplorationStateEngine.enterScene(
-      nextScene.id,
-    )
+    // ======================================================
+    // ATUALIZAR ENGINE
+    // ======================================================
+
+    ExplorationStateEngine
+      .enterScene(
+        nextScene.id,
+      )
+
+    // ======================================================
+    // FINALIZAR TRANSIÇÃO
+    // ======================================================
 
     setTimeout(() => {
-      setIsTransitioning(false)
 
-      ExplorationStateEngine.finishTransition()
+      setIsTransitioning(
+        false,
+      )
+
+      ExplorationStateEngine
+        .finishTransition()
+
     }, 350)
 
   } catch (err) {
+
+    // ======================================================
+    // ERRO
+    // ======================================================
+
     console.error(
       "Erro ao entrar na cena:",
       err,
     )
 
-    setIsTransitioning(false)
+    setIsTransitioning(
+      false,
+    )
 
-    ExplorationStateEngine.finishTransition()
+    ExplorationStateEngine
+      .finishTransition()
 
     alert(
       "Não foi possível entrar nesta cena.",
     )
   }
 }
-
   // ============================================================
   // VOLTAR
   // ============================================================
@@ -460,6 +780,17 @@ async function handleLocationClick(
     ...sceneHistory,
     currentScene,
   ]
+
+  // ============================================================
+// ACESSO AO HOTSPOT SELECIONADO
+// ============================================================
+
+const selectedAccess =
+  selectedHotspot
+    ? getHotspotAccessState(
+        selectedHotspot,
+      )
+    : null
 
   // ============================================================
   // CLIQUE NA CENA PARA CRIAR HOTSPOT
@@ -1423,158 +1754,200 @@ async function handleLocationClick(
               location.target_scene_id,
             )
 
+            const entityId =
+  getEntityId(location)
+
+const hotspotKey =
+  entityId ??
+  `location-${location.id}`
+
+const isDiscovered =
+  discoveredHotspots.has(
+    hotspotKey,
+  )
+
+
+const access =
+  getHotspotAccessState(
+    location,
+  )
+
           return (
-            <button
-              key={location.id}
-              type="button"
-              onMouseDown={(e) => {
-                if (!isEditing) {
-                  return
-                }
+  <button
+    key={location.id}
+    type="button"
+    onMouseDown={(e) => {
+      if (!isEditing) {
+        return
+      }
 
-                e.stopPropagation()
+      e.stopPropagation()
 
-                setDraggingLocation(
-                  location,
-                )
-              }}
-              onClick={(e) => {
-                e.stopPropagation()
+      setDraggingLocation(
+        location,
+      )
+    }}
+    onClick={(e) => {
+      e.stopPropagation()
 
-                // ----------------------------------------------
-                // MODO EDIÇÃO
-                // ----------------------------------------------
+      // ----------------------------------------------
+      // MODO EDIÇÃO
+      // ----------------------------------------------
 
-                if (isEditing) {
-                  handleEditLocation(
-                    location,
-                  )
+      if (isEditing) {
+        handleEditLocation(
+          location,
+        )
 
-                  return
-                }
+        return
+      }
 
-                // ----------------------------------------------
-                // MODO EXPLORAÇÃO
-                // ----------------------------------------------
+      // ----------------------------------------------
+      // MODO EXPLORAÇÃO
+      // ----------------------------------------------
 
-                void handleLocationClick(
-                  location,
-                )
-              }}
-              style={{
-                left:
-                  `${location.pos_x}%`,
-                top:
-                  `${location.pos_y}%`,
-              }}
-              className="
-                group
-                absolute
-                z-[80]
-                -translate-x-1/2
-                -translate-y-1/2
-                flex
-                flex-col
-                items-center
-                gap-2
-                cursor-pointer
-              "
-              title={
-                location.description ||
-                location.name
-              }
-            >
-              {/* =================================================
-                  PONTO
-                  ================================================= */}
+      void handleLocationClick(
+        location,
+      )
+    }}
+    style={{
+      left:
+        `${location.pos_x}%`,
+      top:
+        `${location.pos_y}%`,
+    }}
+    className="
+      group
+      absolute
+      z-[80]
+      -translate-x-1/2
+      -translate-y-1/2
+      flex
+      flex-col
+      items-center
+      gap-2
+      cursor-pointer
+    "
+    title={
+      location.description ||
+      location.name
+    }
+  >
+    {/* =================================================
+        PONTO
+        ================================================= */}
 
-              <span
-                className="
-                  relative
-                  flex
-                  items-center
-                  justify-center
-                "
-              >
-                <span
-                  className="
-                    absolute
-                    w-9
-                    h-9
-                    rounded-full
-                    border-2
-                    border-[#e0a96d]
-                    animate-ping
-                    opacity-60
-                  "
-                />
+    <span
+      className="
+        relative
+        flex
+        items-center
+        justify-center
+      "
+    >
+      <span
+        className={`
+          relative
+          w-5
+          h-5
+          rounded-full
+          border-2
+          border-white/70
+          group-hover:scale-125
+          transition
 
-                <span
-                  className="
-                    relative
-                    w-5
-                    h-5
-                    rounded-full
-                    bg-[#e0a96d]
-                    border-2
-                    border-white/70
-                    shadow-[0_0_25px_rgba(224,169,109,1)]
-                    group-hover:scale-125
-                    transition
-                  "
-                />
-              </span>
+          ${
+            access.locked
+              ? "bg-gray-700 shadow-[0_0_15px_rgba(0,0,0,0.8)]"
+              : isDiscovered
+                ? "bg-white/80 shadow-[0_0_12px_rgba(255,255,255,0.6)]"
+                : "bg-[#e0a96d] shadow-[0_0_25px_rgba(224,169,109,1)]"
+          }
+        `}
+      >
+        {access.locked && (
+          <span
+            className="
+              absolute
+              -top-1
+              -right-1
+              text-[10px]
+            "
+          >
+            🔒
+          </span>
+        )}
+      </span>
+    </span>
 
-              {/* =================================================
-                  NOME
-                  ================================================= */}
+    {/* =================================================
+        NOME
+        ================================================= */}
 
-              <span
-                className="
-                  opacity-0
-                  group-hover:opacity-100
-                  translate-y-1
-                  group-hover:translate-y-0
-                  transition
-                  px-3
-                  py-1
-                  rounded-full
-                  bg-black/80
-                  border
-                  border-[#e0a96d]/40
-                  text-[#f2e9e4]
-                  text-xs
-                  whitespace-nowrap
-                  pointer-events-none
-                "
-              >
-                {hotspotType.icon}{" "}
-                {location.name}
-              </span>
+    <span
+      className="
+        opacity-0
+        group-hover:opacity-100
+        translate-y-1
+        group-hover:translate-y-0
+        transition
+        px-3
+        py-1
+        rounded-full
+        bg-black/80
+        border
+        border-[#e0a96d]/40
+        text-[#f2e9e4]
+        text-xs
+        whitespace-nowrap
+        pointer-events-none
+      "
+    >
+      {hotspotType.icon}{" "}
+      {location.name}
+    </span>
 
-              {/* =================================================
-                  INDICADOR DE PASSAGEM
-                  ================================================= */}
+    {/* =================================================
+        INDICADOR DE ACESSO
+        ================================================= */}
 
-              {hasDestination && (
-                <span
-                  className="
-                    absolute
-                    -top-7
-                    opacity-0
-                    group-hover:opacity-100
-                    transition
-                    text-[10px]
-                    text-[#e0a96d]
-                    whitespace-nowrap
-                    pointer-events-none
-                  "
-                >
-                  Entrar →
-                </span>
-              )}
-            </button>
-          )
+    {access.locked ? (
+      <span
+        className="
+          absolute
+          -top-7
+          opacity-0
+          group-hover:opacity-100
+          transition
+          text-[10px]
+          text-red-300
+          whitespace-nowrap
+          pointer-events-none
+        "
+      >
+        🔒 Bloqueado
+      </span>
+    ) : (
+      hasDestination && (
+        <span
+          className="
+            absolute
+            -top-7
+            opacity-0
+            group-hover:opacity-100
+            transition
+            text-[10px]
+            text-[#e0a96d]
+            whitespace-nowrap
+            pointer-events-none
+          "
+        >
+          Entrar →
+        </span>
+      )
+    )}
+  </button>
+)
         },
       )}
 
@@ -1627,7 +2000,47 @@ async function handleLocationClick(
                   ).label
                 }
               </div>
+              {getHotspotAccessState(
+  selectedHotspot,
+).locked ? (
+  <div
+    className="
+      mt-2
+      flex
+      items-center
+      gap-2
+      text-xs
+      text-red-300/70
+    "
+  >
+    <span>
+      🔒
+    </span>
 
+    <span>
+      Acesso bloqueado
+    </span>
+  </div>
+) : (
+  <div
+    className="
+      mt-2
+      flex
+      items-center
+      gap-2
+      text-xs
+      text-[#c9ada7]/60
+    "
+  >
+    <span>
+      ◉
+    </span>
+
+    <span>
+      Local já explorado
+    </span>
+  </div>
+)}
               <h2
                 className="
                   text-2xl
@@ -1674,8 +2087,26 @@ async function handleLocationClick(
                 selectedHotspot.description
               }
             </p>
+            
           )}
-
+          {selectedAccess &&
+  selectedAccess.locked && (
+    <div
+      className="
+        mt-4
+        rounded-xl
+        border
+        border-gray-500/30
+        bg-black/30
+        px-4
+        py-3
+        text-sm
+        text-gray-400
+      "
+    >
+      🔒 Este caminho está bloqueado.
+    </div>
+  )}
           <div
             className="
               mt-4
