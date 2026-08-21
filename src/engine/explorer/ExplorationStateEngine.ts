@@ -57,7 +57,6 @@ export type ExplorationAccessCondition = {
 
   requiresRelationship?:
     string
-
 }
 
 
@@ -72,7 +71,6 @@ export interface ExplorationAccessResult {
 
   reason:
     string | null
-
 }
 
 
@@ -154,7 +152,7 @@ export interface ExplorationState {
 
 
   // ==========================================================
-  // Entidades descobertas
+  // Entidades
   // ==========================================================
 
   discoveredEntities:
@@ -252,10 +250,13 @@ function createDefaultState():
 
 export class ExplorationStateEngine {
 
-
   private static state:
     ExplorationState =
       createDefaultState()
+
+
+  private static readonly STORAGE_KEY =
+    "narraverse_exploration_state"
 
 
   // ==========================================================
@@ -326,8 +327,104 @@ export class ExplorationStateEngine {
     }
   }
 
+  // ==========================================================
+  // SALVAR ESTADO
+  // ==========================================================
+
+  private static saveState(): void {
+
+    try {
+
+      localStorage.setItem(
+        this.STORAGE_KEY,
+        JSON.stringify(
+          this.state,
+        ),
+      )
+
+    } catch (error) {
+
+      console.error(
+        "Erro ao salvar estado da exploração:",
+        error,
+      )
+
+    }
+  }
+
 
   // ==========================================================
+  // CARREGAR ESTADO
+  // ==========================================================
+
+  private static loadState(): ExplorationState | null {
+
+    try {
+
+      const stored =
+        localStorage.getItem(
+          this.STORAGE_KEY,
+        )
+
+      if (!stored) {
+        return null
+      }
+
+      const parsed =
+        JSON.parse(
+          stored,
+        ) as ExplorationState
+
+      return {
+        ...createDefaultState(),
+        ...parsed,
+
+        sceneHistory:
+          parsed.sceneHistory ?? [],
+
+        availableHotspots:
+          parsed.availableHotspots ?? [],
+
+        discoveredHotspots:
+          parsed.discoveredHotspots ?? [],
+
+        interactedHotspots:
+          parsed.interactedHotspots ?? [],
+
+        unlockedPaths:
+          parsed.unlockedPaths ?? [],
+
+        lockedPaths:
+          parsed.lockedPaths ?? [],
+
+        discoveredSecrets:
+          parsed.discoveredSecrets ?? [],
+
+        flags:
+          parsed.flags ?? [],
+
+        discoveredEntities:
+          parsed.discoveredEntities ?? [],
+
+        discoveredItems:
+          parsed.discoveredItems ?? [],
+
+        relationships:
+          parsed.relationships ?? [],
+      }
+
+    } catch (error) {
+
+      console.error(
+        "Erro ao carregar estado da exploração:",
+        error,
+      )
+
+      return null
+    }
+  }
+
+    // ==========================================================
   // INICIAR EXPLORAÇÃO
   // ==========================================================
 
@@ -335,14 +432,39 @@ export class ExplorationStateEngine {
     sceneId: number,
   ): ExplorationState {
 
-    this.state =
-      createDefaultState()
+    const savedState =
+      this.loadState()
 
-    this.state.currentSceneId =
-      sceneId
+    if (savedState) {
 
-    this.state.sceneHistory =
-      [sceneId]
+      this.state =
+        savedState
+
+      this.state.currentSceneId =
+        sceneId
+
+      if (
+        !this.state.sceneHistory.includes(
+          sceneId,
+        )
+      ) {
+
+        this.state.sceneHistory.push(
+          sceneId,
+        )
+      }
+
+    } else {
+
+      this.state =
+        createDefaultState()
+
+      this.state.currentSceneId =
+        sceneId
+
+      this.state.sceneHistory =
+        [sceneId]
+    }
 
     this.state.isExploring =
       true
@@ -350,9 +472,10 @@ export class ExplorationStateEngine {
     this.state.isTransitioning =
       false
 
+    this.saveState()
+
     return this.getState()
   }
-
 
   // ==========================================================
   // ENTRAR EM UMA CENA
@@ -382,6 +505,7 @@ export class ExplorationStateEngine {
         sceneId,
       )
     ) {
+
       this.state.sceneHistory.push(
         sceneId,
       )
@@ -434,8 +558,15 @@ export class ExplorationStateEngine {
       )
 
     // --------------------------------------------------------
-    // Inicialmente, caminhos que possuem destino são tratados
-    // como disponíveis, a menos que uma condição os bloqueie.
+    // Limpa a classificação dos caminhos da cena atual
+    // --------------------------------------------------------
+
+    this.state.unlockedPaths = []
+
+    this.state.lockedPaths = []
+
+    // --------------------------------------------------------
+    // Classifica os caminhos
     // --------------------------------------------------------
 
     for (
@@ -452,10 +583,12 @@ export class ExplorationStateEngine {
 
       const access =
         this.canAccessPath(
-          location as ExplorationLocation,
+          location,
         )
 
-      if (access.allowed) {
+      if (
+        access.allowed
+      ) {
 
         this.unlockPath(
           location.id,
@@ -589,11 +722,6 @@ export class ExplorationStateEngine {
         secretId,
       )
     }
-
-    // --------------------------------------------------------
-    // Ao descobrir um segredo, alguns caminhos podem ser
-    // reavaliados pelo ExplorerView quando necessário.
-    // --------------------------------------------------------
   }
 
 
@@ -697,54 +825,60 @@ export class ExplorationStateEngine {
   }
 
 
-    // ========================================
-  // Verificar acesso ao caminho
-  // ========================================
+  // ==========================================================
+  // VERIFICAR ACESSO AO CAMINHO
+  // ==========================================================
 
   static canAccessPath(
     location: SceneLocation,
-  ): {
-    allowed: boolean
-    reason: string | null
-  } {
+  ): ExplorationAccessResult {
 
-    // ----------------------------------------
+    const explorationLocation =
+      location as ExplorationLocation
+
+
+    // --------------------------------------------------------
     // Hotspot sem destino
-    // ----------------------------------------
+    // --------------------------------------------------------
 
     if (
       !location.target_scene_id
     ) {
+
       return {
         allowed: true,
         reason: null,
       }
     }
 
-    // ----------------------------------------
+
+    // --------------------------------------------------------
     // Caminho explicitamente desbloqueado
-    // ----------------------------------------
+    // --------------------------------------------------------
 
     if (
       this.state.unlockedPaths.includes(
         location.id,
       )
     ) {
+
       return {
         allowed: true,
         reason: null,
       }
     }
 
-    // ----------------------------------------
+
+    // --------------------------------------------------------
     // Caminho explicitamente bloqueado
-    // ----------------------------------------
+    // --------------------------------------------------------
 
     if (
       this.state.lockedPaths.includes(
         location.id,
       )
     ) {
+
       return {
         allowed: false,
         reason:
@@ -752,10 +886,180 @@ export class ExplorationStateEngine {
       }
     }
 
-    // ----------------------------------------
-    // Por padrão, caminhos não registrados
-    // permanecem acessíveis.
-    // ----------------------------------------
+
+    // --------------------------------------------------------
+    // Requer segredo
+    // --------------------------------------------------------
+
+    if (
+      explorationLocation.requiresSecret
+    ) {
+
+      const hasSecret =
+        this.state.discoveredSecrets.includes(
+          explorationLocation.requiresSecret,
+        )
+
+      if (!hasSecret) {
+
+        return {
+          allowed: false,
+          reason:
+            "Você ainda não descobriu o segredo necessário.",
+        }
+      }
+    }
+
+
+    // --------------------------------------------------------
+    // Requer entidade
+    // --------------------------------------------------------
+
+    if (
+      explorationLocation.requiresEntity
+    ) {
+
+      const hasEntity =
+        this.state.discoveredEntities.includes(
+          explorationLocation.requiresEntity,
+        )
+
+      if (!hasEntity) {
+
+        return {
+          allowed: false,
+          reason:
+            "Você ainda não descobriu a entidade necessária.",
+        }
+      }
+    }
+
+
+    // --------------------------------------------------------
+    // Requer hotspot descoberto
+    // --------------------------------------------------------
+
+    if (
+      explorationLocation.requiresHotspot !==
+      undefined
+    ) {
+
+      const discovered =
+        this.state.discoveredHotspots.includes(
+          explorationLocation.requiresHotspot,
+        )
+
+      if (!discovered) {
+
+        return {
+          allowed: false,
+          reason:
+            "Você precisa descobrir outro local antes de seguir.",
+        }
+      }
+    }
+
+
+    // --------------------------------------------------------
+    // Requer interação
+    // --------------------------------------------------------
+
+    if (
+      explorationLocation.requiresInteraction !==
+      undefined
+    ) {
+
+      const interacted =
+        this.state.interactedHotspots.includes(
+          explorationLocation.requiresInteraction,
+        )
+
+      if (!interacted) {
+
+        return {
+          allowed: false,
+          reason:
+            "Você precisa interagir com outro local antes de seguir.",
+        }
+      }
+    }
+
+
+    // --------------------------------------------------------
+    // Requer flag
+    // --------------------------------------------------------
+
+    if (
+      explorationLocation.requiresFlag
+    ) {
+
+      const hasFlag =
+        this.state.flags.includes(
+          explorationLocation.requiresFlag,
+        )
+
+      if (!hasFlag) {
+
+        return {
+          allowed: false,
+          reason:
+            "Uma condição narrativa ainda precisa ser cumprida.",
+        }
+      }
+    }
+
+
+    // --------------------------------------------------------
+    // Requer item
+    // --------------------------------------------------------
+
+    if (
+      explorationLocation.requiresItem
+    ) {
+
+      const hasItem =
+        this.state.discoveredItems.includes(
+          explorationLocation.requiresItem,
+        )
+
+      if (!hasItem) {
+
+        return {
+          allowed: false,
+          reason:
+            "Você ainda não possui o item necessário.",
+        }
+      }
+    }
+
+
+    // --------------------------------------------------------
+    // Requer relacionamento
+    // --------------------------------------------------------
+
+    if (
+      explorationLocation.requiresRelationship
+    ) {
+
+      const hasRelationship =
+        this.state.relationships.includes(
+          explorationLocation.requiresRelationship,
+        )
+
+      if (!hasRelationship) {
+
+        return {
+          allowed: false,
+          reason:
+            "Seu relacionamento com alguém ainda não permite seguir por este caminho.",
+        }
+      }
+    }
+
+
+    // --------------------------------------------------------
+    // Acesso permitido
+    // --------------------------------------------------------
 
     return {
       allowed: true,
@@ -765,7 +1069,7 @@ export class ExplorationStateEngine {
 
 
   // ==========================================================
-  // VERIFICAR SE HOTSPOT FOI INTERAGIDO
+  // VERIFICAR HOTSPOT INTERAGIDO
   // ==========================================================
 
   static hasInteracted(
@@ -780,7 +1084,7 @@ export class ExplorationStateEngine {
 
 
   // ==========================================================
-  // VERIFICAR SE HOTSPOT FOI DESCOBERTO
+  // VERIFICAR HOTSPOT DESCOBERTO
   // ==========================================================
 
   static hasDiscoveredHotspot(
@@ -795,7 +1099,7 @@ export class ExplorationStateEngine {
 
 
   // ==========================================================
-  // VERIFICAR CAMINHO
+  // VERIFICAR CAMINHO DESBLOQUEADO
   // ==========================================================
 
   static isPathUnlocked(

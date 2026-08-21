@@ -45,7 +45,7 @@ export default function ExplorerView({
   // ============================================================
 
   const [currentScene, setCurrentScene] =
-    useState(scene)
+  useState<RegionScene>(scene)
 
   const [sceneHistory, setSceneHistory] =
     useState<RegionScene[]>([])
@@ -62,8 +62,7 @@ export default function ExplorerView({
     setSelectedHotspot,
   ] = useState<ExplorerLocation | null>(null)
 
-  const [discoveredHotspots, setDiscoveredHotspots] =
-  useState<Set<string>>(new Set())
+  
 
   const [isTransitioning, setIsTransitioning] =
     useState(false)
@@ -129,6 +128,11 @@ export default function ExplorerView({
   const [imageFile, setImageFile] =
     useState<File | null>(null)
 
+  const [
+  ,
+  setExplorationRevision,
+] = useState(0)
+
   // ============================================================
   // DRAG DE HOTSPOT
   // ============================================================
@@ -153,6 +157,7 @@ export default function ExplorerView({
       ExplorationStateEngine.stop()
     }
   }, [scene.id])
+
 
   // ============================================================
   // CARREGAR HOTSPOTS DA CENA
@@ -466,25 +471,55 @@ function canUnlockHotspot(
 // ESTADO DO HOTSPOT
 // ============================================================
 
+type HotspotAccessState = {
+  locked: boolean
+  unlocked: boolean
+  reason: string | null
+}
+
 function getHotspotAccessState(
   location: SceneLocation,
-) {
+): HotspotAccessState {
+
   const locked =
     isHotspotLocked(location)
+
+  // ----------------------------------------------------------
+  // Hotspot normalmente acessível
+  // ----------------------------------------------------------
 
   if (!locked) {
     return {
       locked: false,
       unlocked: true,
+      reason: null,
     }
   }
+
+  // ----------------------------------------------------------
+  // Verificar se algum requisito já foi satisfeito
+  // ----------------------------------------------------------
 
   const canUnlock =
     canUnlockHotspot(location)
 
+  if (canUnlock) {
+    return {
+      locked: false,
+      unlocked: true,
+      reason: null,
+    }
+  }
+
+  // ----------------------------------------------------------
+  // Hotspot bloqueado
+  // ----------------------------------------------------------
+
   return {
-    locked: !canUnlock,
-    unlocked: canUnlock,
+    locked: true,
+    unlocked: false,
+    reason:
+      "Você ainda não descobriu como acessar este local.",
   }
 }
 
@@ -495,33 +530,29 @@ function getHotspotAccessState(
 async function handleLocationClick(
   location: SceneLocation,
 ) {
-  // ========================================================
+  // ==========================================================
   // IMPEDIR INTERAÇÃO DURANTE TRANSIÇÃO
-  // ========================================================
+  // ==========================================================
 
   if (isTransitioning) {
     return
   }
 
-  // ========================================================
-  // CONVERTER PARA LOCAL DO EXPLORADOR
-  // ========================================================
-
   const explorerLocation =
     location as ExplorerLocation
 
-  // ========================================================
+  // ==========================================================
   // VERIFICAR ACESSO
-  // ========================================================
+  // ==========================================================
 
   const access =
     getHotspotAccessState(
       location,
     )
 
-  // ========================================================
-  // CAMINHO BLOQUEADO
-  // ========================================================
+  // ==========================================================
+  // HOTSPOT BLOQUEADO
+  // ==========================================================
 
   if (access.locked) {
     setSelectedHotspot(
@@ -531,75 +562,46 @@ async function handleLocationClick(
     return
   }
 
-  // ========================================================
+  // ==========================================================
   // IDENTIFICAR ENTITY
-  // ========================================================
+  // ==========================================================
 
   const entityId =
     getEntityId(location)
 
-  const hotspotKey =
-    entityId ??
-    `location-${location.id}`
-
-  // ========================================================
-  // REGISTRAR DESCOBERTA NO ESTADO VISUAL
-  // ========================================================
-
-  setDiscoveredHotspots(
-    (prev) => {
-      const next =
-        new Set(prev)
-
-      next.add(hotspotKey)
-
-      return next
-    },
-  )
-
-  // ========================================================
-  // REGISTRAR DESCOBERTA NO ENGINE
-  // ========================================================
+  // ==========================================================
+  // REGISTRAR DESCOBERTA
+  // ==========================================================
 
   ExplorationStateEngine
     .discoverHotspot(
       location.id,
     )
 
-  // ========================================================
-  // MEMÓRIA DA EXPLORAÇÃO
-  // ========================================================
+  // ==========================================================
+  // MEMÓRIA DA ENTITY
+  // ==========================================================
 
   if (entityId) {
-
-    // ------------------------------------------------------
-    // Descobrir entidade
-    // ------------------------------------------------------
-
     ExplorationMemoryEngine
       .discoverEntity(
         entityId,
       )
-
-    // ------------------------------------------------------
-    // Registrar interação
-    // ------------------------------------------------------
 
     ExplorationMemoryEngine
       .interact(
         entityId,
       )
 
-    // ------------------------------------------------------
+    // ========================================================
     // SEGREDO
-    // ------------------------------------------------------
+    // ========================================================
 
     if (
       entityId.startsWith(
         "secret-",
       )
     ) {
-
       ExplorationMemoryEngine
         .discoverSecret(
           entityId,
@@ -612,23 +614,24 @@ async function handleLocationClick(
     }
   }
 
-  // ========================================================
-  // REGISTRAR INTERAÇÃO COM HOTSPOT
-  // ========================================================
+  // ==========================================================
+  // REGISTRAR INTERAÇÃO
+  // ==========================================================
 
   ExplorationStateEngine
     .interactHotspot(
       location.id,
     )
 
-  // ========================================================
-  // SEM DESTINO
-  //
-  // O hotspot foi explorado, mas não possui
-  // uma cena de destino.
-  //
-  // Apenas abre o painel de informações.
-  // ========================================================
+  // ==========================================================
+  // ATUALIZAR UI
+  // ==========================================================
+
+  refreshExplorationState()
+
+  // ==========================================================
+  // HOTSPOT SEM DESTINO
+  // ==========================================================
 
   if (
     !location.target_scene_id
@@ -640,9 +643,9 @@ async function handleLocationClick(
     return
   }
 
-  // ========================================================
-  // TRANSIÇÃO PARA OUTRA CENA
-  // ========================================================
+  // ==========================================================
+  // INICIAR TRANSIÇÃO
+  // ==========================================================
 
   setSelectedHotspot(
     null,
@@ -655,20 +658,21 @@ async function handleLocationClick(
   ExplorationStateEngine
     .beginTransition()
 
-  try {
+  refreshExplorationState()
 
-    // ======================================================
-    // CARREGAR CENA DE DESTINO
-    // ======================================================
+  try {
+    // ========================================================
+    // CARREGAR PRÓXIMA CENA
+    // ========================================================
 
     const nextScene =
       await getRegionSceneById(
         location.target_scene_id,
       )
 
-    // ======================================================
-    // SALVAR CENA ATUAL NO HISTÓRICO
-    // ======================================================
+    // ========================================================
+    // HISTÓRICO
+    // ========================================================
 
     setSceneHistory(
       (prev) => [
@@ -677,29 +681,30 @@ async function handleLocationClick(
       ],
     )
 
-    // ======================================================
-    // ALTERAR CENA ATUAL
-    // ======================================================
+    // ========================================================
+    // ALTERAR CENA
+    // ========================================================
 
     setCurrentScene(
       nextScene,
     )
 
-    // ======================================================
+    // ========================================================
     // ATUALIZAR ENGINE
-    // ======================================================
+    // ========================================================
 
     ExplorationStateEngine
       .enterScene(
         nextScene.id,
       )
 
-    // ======================================================
+    refreshExplorationState()
+
+    // ========================================================
     // FINALIZAR TRANSIÇÃO
-    // ======================================================
+    // ========================================================
 
-    setTimeout(() => {
-
+    window.setTimeout(() => {
       setIsTransitioning(
         false,
       )
@@ -707,17 +712,13 @@ async function handleLocationClick(
       ExplorationStateEngine
         .finishTransition()
 
+      refreshExplorationState()
     }, 350)
 
-  } catch (err) {
-
-    // ======================================================
-    // ERRO
-    // ======================================================
-
+  } catch (error) {
     console.error(
       "Erro ao entrar na cena:",
-      err,
+      error,
     )
 
     setIsTransitioning(
@@ -727,50 +728,62 @@ async function handleLocationClick(
     ExplorationStateEngine
       .finishTransition()
 
+    refreshExplorationState()
+
     alert(
       "Não foi possível entrar nesta cena.",
     )
   }
 }
-  // ============================================================
-  // VOLTAR
-  // ============================================================
+ // ============================================================
+// VOLTAR
+// ============================================================
 
-  function handleBack() {
-    const previousScene =
-      sceneHistory[
-        sceneHistory.length - 1
-      ]
-
-    if (!previousScene) {
-      return
-    }
-
-    setSelectedHotspot(null)
-
-    ExplorationStateEngine.beginTransition()
-
-    setCurrentScene(
-      previousScene,
-    )
-
-    ExplorationStateEngine.enterScene(
-      previousScene.id,
-    )
-
-    setSceneHistory(
-      (prev) =>
-        prev.slice(0, -1),
-    )
-
-    setIsTransitioning(true)
-
-    setTimeout(() => {
-      setIsTransitioning(false)
-
-      ExplorationStateEngine.finishTransition()
-    }, 350)
+function handleBack() {
+  if (isTransitioning) {
+    return
   }
+
+  const previousScene =
+    sceneHistory[
+      sceneHistory.length - 1
+    ]
+
+  if (!previousScene) {
+    return
+  }
+
+  setSelectedHotspot(null)
+
+  setIsTransitioning(true)
+
+  ExplorationStateEngine.beginTransition()
+
+  refreshExplorationState()
+
+  setCurrentScene(
+    previousScene,
+  )
+
+  ExplorationStateEngine.enterScene(
+    previousScene.id,
+  )
+
+  setSceneHistory(
+    (prev) =>
+      prev.slice(0, -1),
+  )
+
+  refreshExplorationState()
+
+  setTimeout(() => {
+    setIsTransitioning(false)
+
+    ExplorationStateEngine.finishTransition()
+
+    refreshExplorationState()
+  }, 350)
+}
 
   // ============================================================
   // CAMINHO DA CENA
@@ -1268,6 +1281,12 @@ const selectedAccess =
     setSelectedHotspot(null)
   }
 
+  function refreshExplorationState() {
+  setExplorationRevision(
+    (value) => value + 1,
+  )
+}
+
   // ============================================================
   // RENDER
   // ============================================================
@@ -1754,16 +1773,12 @@ const selectedAccess =
               location.target_scene_id,
             )
 
-            const entityId =
-  getEntityId(location)
-
-const hotspotKey =
-  entityId ??
-  `location-${location.id}`
+const explorationState =
+  ExplorationStateEngine.getState()
 
 const isDiscovered =
-  discoveredHotspots.has(
-    hotspotKey,
+  explorationState.discoveredHotspots.includes(
+    location.id,
   )
 
 
@@ -1885,27 +1900,28 @@ const access =
         ================================================= */}
 
     <span
-      className="
-        opacity-0
-        group-hover:opacity-100
-        translate-y-1
-        group-hover:translate-y-0
-        transition
-        px-3
-        py-1
-        rounded-full
-        bg-black/80
-        border
-        border-[#e0a96d]/40
-        text-[#f2e9e4]
-        text-xs
-        whitespace-nowrap
-        pointer-events-none
-      "
-    >
-      {hotspotType.icon}{" "}
-      {location.name}
-    </span>
+  className="
+    opacity-0
+    group-hover:opacity-100
+    translate-y-1
+    group-hover:translate-y-0
+    transition
+    px-3
+    py-1
+    rounded-full
+    bg-black/80
+    border
+    border-[#e0a96d]/40
+    text-[#f2e9e4]
+    text-xs
+    whitespace-nowrap
+    pointer-events-none
+  "
+>
+  {access.locked
+    ? `🔒 ${location.name}`
+    : `${hotspotType.icon} ${location.name}`}
+</span>
 
     {/* =================================================
         INDICADOR DE ACESSO
@@ -2104,7 +2120,7 @@ const access =
         text-gray-400
       "
     >
-      🔒 Este caminho está bloqueado.
+      🔒 {selectedAccess.reason}
     </div>
   )}
           <div
@@ -2261,45 +2277,75 @@ const access =
               <button
                 type="button"
                 onClick={() => {
-                  if (
-                    item.id ===
-                    currentScene.id
-                  ) {
-                    return
-                  }
+  if (
+    item.id ===
+    currentScene.id
+  ) {
+    return
+  }
 
-                  const targetIndex =
-                    scenePath.findIndex(
-                      (sceneItem) =>
-                        sceneItem.id ===
-                        item.id,
-                    )
+  if (isTransitioning) {
+    return
+  }
 
-                  if (
-                    targetIndex <
-                    0
-                  ) {
-                    return
-                  }
+  const targetIndex =
+    scenePath.findIndex(
+      (sceneItem) =>
+        sceneItem.id ===
+        item.id,
+    )
 
-                  const targetPath =
-                    scenePath.slice(
-                      0,
-                      targetIndex,
-                    )
+  if (
+    targetIndex < 0
+  ) {
+    return
+  }
 
-                  setSceneHistory(
-                    targetPath,
-                  )
+  const targetPath =
+    scenePath.slice(
+      0,
+      targetIndex,
+    )
 
-                  setSelectedHotspot(
-                    null,
-                  )
+  setSceneHistory(
+    targetPath,
+  )
 
-                  setCurrentScene(
-                    item,
-                  )
-                }}
+  setSelectedHotspot(
+    null,
+  )
+
+  setIsTransitioning(
+    true,
+  )
+
+  ExplorationStateEngine
+    .beginTransition()
+
+  refreshExplorationState()
+
+  setCurrentScene(
+    item,
+  )
+
+  ExplorationStateEngine
+    .enterScene(
+      item.id,
+    )
+
+  refreshExplorationState()
+
+  setTimeout(() => {
+    setIsTransitioning(
+      false,
+    )
+
+    ExplorationStateEngine
+      .finishTransition()
+
+    refreshExplorationState()
+  }, 350)
+}}
                 className="
                   hover:text-[#e0a96d]
                   transition
@@ -2385,56 +2431,60 @@ const access =
           IA
           ======================================================== */}
 
-      <button
-        type="button"
-        onClick={() =>
-          void handleGenerateHotspots()
-        }
-        className="
-          absolute
-          top-6
-          right-56
-          z-[110]
-          bg-[#6d4cff]
-          border
-          border-white/20
-          px-4
-          py-2
-          rounded-full
-          text-white
-          hover:brightness-110
-          transition
-        "
-      >
-        ✨ IA
-      </button>
+      {isEditing && (
+  <button
+    type="button"
+    onClick={() =>
+      void handleGenerateHotspots()
+    }
+    className="
+      absolute
+      top-6
+      right-56
+      z-[110]
+      bg-[#6d4cff]
+      border
+      border-white/20
+      px-4
+      py-2
+      rounded-full
+      text-white
+      hover:brightness-110
+      transition
+    "
+  >
+    ✨ IA
+  </button>
+)}
 
       {/* ========================================================
           DEBUG
           ======================================================== */}
 
-      <pre
-        className="
-          absolute
-          bottom-4
-          right-4
-          z-[200]
-          max-w-[400px]
-          max-h-[300px]
-          overflow-auto
-          bg-black/80
-          text-green-300
-          text-xs
-          p-4
-          rounded-xl
-        "
-      >
-        {JSON.stringify(
-          ExplorationStateEngine.getState(),
-          null,
-          2,
-        )}
-      </pre>
+      {import.meta.env.DEV && (
+  <pre
+    className="
+      absolute
+      bottom-4
+      right-4
+      z-[200]
+      max-w-[400px]
+      max-h-[300px]
+      overflow-auto
+      bg-black/80
+      text-green-300
+      text-xs
+      p-4
+      rounded-xl
+    "
+  >
+    {JSON.stringify(
+      ExplorationStateEngine.getState(),
+      null,
+      2,
+    )}
+  </pre>
+)}
 
       {/* ========================================================
           FECHAR
