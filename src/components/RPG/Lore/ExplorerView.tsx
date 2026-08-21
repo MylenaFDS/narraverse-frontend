@@ -484,9 +484,9 @@ function getHotspotAccessState(
   const locked =
     isHotspotLocked(location)
 
-  // ----------------------------------------------------------
-  // Hotspot normalmente acessível
-  // ----------------------------------------------------------
+  // ==========================================================
+  // HOTSPOT NORMALMENTE ACESSÍVEL
+  // ==========================================================
 
   if (!locked) {
     return {
@@ -496,9 +496,9 @@ function getHotspotAccessState(
     }
   }
 
-  // ----------------------------------------------------------
-  // Verificar se algum requisito já foi satisfeito
-  // ----------------------------------------------------------
+  // ==========================================================
+  // VERIFICAR SE PODE SER DESBLOQUEADO
+  // ==========================================================
 
   const canUnlock =
     canUnlockHotspot(location)
@@ -511,9 +511,9 @@ function getHotspotAccessState(
     }
   }
 
-  // ----------------------------------------------------------
-  // Hotspot bloqueado
-  // ----------------------------------------------------------
+  // ==========================================================
+  // HOTSPOT BLOQUEADO
+  // ==========================================================
 
   return {
     locked: true,
@@ -2016,9 +2016,7 @@ const access =
                   ).label
                 }
               </div>
-              {getHotspotAccessState(
-  selectedHotspot,
-).locked ? (
+              {selectedAccess?.locked ? (
   <div
     className="
       mt-2
@@ -2029,9 +2027,7 @@ const access =
       text-red-300/70
     "
   >
-    <span>
-      🔒
-    </span>
+    <span>🔒</span>
 
     <span>
       Acesso bloqueado
@@ -2048,9 +2044,7 @@ const access =
       text-[#c9ada7]/60
     "
   >
-    <span>
-      ◉
-    </span>
+    <span>◉</span>
 
     <span>
       Local já explorado
