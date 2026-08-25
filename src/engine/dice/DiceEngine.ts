@@ -1,10 +1,7 @@
 export interface DiceResult {
   expression: string
-
   rolls: number[]
-
   modifier: number
-
   total: number
 }
 
@@ -20,14 +17,12 @@ export class DiceEngine {
       )
 
     if (!match) {
-
       return {
         expression,
         rolls: [],
         modifier: 0,
         total: 0,
       }
-
     }
 
     const quantity =
@@ -39,6 +34,20 @@ export class DiceEngine {
     const modifier =
       Number(match[3] ?? 0)
 
+    if (
+      quantity <= 0 ||
+      quantity > 100 ||
+      sides <= 0 ||
+      sides > 1000
+    ) {
+      return {
+        expression,
+        rolls: [],
+        modifier: 0,
+        total: 0,
+      }
+    }
+
     const rolls: number[] = []
 
     for (
@@ -46,18 +55,17 @@ export class DiceEngine {
       i < quantity;
       i++
     ) {
-
       rolls.push(
         Math.floor(
           Math.random() * sides
         ) + 1
       )
-
     }
 
     const total =
       rolls.reduce(
-        (a, b) => a + b,
+        (sum, value) =>
+          sum + value,
         0,
       ) + modifier
 
@@ -67,7 +75,5 @@ export class DiceEngine {
       modifier,
       total,
     }
-
   }
-
 }
