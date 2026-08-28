@@ -3,6 +3,7 @@ import type { WorldContext } from "./context/ContextEngine"
 import { WorldReasoningEngine } from "./brain/WorldReasoningEngine"
 import { CharacterStateEngine } from "./brain/CharacterStateEngine"
 import { InventoryReasoningEngine } from "./brain/InventoryReasoningEngine"
+import { CharacterSheetAdapter } from "./brain/CharacterSheetAdapter"
 
 export interface RuleResult {
 
@@ -48,9 +49,11 @@ export class RuleEngine {
     // ============================
 
     const state =
-      CharacterStateEngine.build(
-        context.profile.character,
-      )
+  CharacterStateEngine.build(
+    CharacterSheetAdapter.toEngine(
+      context.profile.character,
+    ),
+  )
 
     if (state.health < 20) {
 

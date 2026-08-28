@@ -12,6 +12,7 @@ export interface StoryContext {
 
   lastDialogues: string[]
 
+
   // ======================================
   // Continuidade narrativa
   // ======================================
@@ -24,6 +25,7 @@ export interface StoryContext {
 
   previousMood?: string
 
+
   // ======================================
   // Estado atual
   // ======================================
@@ -35,6 +37,7 @@ export interface StoryContext {
   sceneMood: string
 
   activeEvents: string[]
+
 
   // ======================================
   // Estrutura narrativa
@@ -56,6 +59,7 @@ export interface StoryContext {
     | "slow"
     | "normal"
     | "fast"
+
 
   // ======================================
   // Dramaturgia
@@ -81,6 +85,7 @@ export interface StoryContext {
 
   recentConsequences: string[]
 
+
   // ======================================
   // Continuidade
   // ======================================
@@ -90,6 +95,7 @@ export interface StoryContext {
   unansweredQuestions: string[]
 
   topics: string[]
+
 
   // ======================================
   // Personagens
@@ -101,6 +107,7 @@ export interface StoryContext {
 
   lastDialogue?: string
 
+
   // ======================================
   // Mundo
   // ======================================
@@ -110,6 +117,7 @@ export interface StoryContext {
   discoveredFactions: string[]
 
   discoveredItems: string[]
+
 
   // ======================================
   // Objetivos
@@ -122,6 +130,7 @@ export interface StoryContext {
   completedObjectives: string[]
 
   completedQuests: string[]
+
 
   // ======================================
   // Resumo dinâmico

@@ -4,6 +4,7 @@ import type {
   PerceptionResult,
 } from "./types/Perception"
 
+
 export class PerceptionEngine {
 
   static perceive(
@@ -12,55 +13,45 @@ export class PerceptionEngine {
 
     return {
 
-      // ==========================
-      // Personagens
-      // ==========================
-
       visibleCharacters:
         context.nearbyCharacters.map(
-          character => character.id,
+          character =>
+            character.id,
         ),
 
       visibleNPCs:
         context.nearbyNPCs.map(
-          npc => npc.id,
+          npc =>
+            npc.id,
         ),
 
       audibleCharacters:
         context.nearbyCharacters.map(
-          character => character.id,
+          character =>
+            character.id,
         ),
-
-      // ==========================
-      // Mundo
-      // ==========================
 
       visibleLore:
         context.nearbyLore.map(
-          lore => lore.id,
+          lore =>
+            lore.id,
         ),
 
       visibleFactions:
         context.nearbyFactions.map(
-          faction => faction.id,
+          faction =>
+            faction.id,
         ),
 
-      // ==========================
-      // Objetos
-      // ==========================
-
       nearbyObjects: [],
-
-      // ==========================
-      // Ambiente
-      // ==========================
 
       weather:
         typeof context.currentWeather === "string"
           ? context.currentWeather
           : undefined,
 
-      light: undefined,
+      light:
+        undefined,
 
       terrain:
         typeof context.currentTerrain === "string"

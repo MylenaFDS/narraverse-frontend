@@ -1,6 +1,7 @@
+import type { ActionType } from "../../ActionEngine"
 export interface Decision {
 
-  action: string
+  action: ActionType
 
   targetId?: number
 

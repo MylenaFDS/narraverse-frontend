@@ -1,87 +1,280 @@
 import type { CampaignState } from "../state/CampaignState"
-import type { StoryContext } from "../../writer/story/types/StoryContext"
+
+import type {
+  StoryContext,
+} from "../../writer/story/types/StoryContext"
+
 
 export class StoryContextAdapter {
 
 
-static toStoryContext(
- state: CampaignState,
-): StoryContext {
+  // ==========================================================
+  // CONVERTER CAMPAIGN STATE
+  // ==========================================================
+
+  static toStoryContext(
+    state: CampaignState,
+  ): StoryContext {
+
+    const history =
+      state.history ?? []
 
 
-return {
+    const activeEvents =
+      state.activeEvents ?? []
 
 
-recentTurns: [],
+    const aliveCharacters =
+      state.aliveCharacters ?? []
 
 
-lastActions:
-state.history
-.filter(
-event =>
-event.type === "attack"
-||
-event.type === "movement"
-)
-.map(
-event =>
-event.description
-),
+    const deadCharacters =
+      state.deadCharacters ?? []
 
 
-lastDialogues:
-state.history
-.filter(
-event =>
-event.type === "dialogue"
-)
-.map(
-event =>
-event.description
-),
+    // ========================================================
+    // ÚLTIMOS EVENTOS
+    // ========================================================
+
+    const recentHistory =
+      history.slice(-10)
 
 
-activeEvents:
-state.activeEvents,
+    // ========================================================
+    // AÇÕES
+    // ========================================================
+
+    const lastActions =
+      recentHistory
+        .filter(
+          event =>
+            event.type === "attack" ||
+            event.type === "movement",
+        )
+        .map(
+          event =>
+            event.description,
+        )
 
 
-unresolvedThreads:
-[],
+    // ========================================================
+    // DIÁLOGOS
+    // ========================================================
+
+    const lastDialogues =
+      recentHistory
+        .filter(
+          event =>
+            event.type === "dialogue",
+        )
+        .map(
+          event =>
+            event.description,
+        )
 
 
-currentSituation:
-state.activeEvents.join(
-". "
-),
+    // ========================================================
+    // FATOS RECENTES
+    // ========================================================
+
+    const recentFacts =
+      recentHistory.map(
+        event =>
+          event.description,
+      )
 
 
-recentFacts:
-state.history.map(
-event =>
-event.description
-),
+    // ========================================================
+    // PERSONAGENS MENCIONADOS
+    // ========================================================
+
+    const mentionedCharacters =
+      [
+        ...aliveCharacters,
+        ...deadCharacters,
+      ]
 
 
-mentionedCharacters:
-[
-...state.aliveCharacters,
-...state.deadCharacters,
-],
+    // ========================================================
+    // SITUAÇÃO ATUAL
+    // ========================================================
+
+    const currentSituation =
+      activeEvents.length > 0
+        ? activeEvents.join(". ")
+        : "Nenhum evento importante está acontecendo no momento."
 
 
-topics:
-state.activeEvents,
+    // ========================================================
+    // CONTEXTO
+    // ========================================================
+
+    return {
+
+      // ======================================
+      // Histórico
+      // ======================================
+
+      recentTurns: [],
+
+      recentFacts,
+
+      lastActions,
+
+      lastDialogues,
 
 
-sceneMood:
-"unknown",
+      // ======================================
+      // Continuidade
+      // ======================================
+
+      previousSummary:
+        undefined,
+
+      previousScene:
+        undefined,
+
+      previousLocation:
+        undefined,
+
+      previousMood:
+        undefined,
 
 
-unansweredQuestions: [],
+      // ======================================
+      // Estado atual
+      // ======================================
+
+      currentSituation,
+
+      currentLocation:
+        undefined,
+
+      sceneMood:
+        "unknown",
+
+      activeEvents,
 
 
-}
+      // ======================================
+      // Estrutura narrativa
+      // ======================================
 
-}
+      storyArc:
+        undefined,
+
+      chapter:
+        undefined,
+
+      sceneNumber:
+        undefined,
+
+      storyPhase:
+        undefined,
+
+      storyTempo:
+        undefined,
+
+
+      // ======================================
+      // Dramaturgia
+      // ======================================
+
+      narrativeTension:
+        0,
+
+      dominantEmotion:
+        undefined,
+
+      dramaticQuestion:
+        undefined,
+
+      expectedClimax:
+        undefined,
+
+      lastMajorEvent:
+        recentFacts[
+          recentFacts.length - 1
+        ],
+
+      lastTurningPoint:
+        undefined,
+
+      currentConflict:
+        undefined,
+
+      currentGoal:
+        undefined,
+
+      currentMystery:
+        undefined,
+
+      recentConsequences: [],
+
+
+      // ======================================
+      // Continuidade
+      // ======================================
+
+      unresolvedThreads: [],
+
+      unansweredQuestions: [],
+
+      topics:
+        activeEvents,
+
+
+      // ======================================
+      // Personagens
+      // ======================================
+
+      mentionedCharacters,
+
+      focusedCharacter:
+        undefined,
+
+      lastDialogue:
+        lastDialogues[
+          lastDialogues.length - 1
+        ],
+
+
+      // ======================================
+      // Mundo
+      // ======================================
+
+      discoveredLocations: [],
+
+      discoveredFactions: [],
+
+      discoveredItems: [],
+
+
+      // ======================================
+      // Objetivos
+      // ======================================
+
+      activeObjectives: [],
+
+      activeQuests: [],
+
+      completedObjectives: [],
+
+      completedQuests: [],
+
+
+      // ======================================
+      // Resumo dinâmico
+      // ======================================
+
+      keywords: [],
+
+      themes: [],
+
+      narrativeHooks: [],
+
+    }
+
+  }
 
 }

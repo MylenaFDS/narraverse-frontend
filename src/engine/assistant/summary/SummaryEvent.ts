@@ -141,6 +141,6 @@ export interface SummaryEvent {
   // Marcadores narrativos
   // ======================================
 
-  tags?:string
+  tags?: string[]
 
 }

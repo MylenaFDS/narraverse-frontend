@@ -1,7 +1,9 @@
 
+
+
 import type {
-  WorldContext,
-} from "../context/ContextEngine"
+  AIContext,
+} from "./AIContext"
 import { PersonalityEngine } from "./PersonalityEngine"
 import { EmotionEngine } from "./EmotionEngine"
 import { GoalEngine } from "./GoalEngine"
@@ -34,11 +36,13 @@ export class BrainEngine {
 
   static think(
 
-    context: WorldContext,
+  context: AIContext,
 
-    profile: BrainProfile,
+  profile: BrainProfile,
 
-  ): BrainResult {
+): BrainResult {
+  const worldContext =
+  context.world
 
     // ==========================
     // Personagem
@@ -94,9 +98,9 @@ export class BrainEngine {
     // ==========================
 
     const world =
-      WorldReasoningEngine.analyze(
-        context,
-      )
+  WorldReasoningEngine.analyze(
+    worldContext,
+  )
 
     // ==========================
     // Estado
@@ -322,7 +326,7 @@ export class BrainEngine {
 
     return {
 
-  context,
+  context: worldContext,
 
   character,
 

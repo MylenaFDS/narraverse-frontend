@@ -14,7 +14,7 @@ export class StoryEventBuilder {
       type:
         brain.decision.action as StoryEvent["type"],
 
-      actor:
+      actorId:
         brain.character.id,
 
       description:

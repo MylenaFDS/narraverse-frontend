@@ -1,8 +1,21 @@
 import type { WorldContext } from "./context/ContextEngine"
 
+
+// ============================================================
+// TIPOS
+// ============================================================
+
+export type WorldDecisionAction =
+  | "generate_world"
+  | "suggest_character"
+  | "generate_npc"
+  | "suggest_faction"
+  | "generate_event"
+
+
 export interface Decision {
 
-  action: string
+  action: WorldDecisionAction
 
   target?: number | string
 
@@ -12,7 +25,13 @@ export interface Decision {
 
 }
 
+
+// ============================================================
+// ENGINE DE DECISÃO DO MUNDO
+// ============================================================
+
 export class DecisionEngine {
+
 
   static decide(
     context: WorldContext,
@@ -20,19 +39,25 @@ export class DecisionEngine {
 
     const decisions: Decision[] = []
 
-    // =============================
-    // Mundo vazio
-    // =============================
 
-    if (context.lore.length === 0) {
+    // ========================================================
+    // MUNDO VAZIO
+    // ========================================================
+
+    if (
+      context.lore.length === 0
+    ) {
 
       decisions.push({
 
-        action: "generate_world",
+        action:
+          "generate_world",
 
-        priority: 100,
+        priority:
+          100,
 
-        reason: "O RPG ainda não possui nenhuma lore.",
+        reason:
+          "O RPG ainda não possui nenhuma lore.",
 
       })
 
@@ -40,80 +65,110 @@ export class DecisionEngine {
 
     }
 
-    // =============================
-    // Personagens
-    // =============================
 
-    if (context.characters.length === 0) {
+    // ========================================================
+    // PERSONAGENS
+    // ========================================================
+
+    if (
+      context.characters.length === 0
+    ) {
 
       decisions.push({
 
-        action: "suggest_character",
+        action:
+          "suggest_character",
 
-        priority: 90,
+        priority:
+          90,
 
-        reason: "Não existem personagens ativos.",
+        reason:
+          "Não existem personagens ativos.",
 
       })
 
     }
 
-    // =============================
+
+    // ========================================================
     // NPCs
-    // =============================
+    // ========================================================
 
-    if (context.npcs.length === 0) {
+    if (
+      context.npcs.length === 0
+    ) {
 
       decisions.push({
 
-        action: "generate_npc",
+        action:
+          "generate_npc",
 
-        priority: 80,
+        priority:
+          80,
 
-        reason: "A cena não possui NPCs.",
+        reason:
+          "A cena não possui NPCs.",
 
       })
 
     }
 
-    // =============================
-    // Facções
-    // =============================
 
-    if (context.factions.length === 0) {
+    // ========================================================
+    // FACÇÕES
+    // ========================================================
+
+    if (
+      context.factions.length === 0
+    ) {
 
       decisions.push({
 
-        action: "suggest_faction",
+        action:
+          "suggest_faction",
 
-        priority: 70,
+        priority:
+          70,
 
-        reason: "Ainda não existem facções.",
+        reason:
+          "Ainda não existem facções.",
 
       })
 
     }
 
-    // =============================
-    // Timeline
-    // =============================
 
-    if (context.timeline.length === 0) {
+    // ========================================================
+    // TIMELINE
+    // ========================================================
+
+    if (
+      context.timeline.length === 0
+    ) {
 
       decisions.push({
 
-        action: "generate_event",
+        action:
+          "generate_event",
 
-        priority: 60,
+        priority:
+          60,
 
-        reason: "Nenhum evento histórico registrado.",
+        reason:
+          "Nenhum evento histórico registrado.",
 
       })
 
     }
+
+
+    // ========================================================
+    // ORDENAR POR PRIORIDADE
+    // ========================================================
 
     return decisions.sort(
-      (a, b) => b.priority - a.priority,
+      (a, b) =>
+        b.priority - a.priority,
     )
 
   }

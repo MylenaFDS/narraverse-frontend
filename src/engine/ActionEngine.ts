@@ -23,6 +23,13 @@ export type ActionType =
   | "talk"
   | "investigate"
   | "rest"
+  | "explore"
+  | "defend"
+  | "escape"
+  | "retreat"
+  | "flee"
+  | "wait"
+  | "advance_goal"
 
 
 export interface ActionRequest {
@@ -289,7 +296,158 @@ export class ActionEngine {
         }
 
       }
+            // ======================================================
+      // EXPLORAÇÃO
+      // ======================================================
 
+      case "explore":
+
+        return {
+
+          success: true,
+
+          description:
+            "O personagem explorou a região ao redor.",
+
+          action:
+            request.type,
+
+          requiresRoll:
+            false,
+
+        }
+
+
+      // ======================================================
+      // DEFESA
+      // ======================================================
+
+      case "defend":
+
+        return {
+
+          success: true,
+
+          description:
+            "O personagem assumiu uma postura defensiva.",
+
+          action:
+            request.type,
+
+          requiresRoll:
+            false,
+
+        }
+
+
+      // ======================================================
+      // FUGA
+      // ======================================================
+
+      case "escape":
+
+        return {
+
+          success: true,
+
+          description:
+            "O personagem tentou escapar da situação.",
+
+          action:
+            request.type,
+
+          requiresRoll:
+            true,
+
+        }
+
+
+      // ======================================================
+      // RETIRADA
+      // ======================================================
+
+      case "retreat":
+
+        return {
+
+          success: true,
+
+          description:
+            "O personagem recuou.",
+
+          action:
+            request.type,
+
+          requiresRoll:
+            false,
+
+        }
+
+
+      // ======================================================
+      // FUGIR
+      // ======================================================
+
+      case "flee":
+
+        return {
+
+          success: true,
+
+          description:
+            "O personagem fugiu do perigo.",
+
+          action:
+            request.type,
+
+          requiresRoll:
+            false,
+
+        }
+
+
+      // ======================================================
+      // ESPERAR
+      // ======================================================
+
+      case "wait":
+
+        return {
+
+          success: true,
+
+          description:
+            "O personagem aguardou.",
+
+          action:
+            request.type,
+
+          requiresRoll:
+            false,
+
+        }
+
+
+      // ======================================================
+      // PROGRESSO DO OBJETIVO
+      // ======================================================
+
+      case "advance_goal":
+
+        return {
+
+          success: true,
+
+          description:
+            "O personagem avançou em direção ao seu objetivo.",
+
+          action:
+            request.type,
+
+          requiresRoll:
+            false,
+
+        }
 
       // ======================================================
       // DESCANSO
@@ -407,21 +565,26 @@ export class ActionEngine {
 
         return "Uma falha crítica ocorreu."
 
+
       case "failure":
 
         return "A ação falhou."
+
 
       case "partial_success":
 
         return "A ação teve sucesso parcial."
 
+
       case "critical_success":
 
         return "Um sucesso crítico foi alcançado."
 
+
       case "success":
 
         return "A ação foi bem-sucedida."
+
 
       default:
 

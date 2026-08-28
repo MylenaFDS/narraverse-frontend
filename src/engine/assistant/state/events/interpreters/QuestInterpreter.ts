@@ -132,7 +132,7 @@ export class QuestInterpreter {
       events.push({
 
         type:
-          "quest_completed",
+          "questComplete",
 
         actorId,
 

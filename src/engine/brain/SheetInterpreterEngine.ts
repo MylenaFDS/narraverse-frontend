@@ -18,7 +18,7 @@ export class SheetInterpreterEngine {
 
         item =>
 
-          item.field_name
+          item.name
 
             .trim()
 

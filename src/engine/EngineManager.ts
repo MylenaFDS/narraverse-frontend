@@ -1,14 +1,41 @@
 import type { WorldContext } from "./context/ContextEngine"
 
-import { RuleEngine } from "./RuleEngine"
-import { MemoryEngine } from "./MemoryEngine"
-import { DecisionEngine } from "./WorldDecisionEngine"
-import { ActionEngine } from "./ActionEngine"
-import { WorldStateEngine } from "./assistant/state/world/WorldStateEngine"
-import { EventEngine } from "./EventEngine"
-import { NarrativeEngine } from "./NarrativeEngine"
+import {
+  RuleEngine,
+} from "./RuleEngine"
+
+import {
+  MemoryEngine,
+} from "./MemoryEngine"
+
+import {
+  DecisionEngine,
+} from "./WorldDecisionEngine"
+
+import {
+  ActionEngine,
+  type ActionType,
+} from "./ActionEngine"
+
+import {
+  WorldStateEngine,
+} from "./assistant/state/world/WorldStateEngine"
+
+import {
+  EventEngine,
+} from "./EventEngine"
+
+import {
+  NarrativeEngine,
+} from "./NarrativeEngine"
+
+
+// ============================================================
+// RESULTADO DA ENGINE
+// ============================================================
 
 export interface EngineResult {
+
   allowed: boolean
 
   score: number
@@ -22,113 +49,246 @@ export interface EngineResult {
   events: string[]
 
   narrative: string[]
+
 }
 
+
+// ============================================================
+// ENGINE MANAGER
+// ============================================================
+
 export class EngineManager {
+
+
   static run(
     context: WorldContext,
   ): EngineResult {
 
-    // 1. Validação das regras
+
+    // ========================================================
+    // 1. VALIDAÇÃO DAS REGRAS
+    // ========================================================
+
     const validation =
-      RuleEngine.evaluate(context)
-
-    // 2. Atualiza memória
-    MemoryEngine.add({
-  id: Date.now().toString(),
-
-  type: "engine",
-
-  title: "Execução da Engine",
-
-  description:
-    "Contexto processado pelo EngineManager.",
-
-  timestamp: Date.now(),
-
-  importance: 1,
-
-  // =============================
-  // Metadados narrativos
-  // =============================
-
-  people: [],
-
-  places: [],
-
-  tags: [
-    "engine",
-    "world-processing",
-  ],
-
-  confidence: 1,
-
-  recalled: 0,
-})
-
-    // 3. Sugere decisões
-    const decisions =
-      DecisionEngine.decide(context)
-
-    // 4. Executa ações
-    const actionResults =
-      decisions.map((decision) =>
-        ActionEngine.execute(
-          context,
-          decision.action,
-        )
+      RuleEngine.evaluate(
+        context,
       )
 
-    // 5. Atualiza estado do mundo
-    // (por enquanto apenas mantém sincronizado)
+
+    // ========================================================
+    // 2. ATUALIZA MEMÓRIA
+    // ========================================================
+
+    MemoryEngine.add({
+
+      id:
+        Date.now().toString(),
+
+      type:
+        "engine",
+
+      title:
+        "Execução da Engine",
+
+      description:
+        "Contexto processado pelo EngineManager.",
+
+      timestamp:
+        Date.now(),
+
+      importance:
+        1,
+
+      people:
+        [],
+
+      places:
+        [],
+
+      tags: [
+        "engine",
+        "world-processing",
+      ],
+
+      confidence:
+        1,
+
+      recalled:
+        0,
+
+    })
+
+
+    // ========================================================
+    // 3. SUGERE DECISÕES
+    // ========================================================
+
+    const decisions =
+      DecisionEngine.decide(
+        context,
+      )
+
+
+    // ========================================================
+    // 4. CONVERTE APENAS AÇÕES COMPATÍVEIS
+    // ========================================================
+
+    const validActionTypes:
+      ActionType[] = [
+
+        "move",
+
+        "attack",
+
+        "spell",
+
+        "skill",
+
+        "talk",
+
+        "investigate",
+
+        "rest",
+
+      ]
+
+
+    const actionResults =
+      decisions
+        .filter(
+          decision =>
+            validActionTypes.includes(
+              decision.action as ActionType,
+            ),
+        )
+        .map(
+          decision => {
+
+            const targetId =
+              typeof decision.target === "number"
+                ? decision.target
+                : undefined
+
+
+            const target =
+              targetId !== undefined
+                ? context.characters.find(
+                    character =>
+                      character.id === targetId,
+                  )
+                : undefined
+
+
+            return ActionEngine.execute(
+
+              context,
+
+              {
+
+                type:
+                  decision.action as ActionType,
+
+                actor:
+                  context.profile.character,
+
+                target,
+
+              },
+
+            )
+
+          },
+        )
+
+
+    // ========================================================
+    // 5. ATUALIZA ESTADO DO MUNDO
+    // ========================================================
+
     WorldStateEngine.all()
 
-    // 6. Cria eventos
+
+    // ========================================================
+    // 6. CRIA EVENTOS
+    // ========================================================
+
     const events =
-  actionResults.map((action) =>
-    EventEngine.register({
-      type: "world",
+      actionResults.map(
+        action =>
+          EventEngine.register({
 
-      title: action.description,
+            type:
+              "world",
 
-      description: action.description,
+            title:
+              action.description,
 
-      importance: 10,
-    })
-  )
+            description:
+              action.description,
 
-    // 7. Gera narrativa
-    const narrative =
-      actionResults.map((action) =>
-        NarrativeEngine.describe({
-          action: action.description,
-          result: action.description,
-        })
+            importance:
+              10,
+
+          }),
       )
 
+
+    // ========================================================
+    // 7. GERA NARRATIVA
+    // ========================================================
+
+    const narrative =
+      actionResults.map(
+        action =>
+          NarrativeEngine.describe({
+
+            action:
+              action.description,
+
+            result:
+              action.description,
+
+          }),
+      )
+
+
+    // ========================================================
+    // 8. RESULTADO
+    // ========================================================
+
     return {
-      allowed: validation.allowed,
 
-      score: validation.score,
+      allowed:
+        validation.allowed,
 
-      warnings: validation.reasons,
+      score:
+        validation.score,
+
+      warnings:
+        validation.reasons,
 
       decisions:
         decisions.map(
-          (d) => d.action,
+          decision =>
+            decision.action,
         ),
 
       actions:
         actionResults.map(
-          (a) => a.description,
+          action =>
+            action.description,
         ),
 
       events:
         events.map(
-          (e) => e.title,
+          event =>
+            event.title,
         ),
 
       narrative,
+
     }
+
   }
+
 }

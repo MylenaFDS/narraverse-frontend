@@ -26,6 +26,19 @@ export interface CombatState {
 
   participants: CombatParticipantState[]
 
+  /**
+   * IDs dos personagens na ordem em que agirão.
+   *
+   * Exemplo:
+   *
+   * [3, 1, 2]
+   *
+   * significa:
+   *
+   * personagem 3 → personagem 1 → personagem 2
+   */
+  initiativeOrder: number[]
+
   round: number
 
   activeParticipantId: number | null
@@ -61,11 +74,14 @@ export class CombatStateEngine {
 
       character,
 
-      currentHP: hp,
+      currentHP:
+        hp,
 
-      maxHP: hp,
+      maxHP:
+        hp,
 
-      defeated: false,
+      defeated:
+        false,
 
     }
 
@@ -84,7 +100,14 @@ export class CombatStateEngine {
 
       participants,
 
-      round: 1,
+      initiativeOrder:
+        participants.map(
+          participant =>
+            participant.character.id,
+        ),
+
+      round:
+        1,
 
       activeParticipantId:
         participants[0]?.character.id ??
@@ -94,6 +117,22 @@ export class CombatStateEngine {
         participants.length <= 1,
 
     }
+
+  }
+
+
+  // ==========================================================
+  // PARTICIPANTES VIVOS
+  // ==========================================================
+
+  static getAliveParticipants(
+    state: CombatState,
+  ): CombatParticipantState[] {
+
+    return state.participants.filter(
+      participant =>
+        !participant.defeated,
+    )
 
   }
 
@@ -141,13 +180,11 @@ export class CombatStateEngine {
     state: CombatState,
   ): boolean {
 
-    const alive =
-      state.participants.filter(
-        participant =>
-          !participant.defeated,
-      )
-
-    return alive.length <= 1
+    return (
+      this.getAliveParticipants(
+        state,
+      ).length <= 1
+    )
 
   }
 
@@ -168,7 +205,11 @@ export class CombatStateEngine {
 
         ...state,
 
-        finished: true,
+        finished:
+          true,
+
+        activeParticipantId:
+          null,
 
       }
 
