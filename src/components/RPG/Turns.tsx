@@ -27,6 +27,8 @@ import { useLocation, useNavigate } from "react-router-dom"
 import { GenerateAssistantService } from "../../engine/assistant/GenerateAssistantService"
 import type { AssistantResult } from "../../engine/assistant/AssistantResult"
 import AssistantModal from "../Assistant/AssistantModal"
+import { TurnDiceEngine } from "../../engine/dice/TurnDiceEngine"
+
 type Props = {
   rpgId: number
   rpgOwnerId: number
@@ -359,34 +361,60 @@ useEffect(() => {
   // AÇÕES
   // ===============================
   async function handleSendTurn() {
-    if (!newTurn.trim()) return
+  if (!newTurn.trim()) return
 
-    await createTurn(rpgId, {
-      content: newTurn,
-      reply_to_turn_id: null,
-      mentioned_characters: mentions,
-      character_id: selectedCharacterId ?? undefined,
-    })
+  const diceResult =
+    TurnDiceEngine.resolve(newTurn)
 
-    setNewTurn("")
-    setMentions([])
-  }
+  await createTurn(rpgId, {
+    content: diceResult.processedText,
+    reply_to_turn_id: null,
+    mentioned_characters: mentions,
+    character_id:
+      selectedCharacterId ?? undefined,
+  })
+
+  setNewTurn("")
+  setMentions([])
+}
 
   async function handleSendReply(parentId: number) {
   if (!replyContent.trim()) return
 
-  const parentTurn = turns.find((t) => t.id === parentId)
+  const parentTurn =
+    turns.find(
+      (t) => t.id === parentId,
+    )
 
-  if (!parentTurn || !canReply(parentTurn)) {
-    alert("Você não pode responder este turno.")
+  if (
+    !parentTurn ||
+    !canReply(parentTurn)
+  ) {
+    alert(
+      "Você não pode responder este turno.",
+    )
+
     return
   }
 
+  const diceResult =
+    TurnDiceEngine.resolve(
+      replyContent,
+    )
+
   await createTurn(rpgId, {
-    content: replyContent,
-    reply_to_turn_id: parentId,
-    mentioned_characters: mentions,
-    character_id: selectedCharacterId ?? undefined,
+    content:
+      diceResult.processedText,
+
+    reply_to_turn_id:
+      parentId,
+
+    mentioned_characters:
+      mentions,
+
+    character_id:
+      selectedCharacterId ??
+      undefined,
   })
 
   setReplyContent("")
