@@ -2,8 +2,17 @@ import type { Character } from "../types/character"
 import type { WorldContext } from "./context/ContextEngine"
 
 import {
+  CharacterStatsEngine,
+} from "./CharacterStatsEngine"
+
+import {
   DiceResolver,
 } from "./dice/DiceResolver"
+
+import {
+  DiceConsequenceEngine,
+  type DiceConsequence,
+} from "./dice/DiceConsequenceEngine"
 
 import {
   CombatEngine,
@@ -32,45 +41,128 @@ export type ActionType =
   | "advance_goal"
 
 
+// ============================================================
+// PEDIDO DE AÇÃO
+// ============================================================
+
 export interface ActionRequest {
 
+  /**
+   * Tipo da ação.
+   */
   type: ActionType
 
+  /**
+   * Personagem que realiza a ação.
+   */
   actor: Character
 
+  /**
+   * Alvo da ação, quando existir.
+   */
   target?: Character
+
+  /**
+   * Expressão base da rolagem.
+   *
+   * Exemplo:
+   *
+   * 1d20
+   */
+  expression?: string
+
+  /**
+   * Dificuldade do teste.
+   *
+   * Se não for informada,
+   * será utilizada a dificuldade padrão.
+   */
+  difficulty?: number
+
+  /**
+   * Atributo utilizado pelo teste.
+   *
+   * Exemplos:
+   *
+   * "Força"
+   * "Destreza"
+   * "Inteligência"
+   * "Sabedoria"
+   * "Carisma"
+   *
+   * Quando não informado, cada tipo
+   * de ação possui um atributo padrão.
+   */
+  attribute?: string
 
 }
 
 
+// ============================================================
+// RESULTADO DE DADOS
+// ============================================================
+
+export interface ActionDiceResult {
+
+  expression: string
+
+  difficulty: number
+
+  total: number
+
+  rolls: number[]
+
+  modifier: number
+
+  outcome: string
+
+  margin: number
+
+}
+
+
+// ============================================================
+// RESULTADO DA AÇÃO
+// ============================================================
+
 export interface ActionResult {
 
+  /**
+   * Indica sucesso completo ou crítico.
+   *
+   * Sucesso parcial permanece false,
+   * pois ainda possui uma consequência/custo.
+   */
   success: boolean
 
+  /**
+   * Descrição mecânica do resultado.
+   */
   description: string
 
+  /**
+   * Tipo da ação.
+   */
   action: ActionType
 
+  /**
+   * Indica se houve rolagem.
+   */
   requiresRoll: boolean
 
-  dice?: {
+  /**
+   * Resultado do teste.
+   */
+  dice?: ActionDiceResult
 
-    expression: string
+  /**
+   * Consequência determinada pelos dados.
+   */
+  consequence?: DiceConsequence
 
-    difficulty: number
-
-    total: number
-
-    rolls: number[]
-
-    modifier: number
-
-    outcome: string
-
-    margin: number
-
-  }
-
+  /**
+   * Informações produzidas pelo CombatEngine.
+   */
   combat?: {
 
     probability: number
@@ -95,12 +187,17 @@ export interface ActionResult {
 export class ActionEngine {
 
 
+  // ==========================================================
+  // EXECUTAR
+  // ==========================================================
+
   static execute(
     context: WorldContext,
     request: ActionRequest,
   ): ActionResult {
 
     switch (request.type) {
+
 
       // ======================================================
       // MOVIMENTO
@@ -142,78 +239,26 @@ export class ActionEngine {
 
       case "spell":
 
-        return {
-
-          success: true,
-
-          description:
-            "O personagem lançou uma magia.",
-
-          action:
-            request.type,
-
-          requiresRoll:
-            false,
-
-        }
+        return this.executeDiceAction(
+          request,
+          "A magia",
+          request.attribute ??
+            "Inteligência",
+        )
 
 
       // ======================================================
       // HABILIDADE
       // ======================================================
 
-      case "skill": {
+      case "skill":
 
-        const result =
-          DiceResolver.resolve(
-            "1d20",
-            15,
-          )
-
-        return {
-
-          success:
-            result.success,
-
-          description:
-            this.describeDiceResult(
-              result.outcome,
-            ),
-
-          action:
-            request.type,
-
-          requiresRoll:
-            true,
-
-          dice: {
-
-            expression:
-              result.expression,
-
-            difficulty:
-              result.difficulty,
-
-            total:
-              result.total,
-
-            rolls:
-              result.rolls,
-
-            modifier:
-              result.modifier,
-
-            outcome:
-              result.outcome,
-
-            margin:
-              result.margin,
-
-          },
-
-        }
-
-      }
+        return this.executeDiceAction(
+          request,
+          "A habilidade",
+          request.attribute ??
+            "Destreza",
+        )
 
 
       // ======================================================
@@ -242,61 +287,17 @@ export class ActionEngine {
       // INVESTIGAÇÃO
       // ======================================================
 
-      case "investigate": {
+      case "investigate":
 
-        const result =
-          DiceResolver.resolve(
-            "1d20",
-            15,
-          )
+        return this.executeDiceAction(
+          request,
+          "A investigação",
+          request.attribute ??
+            "Inteligência",
+        )
 
-        return {
 
-          success:
-            result.success,
-
-          description:
-            result.success
-
-              ? "O personagem encontrou algo importante."
-
-              : "O personagem não encontrou nada relevante.",
-
-          action:
-            request.type,
-
-          requiresRoll:
-            true,
-
-          dice: {
-
-            expression:
-              result.expression,
-
-            difficulty:
-              result.difficulty,
-
-            total:
-              result.total,
-
-            rolls:
-              result.rolls,
-
-            modifier:
-              result.modifier,
-
-            outcome:
-              result.outcome,
-
-            margin:
-              result.margin,
-
-          },
-
-        }
-
-      }
-            // ======================================================
+      // ======================================================
       // EXPLORAÇÃO
       // ======================================================
 
@@ -341,25 +342,17 @@ export class ActionEngine {
 
 
       // ======================================================
-      // FUGA
+      // ESCAPE
       // ======================================================
 
       case "escape":
 
-        return {
-
-          success: true,
-
-          description:
-            "O personagem tentou escapar da situação.",
-
-          action:
-            request.type,
-
-          requiresRoll:
-            true,
-
-        }
+        return this.executeDiceAction(
+          request,
+          "A tentativa de escapar",
+          request.attribute ??
+            "Destreza",
+        )
 
 
       // ======================================================
@@ -385,25 +378,17 @@ export class ActionEngine {
 
 
       // ======================================================
-      // FUGIR
+      // FUGA
       // ======================================================
 
       case "flee":
 
-        return {
-
-          success: true,
-
-          description:
-            "O personagem fugiu do perigo.",
-
-          action:
-            request.type,
-
-          requiresRoll:
-            false,
-
-        }
+        return this.executeDiceAction(
+          request,
+          "A tentativa de fuga",
+          request.attribute ??
+            "Destreza",
+        )
 
 
       // ======================================================
@@ -449,6 +434,7 @@ export class ActionEngine {
 
         }
 
+
       // ======================================================
       // DESCANSO
       // ======================================================
@@ -471,6 +457,223 @@ export class ActionEngine {
         }
 
     }
+
+  }
+
+
+  // ==========================================================
+  // AÇÃO QUE UTILIZA DADOS
+  // ==========================================================
+
+  private static executeDiceAction(
+    request: ActionRequest,
+    actionDescription: string,
+    defaultAttribute: string,
+  ): ActionResult {
+
+    // --------------------------------------------------------
+    // EXPRESSÃO BASE
+    // --------------------------------------------------------
+
+    const baseExpression =
+      request.expression ??
+      "1d20"
+
+
+    // --------------------------------------------------------
+    // DIFICULDADE
+    // --------------------------------------------------------
+
+    const difficulty =
+      request.difficulty ??
+      15
+
+
+    // --------------------------------------------------------
+    // ATRIBUTO
+    // --------------------------------------------------------
+
+    const attribute =
+      request.attribute ??
+      defaultAttribute
+
+
+    // --------------------------------------------------------
+    // OBTER MODIFICADOR
+    // --------------------------------------------------------
+
+    const modifier =
+      CharacterStatsEngine.getSkillModifier(
+        request.actor,
+        attribute,
+      )
+
+
+    // --------------------------------------------------------
+    // APLICAR MODIFICADOR
+    // --------------------------------------------------------
+
+    const expression =
+      this.applyModifier(
+        baseExpression,
+        modifier,
+      )
+
+
+    // --------------------------------------------------------
+    // RESOLVER DADOS
+    // --------------------------------------------------------
+
+    const result =
+      DiceResolver.resolve(
+        expression,
+        difficulty,
+      )
+
+
+    // --------------------------------------------------------
+    // RESOLVER CONSEQUÊNCIA
+    // --------------------------------------------------------
+
+    const consequence =
+      DiceConsequenceEngine.resolve(
+        result,
+      )
+
+
+    // --------------------------------------------------------
+    // DESCRIÇÃO
+    // --------------------------------------------------------
+
+    const description =
+      this.describeActionResult(
+        actionDescription,
+        consequence,
+      )
+
+
+    // --------------------------------------------------------
+    // RESULTADO
+    // --------------------------------------------------------
+
+    return {
+
+      success:
+        consequence.success,
+
+      description,
+
+      action:
+        request.type,
+
+      requiresRoll:
+        true,
+
+      dice: {
+
+        expression:
+          result.expression,
+
+        difficulty:
+          result.difficulty,
+
+        total:
+          result.total,
+
+        rolls:
+          result.rolls,
+
+        modifier:
+          result.modifier,
+
+        outcome:
+          result.outcome,
+
+        margin:
+          result.margin,
+
+      },
+
+      consequence,
+
+    }
+
+  }
+
+
+  // ==========================================================
+  // APLICAR MODIFICADOR
+  // ==========================================================
+
+  private static applyModifier(
+    expression: string,
+    modifier: number,
+  ): string {
+
+    const normalized =
+      expression.trim()
+
+
+    if (
+      modifier === 0
+    ) {
+
+      return normalized
+
+    }
+
+
+    const match =
+      normalized.match(
+        /^(\d+d\d+)([+-]\d+)?$/i,
+      )
+
+
+    if (!match) {
+
+      return normalized
+
+    }
+
+
+    const dice =
+      match[1]
+
+
+    const existingModifier =
+      Number(
+        match[2] ?? 0,
+      )
+
+
+    const totalModifier =
+      existingModifier +
+      modifier
+
+
+    if (
+      totalModifier === 0
+    ) {
+
+      return dice
+
+    }
+
+
+    if (
+      totalModifier > 0
+    ) {
+
+      return (
+        `${dice}+${totalModifier}`
+      )
+
+    }
+
+
+    return (
+      `${dice}${totalModifier}`
+    )
 
   }
 
@@ -508,13 +711,17 @@ export class ActionEngine {
       CombatAction = {
 
       attacker: {
+
         character:
           request.actor,
+
       },
 
       defender: {
+
         character:
           request.target,
+
       },
 
       action:
@@ -536,7 +743,7 @@ export class ActionEngine {
         false,
 
       description:
-        "O ataque foi analisado.",
+        "O ataque foi analisado e está pronto para resolução.",
 
       action:
         "attack",
@@ -555,40 +762,87 @@ export class ActionEngine {
   // DESCRIÇÃO DO RESULTADO
   // ==========================================================
 
-  private static describeDiceResult(
-    outcome: string,
+  private static describeActionResult(
+    actionDescription: string,
+    consequence: DiceConsequence,
   ): string {
 
-    switch (outcome) {
+    switch (
+      consequence.outcome
+    ) {
+
+
+      // ------------------------------------------------------
+      // FALHA CRÍTICA
+      // ------------------------------------------------------
 
       case "critical_failure":
 
-        return "Uma falha crítica ocorreu."
+        return (
+          `${actionDescription} terminou em ` +
+          `uma falha crítica. ` +
+          `${consequence.description}`
+        )
 
+
+      // ------------------------------------------------------
+      // FALHA
+      // ------------------------------------------------------
 
       case "failure":
 
-        return "A ação falhou."
+        return (
+          `${actionDescription} falhou. ` +
+          `${consequence.description}`
+        )
 
+
+      // ------------------------------------------------------
+      // SUCESSO PARCIAL
+      // ------------------------------------------------------
 
       case "partial_success":
 
-        return "A ação teve sucesso parcial."
+        return (
+          `${actionDescription} teve sucesso parcial. ` +
+          `${consequence.description}`
+        )
 
+
+      // ------------------------------------------------------
+      // SUCESSO CRÍTICO
+      // ------------------------------------------------------
 
       case "critical_success":
 
-        return "Um sucesso crítico foi alcançado."
+        return (
+          `${actionDescription} alcançou um ` +
+          `sucesso crítico. ` +
+          `${consequence.description}`
+        )
 
+
+      // ------------------------------------------------------
+      // SUCESSO
+      // ------------------------------------------------------
 
       case "success":
 
-        return "A ação foi bem-sucedida."
+        return (
+          `${actionDescription} foi bem-sucedida. ` +
+          `${consequence.description}`
+        )
 
+
+      // ------------------------------------------------------
+      // FALLBACK
+      // ------------------------------------------------------
 
       default:
 
-        return "A ação foi resolvida."
+        return (
+          `${actionDescription} foi resolvida.`
+        )
 
     }
 

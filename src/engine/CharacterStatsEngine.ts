@@ -265,7 +265,7 @@ export class CharacterStatsEngine {
 ): number {
 
   const attackField =
-    character.sheet_values.find(
+    (character.sheet_values ?? []).find(
       (item) =>
         item.field.name === "Ataque",
     )
@@ -308,7 +308,7 @@ export class CharacterStatsEngine {
 ): number {
 
   const defenseField =
-    character.sheet_values.find(
+    (character.sheet_values ?? []).find(
       (item) =>
         item.field.name === "Defesa",
     )
