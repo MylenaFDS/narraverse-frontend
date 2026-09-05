@@ -300,12 +300,21 @@ describe(
 
 
     // ========================================================
-    // DANO
+    // DANO — ATAQUE FALHOU
     // ========================================================
 
     it(
       "deve retornar dano igual a zero quando o ataque falhar",
       () => {
+
+        const randomSpy =
+          vi.spyOn(
+            Math,
+            "random",
+          ).mockReturnValue(
+            0.20,
+          )
+
 
         const attacker =
           createCharacter(
@@ -363,6 +372,14 @@ describe(
           result.damage,
         ).toBe(0)
 
+
+        expect(
+          result.outcome,
+        ).toBe("failure")
+
+
+        randomSpy.mockRestore()
+
       },
     )
 
@@ -374,6 +391,15 @@ describe(
     it(
       "deve causar dano quando o ataque for bem-sucedido",
       () => {
+
+        const randomSpy =
+          vi.spyOn(
+            Math,
+            "random",
+          ).mockReturnValue(
+            0.50,
+          )
+
 
         const attacker =
           createCharacter(
@@ -430,6 +456,9 @@ describe(
         expect(
           result.damage,
         ).toBeGreaterThan(0)
+
+
+        randomSpy.mockRestore()
 
       },
     )

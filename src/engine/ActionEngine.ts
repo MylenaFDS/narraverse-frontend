@@ -18,7 +18,14 @@ import {
   CombatEngine,
   type CombatAction,
 } from "./combat/CombatEngine"
+import {
+  CombatActionEngine,
+  type CombatActionResult,
+} from "./combat/CombatActionEngine"
 
+import type {
+  CombatState,
+} from "./combat/CombatState"
 
 // ============================================================
 // TIPOS
@@ -94,6 +101,15 @@ export interface ActionRequest {
    * de ação possui um atributo padrão.
    */
   attribute?: string
+
+    /**
+   * Estado atual do combate.
+   *
+   * Quando informado em uma ação de ataque,
+   * o ataque será realmente resolvido e o estado
+   * será atualizado.
+   */
+  combatState?: CombatState
 
 }
 
@@ -176,6 +192,15 @@ export interface ActionResult {
     consequences: string[]
 
   }
+    /**
+   * Resultado completo de uma ação de combate.
+   */
+  combatResult?: CombatActionResult
+
+  /**
+   * Novo estado do combate.
+   */
+  combatState?: CombatState
 
 }
 
@@ -707,6 +732,78 @@ export class ActionEngine {
     }
 
 
+    // ========================================================
+    // EXECUÇÃO REAL DE COMBATE
+    // ========================================================
+
+    if (request.combatState) {
+
+      const combatResult =
+        CombatActionEngine.execute(
+          context,
+          request.combatState,
+          {
+            attacker:
+              request.actor,
+
+            defender:
+              request.target,
+
+            action:
+              "attack",
+          },
+        )
+
+
+      return {
+
+        success:
+          combatResult.combat.success,
+
+        description:
+          this.describeCombatResult(
+            combatResult,
+          ),
+
+        action:
+          "attack",
+
+        requiresRoll:
+          true,
+
+        combatResult,
+
+        combatState:
+          combatResult.state,
+
+        combat: {
+
+          probability:
+            combatResult.combat.probability,
+
+          damage:
+            combatResult.combat.damage,
+
+          criticalChance:
+            combatResult.combat.criticalChance,
+
+          modifiers:
+            combatResult.combat.modifiers,
+
+          consequences:
+            combatResult.combat.consequences,
+
+        },
+
+      }
+
+    }
+
+
+    // ========================================================
+    // MODO ANÁLISE
+    // ========================================================
+
     const combatAction:
       CombatAction = {
 
@@ -757,7 +854,72 @@ export class ActionEngine {
 
   }
 
+    // ==========================================================
+  // DESCRIÇÃO DO COMBATE
+  // ==========================================================
 
+  private static describeCombatResult(
+    result: CombatActionResult,
+  ): string {
+
+    const combat =
+      result.combat
+
+
+    switch (combat.outcome) {
+
+      case "critical_failure":
+
+        return (
+          "O ataque sofreu uma falha crítica. " +
+          combat.consequences.join(" ")
+        )
+
+
+      case "failure":
+
+        return (
+          "O ataque falhou. " +
+          combat.consequences.join(" ")
+        )
+
+
+      case "partial_success":
+
+        return (
+          "O ataque teve sucesso parcial. " +
+          combat.consequences.join(" ")
+        )
+
+
+      case "critical_success":
+
+        return (
+          `O ataque foi um sucesso crítico e causou ` +
+          `${combat.damage} de dano. ` +
+          combat.consequences.join(" ")
+        )
+
+
+      case "success":
+
+        return (
+          `O ataque foi bem-sucedido e causou ` +
+          `${combat.damage} de dano. ` +
+          combat.consequences.join(" ")
+        )
+
+
+      default:
+
+        return (
+          "O ataque foi resolvido."
+        )
+
+    }
+
+  }
+  
   // ==========================================================
   // DESCRIÇÃO DO RESULTADO
   // ==========================================================

@@ -757,6 +757,331 @@ describe(
 
   },
 )
+    
 
+    it("deve aplicar modificador positivo do atributo na rolagem", () => {
+
+  vi.spyOn(Math, "random")
+    .mockReturnValue(0.85)
+
+  const actor = {
+    id: 1,
+    name: "Aragorn",
+
+    sheet_values: [
+      {
+        field: {
+          id: 1,
+          name: "Força",
+          field_type: "number",
+        },
+        value: "16",
+      },
+    ],
+  } as Character
+
+  const request: ActionRequest = {
+    type: "skill",
+    actor,
+    attribute: "Força",
+  }
+
+  const result = ActionEngine.execute(
+    createContext(),
+    request,
+  )
+
+  expect(result.requiresRoll)
+    .toBe(true)
+
+  expect(result.dice)
+    .toBeDefined()
+
+  expect(result.dice?.expression)
+    .toBe("1d20+3")
+
+  expect(result.dice?.modifier)
+    .toBe(3)
+
+  expect(result.dice?.total)
+    .toBe(21)
+
+  expect(result.dice?.difficulty)
+    .toBe(15)
+
+  expect(result.dice?.outcome)
+    .toBe("success")
+})
+
+it("deve aplicar modificador negativo do atributo na rolagem", () => {
+
+  vi.spyOn(Math, "random")
+    .mockReturnValue(0.85)
+
+  const actor = {
+    id: 1,
+    name: "Aragorn",
+
+    sheet_values: [
+      {
+        field: {
+          id: 1,
+          name: "Destreza",
+          field_type: "number",
+        },
+        value: "6",
+      },
+    ],
+  } as Character
+
+  const request: ActionRequest = {
+    type: "skill",
+    actor,
+    attribute: "Destreza",
+  }
+
+  const result = ActionEngine.execute(
+    createContext(),
+    request,
+  )
+
+  expect(result.requiresRoll)
+    .toBe(true)
+
+  expect(result.dice)
+    .toBeDefined()
+
+  expect(result.dice?.expression)
+    .toBe("1d20-2")
+
+  expect(result.dice?.modifier)
+    .toBe(-2)
+
+  expect(result.dice?.total)
+    .toBe(16)
+
+  expect(result.dice?.difficulty)
+    .toBe(15)
+
+  expect(result.dice?.outcome)
+    .toBe("success")
+})
+
+// ========================================================
+// CONSEQUÊNCIAS
+// ========================================================
+
+it(
+  "deve produzir sucesso crítico em um 20 natural",
+  () => {
+
+    vi
+      .spyOn(
+        Math,
+        "random",
+      )
+      .mockReturnValue(
+        0.999,
+      )
+
+    const actor =
+      createCharacterWithAttribute(
+        "Inteligência",
+        "10",
+      )
+
+    const result =
+      ActionEngine.execute(
+        createContext(),
+        {
+          type: "investigate",
+          actor,
+        },
+      )
+
+    expect(
+      result.requiresRoll,
+    ).toBe(true)
+
+    expect(
+      result.dice?.total,
+    ).toBe(20)
+
+    expect(
+      result.dice?.outcome,
+    ).toBe("critical_success")
+
+    expect(
+      result.success,
+    ).toBe(true)
+
+    expect(
+      result.consequence,
+    ).toBeDefined()
+
+    vi.restoreAllMocks()
+
+  },
+)
+
+
+it(
+  "deve produzir falha crítica em um 1 natural",
+  () => {
+
+    vi
+      .spyOn(
+        Math,
+        "random",
+      )
+      .mockReturnValue(
+        0,
+      )
+
+    const actor =
+      createCharacterWithAttribute(
+        "Inteligência",
+        "10",
+      )
+
+    const result =
+      ActionEngine.execute(
+        createContext(),
+        {
+          type: "investigate",
+          actor,
+        },
+      )
+
+    expect(
+      result.requiresRoll,
+    ).toBe(true)
+
+    expect(
+      result.dice?.total,
+    ).toBe(1)
+
+    expect(
+      result.dice?.outcome,
+    ).toBe("critical_failure")
+
+    expect(
+      result.success,
+    ).toBe(false)
+
+    expect(
+      result.consequence,
+    ).toBeDefined()
+
+    vi.restoreAllMocks()
+
+  },
+)
+
+
+it(
+  "deve produzir falha quando o resultado fica abaixo da dificuldade",
+  () => {
+
+    vi
+      .spyOn(
+        Math,
+        "random",
+      )
+      .mockReturnValue(
+        0.20,
+      )
+
+    const actor =
+      createCharacterWithAttribute(
+        "Inteligência",
+        "10",
+      )
+
+    const result =
+      ActionEngine.execute(
+        createContext(),
+        {
+          type: "investigate",
+          actor,
+          difficulty: 15,
+        },
+      )
+
+    expect(
+      result.dice?.total,
+    ).toBe(5)
+
+    expect(
+      result.dice?.difficulty,
+    ).toBe(15)
+
+    expect(
+      result.dice?.outcome,
+    ).toBe("failure")
+
+    expect(
+      result.success,
+    ).toBe(false)
+
+    expect(
+      result.consequence,
+    ).toBeDefined()
+
+    vi.restoreAllMocks()
+
+  },
+)
+
+
+it(
+  "deve produzir sucesso quando o resultado supera a dificuldade",
+  () => {
+
+    vi
+      .spyOn(
+        Math,
+        "random",
+      )
+      .mockReturnValue(
+        0.85,
+      )
+
+    const actor =
+      createCharacterWithAttribute(
+        "Inteligência",
+        "10",
+      )
+
+    const result =
+      ActionEngine.execute(
+        createContext(),
+        {
+          type: "investigate",
+          actor,
+          difficulty: 15,
+        },
+      )
+
+    expect(
+      result.dice?.total,
+    ).toBe(18)
+
+    expect(
+      result.dice?.outcome,
+    ).toBe("success")
+
+    expect(
+      result.success,
+    ).toBe(true)
+
+    expect(
+      result.consequence,
+    ).toBeDefined()
+
+    vi.restoreAllMocks()
+
+  },
+)
   },
 )

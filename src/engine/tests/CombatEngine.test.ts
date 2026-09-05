@@ -422,8 +422,8 @@ describe("CombatEngine", () => {
     ).toBeGreaterThan(0)
 
     expect(
-  result.damage,
-).toBe(4)
+      result.damage,
+    ).toBe(4)
 
     expect(
       result.consequences,
@@ -570,6 +570,276 @@ describe("CombatEngine", () => {
       "1d20-5",
       10,
     )
+
+
+    vi.restoreAllMocks()
+
+  })
+
+
+  // ==========================================================
+  // HP INSUFICIENTE
+  // ==========================================================
+
+  it("deve identificar quando o dano pode derrotar o alvo", () => {
+
+    const attacker =
+      createCharacter(
+        1,
+        "Guerreiro",
+        16,
+        10,
+      )
+
+    const defender =
+      createCharacter(
+        2,
+        "Goblin",
+        10,
+        10,
+      )
+
+
+    // --------------------------------------------------------
+    // Remove o HP padrão de 100
+    // --------------------------------------------------------
+
+    defender.sheet_values =
+      defender.sheet_values.filter(
+        (item) =>
+          item.field.name !== "HP",
+      )
+
+
+    // --------------------------------------------------------
+    // Adiciona HP = 2
+    // --------------------------------------------------------
+
+    defender.sheet_values.push({
+      id: 24,
+      value: "2",
+      field: {
+        id: 24,
+        name: "HP",
+        field_type: "number",
+      },
+    })
+
+
+    const context =
+      createContext(
+        attacker,
+        defender,
+      )
+
+    const combat =
+      createCombat(
+        attacker,
+        defender,
+      )
+
+
+    vi.spyOn(
+      DiceResolver,
+      "resolve",
+    ).mockReturnValue({
+      expression: "1d20+3",
+      rolls: [15],
+      modifier: 3,
+      total: 18,
+      difficulty: 10,
+      success: true,
+      outcome: "success",
+      margin: 8,
+    })
+
+
+    const result =
+      CombatEngine.resolve(
+        context,
+        combat,
+      )
+
+
+    expect(
+      result.success,
+    ).toBe(true)
+
+    expect(
+      result.damage,
+    ).toBeGreaterThanOrEqual(2)
+
+    expect(
+      result.consequences,
+    ).toContain(
+      "O alvo poderá ser derrotado.",
+    )
+
+    expect(
+      result.consequences,
+    ).toContain(
+      "O dano pode deixar o alvo derrotado.",
+    )
+
+
+    vi.restoreAllMocks()
+
+  })
+
+
+  // ==========================================================
+  // FALHA CRÍTICA
+  // ==========================================================
+
+  it("deve registrar uma falha crítica no resultado do combate", () => {
+
+    const attacker =
+      createCharacter(
+        1,
+        "Guerreiro",
+        16,
+        10,
+      )
+
+    const defender =
+      createCharacter(
+        2,
+        "Goblin",
+        10,
+        10,
+      )
+
+    const context =
+      createContext(
+        attacker,
+        defender,
+      )
+
+    const combat =
+      createCombat(
+        attacker,
+        defender,
+      )
+
+
+    vi.spyOn(
+      DiceResolver,
+      "resolve",
+    ).mockReturnValue({
+      expression: "1d20+3",
+      rolls: [1],
+      modifier: 3,
+      total: 4,
+      difficulty: 10,
+      success: false,
+      outcome: "critical_failure",
+      margin: -6,
+    })
+
+
+    const result =
+      CombatEngine.resolve(
+        context,
+        combat,
+      )
+
+
+    expect(
+      result.success,
+    ).toBe(false)
+
+    expect(
+      result.outcome,
+    ).toBe("critical_failure")
+
+    expect(
+      result.damage,
+    ).toBe(0)
+
+    expect(
+      result.consequences,
+    ).toContain(
+      "O ataque sofreu uma falha crítica.",
+    )
+
+
+    vi.restoreAllMocks()
+
+  })
+
+
+  // ==========================================================
+  // IDENTIDADE DO COMBATE
+  // ==========================================================
+
+  it("deve preservar os IDs dos participantes e o tipo da ação", () => {
+
+    const attacker =
+      createCharacter(
+        10,
+        "Aragorn",
+        16,
+        10,
+      )
+
+    const defender =
+      createCharacter(
+        20,
+        "Orc",
+        10,
+        10,
+      )
+
+    const context =
+      createContext(
+        attacker,
+        defender,
+      )
+
+    const combat =
+      createCombat(
+        attacker,
+        defender,
+      )
+
+
+    vi.spyOn(
+      DiceResolver,
+      "resolve",
+    ).mockReturnValue({
+      expression: "1d20+3",
+      rolls: [15],
+      modifier: 3,
+      total: 18,
+      difficulty: 10,
+      success: true,
+      outcome: "success",
+      margin: 8,
+    })
+
+
+    const result =
+      CombatEngine.resolve(
+        context,
+        combat,
+      )
+
+
+    expect(
+      result.attackerId,
+    ).toBe(10)
+
+    expect(
+      result.defenderId,
+    ).toBe(20)
+
+    expect(
+      result.action,
+    ).toBe("attack")
+
+    expect(
+      result.attackRoll.expression,
+    ).toBe("1d20+3")
 
 
     vi.restoreAllMocks()
