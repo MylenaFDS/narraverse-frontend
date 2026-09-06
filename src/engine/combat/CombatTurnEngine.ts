@@ -214,29 +214,15 @@ export class CombatTurnEngine {
   // PRÓXIMO TURNO
   // ==========================================================
 
-  static nextTurn(
-    state: CombatState,
-  ): CombatState {
+  static nextTurn(state: CombatState): CombatState {
 
-    if (
-      CombatStateEngine.isFinished(
-        state,
-      )
-    ) {
-
-      return {
-
-        ...state,
-
-        activeParticipantId:
-          null,
-
-        finished:
-          true,
-
-      }
-
+  if (state.finished || CombatStateEngine.isFinished(state)) {
+    return {
+      ...state,
+      activeParticipantId: null,
+      finished: true,
     }
+  }
 
     const aliveIds =
       new Set(
