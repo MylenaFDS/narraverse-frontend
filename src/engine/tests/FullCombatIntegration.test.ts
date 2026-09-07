@@ -287,68 +287,64 @@ describe("FullCombatIntegration", () => {
 
   it("deve passar o turno para o próximo personagem depois da ação", () => {
 
-    const hero = createCharacter(
-      1,
-      "Herói",
-      {
-        Força: "16",
-        Destreza: "14",
-        Defesa: "10",
-      },
-    )
+  const hero = createCharacter(
+    1,
+    "Herói",
+    {
+      Força: "16",
+      Destreza: "14",
+      Defesa: "10",
+    },
+  )
 
-    const enemy = createCharacter(
-      2,
-      "Goblin",
-      {
-        Força: "12",
-        Destreza: "10",
-        Defesa: "10",
-      },
-    )
+  const enemy = createCharacter(
+    2,
+    "Goblin",
+    {
+      Força: "12",
+      Destreza: "10",
+      Defesa: "10",
+    },
+  )
 
-    const context = createContext([
-      hero,
-      enemy,
-    ])
+  const context = createContext([
+    hero,
+    enemy,
+  ])
 
-    const state = createCombatState([
-      hero,
-      enemy,
-    ])
+  const state = createCombatState([
+    hero,
+    enemy,
+  ])
 
-    vi.spyOn(Math, "random")
-      .mockReturnValueOnce(0.9)
-      .mockReturnValueOnce(0.1)
-      .mockReturnValue(0.5)
+  vi.spyOn(Math, "random")
+    .mockReturnValueOnce(0.9)
+    .mockReturnValueOnce(0.1)
+    .mockReturnValue(0.5)
 
-    const started = CombatTurnEngine.start(state)
+  const started = CombatTurnEngine.start(state)
 
-    expect(started.activeParticipantId)
-      .toBe(hero.id)
+  expect(started.activeParticipantId)
+    .toBe(hero.id)
 
-    const result = CombatActionEngine.execute(
-      context,
-      started,
-      {
-        attacker: hero,
-        defender: enemy,
-        action: "attack",
-      },
-    )
+  const result = CombatActionEngine.execute(
+    context,
+    started,
+    {
+      attacker: hero,
+      defender: enemy,
+      action: "attack",
+    },
+  )
 
-    const nextTurn = CombatTurnEngine.nextTurn(
-      result.state,
-    )
+  expect(result.state.activeParticipantId)
+    .toBe(enemy.id)
 
-    expect(nextTurn.activeParticipantId)
-      .toBe(enemy.id)
+  expect(result.state.finished)
+    .toBe(false)
 
-    expect(nextTurn.finished)
-      .toBe(false)
-
-    vi.restoreAllMocks()
-  })
+  vi.restoreAllMocks()
+})
 
 
   // ==========================================================
@@ -357,42 +353,50 @@ describe("FullCombatIntegration", () => {
 
   it("deve iniciar uma nova rodada quando todos os participantes vivos tiverem agido", () => {
 
-    const hero = createCharacter(
-      1,
-      "Herói",
-      {
-        Força: "16",
-        Destreza: "14",
-      },
-    )
+  const hero = createCharacter(
+    1,
+    "Herói",
+    {
+      Força: "16",
+      Destreza: "14",
+    },
+  )
 
-    const enemy = createCharacter(
-      2,
-      "Goblin",
-      {
-        Força: "12",
-        Destreza: "10",
-      },
-    )
+  const enemy = createCharacter(
+    2,
+    "Goblin",
+    {
+      Força: "12",
+      Destreza: "10",
+    },
+  )
 
-    const context = createContext([
-      hero,
-      enemy,
-    ])
+  const context = createContext([
+    hero,
+    enemy,
+  ])
 
-    const state = createCombatState([
-      hero,
-      enemy,
-    ])
+  const state = createCombatState([
+    hero,
+    enemy,
+  ])
 
-    vi.spyOn(Math, "random")
-      .mockReturnValueOnce(0.9)
-      .mockReturnValueOnce(0.1)
-      .mockReturnValue(0.5)
+  vi.spyOn(Math, "random")
+    .mockReturnValueOnce(0.9)
+    .mockReturnValueOnce(0.1)
+    .mockReturnValue(0.5)
 
-    const started = CombatTurnEngine.start(state)
+  const started = CombatTurnEngine.start(state)
 
-    const firstAction = CombatActionEngine.execute(
+  expect(started.activeParticipantId)
+    .toBe(hero.id)
+
+  // ----------------------------------------------------------
+  // PRIMEIRO PERSONAGEM AGE
+  // ----------------------------------------------------------
+
+  const firstAction =
+    CombatActionEngine.execute(
       context,
       started,
       {
@@ -402,28 +406,42 @@ describe("FullCombatIntegration", () => {
       },
     )
 
-    const secondTurn = CombatTurnEngine.nextTurn(
+  expect(firstAction.state.activeParticipantId)
+    .toBe(enemy.id)
+
+  expect(firstAction.state.round)
+    .toBe(1)
+
+  // ----------------------------------------------------------
+  // SEGUNDO PERSONAGEM AGE
+  // ----------------------------------------------------------
+
+  const secondAction =
+    CombatActionEngine.execute(
+      context,
       firstAction.state,
+      {
+        attacker: enemy,
+        defender: hero,
+        action: "attack",
+      },
     )
 
-    expect(secondTurn.activeParticipantId)
-      .toBe(enemy.id)
+  // ----------------------------------------------------------
+  // NOVA RODADA
+  // ----------------------------------------------------------
 
-    const nextRound = CombatTurnEngine.nextTurn(
-      secondTurn,
-    )
+  expect(secondAction.state.round)
+    .toBe(2)
 
-    expect(nextRound.round)
-      .toBe(2)
+  expect(secondAction.state.activeParticipantId)
+    .toBe(hero.id)
 
-    expect(nextRound.activeParticipantId)
-      .toBe(hero.id)
+  expect(secondAction.state.finished)
+    .toBe(false)
 
-    expect(nextRound.finished)
-      .toBe(false)
-
-    vi.restoreAllMocks()
-  })
+  vi.restoreAllMocks()
+})
 
 
   // ==========================================================

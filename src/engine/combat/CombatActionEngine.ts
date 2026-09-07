@@ -13,6 +13,10 @@ import {
   type CombatState,
 } from "./CombatState"
 
+import {
+  CombatTurnEngine,
+} from "./CombatTurnEngine"
+
 
 // ============================================================
 // PARTICIPANTE DA AÇÃO
@@ -64,6 +68,19 @@ export class CombatActionEngine {
 
 
     // ========================================================
+    // VERIFICAR COMBATE ENCERRADO
+    // ========================================================
+
+    if (state.finished) {
+
+      throw new Error(
+        "O combate já foi encerrado.",
+      )
+
+    }
+
+
+    // ========================================================
     // LOCALIZAR PARTICIPANTES
     // ========================================================
 
@@ -84,27 +101,18 @@ export class CombatActionEngine {
 
 
     if (!attacker) {
+
       throw new Error(
         "Atacante não participa deste combate.",
       )
+
     }
 
 
     if (!defender) {
+
       throw new Error(
         "Defensor não participa deste combate.",
-      )
-    }
-
-
-    // ========================================================
-    // VERIFICAR COMBATE ENCERRADO
-    // ========================================================
-
-    if (state.finished) {
-
-      throw new Error(
-        "O combate já foi encerrado.",
       )
 
     }
@@ -133,7 +141,25 @@ export class CombatActionEngine {
 
 
     // ========================================================
-    // CRIAR AÇÃO
+    // VERIFICAR TURNO
+    // ========================================================
+
+    if (
+      !CombatTurnEngine.canAct(
+        state,
+        attacker.character.id,
+      )
+    ) {
+
+      throw new Error(
+        "Não é o turno do atacante.",
+      )
+
+    }
+
+
+    // ========================================================
+    // CRIAR AÇÃO DE COMBATE
     // ========================================================
 
     const combatAction: CombatAction = {
@@ -207,7 +233,7 @@ export class CombatActionEngine {
 
 
     // ========================================================
-    // VERIFICAR FIM
+    // VERIFICAR FIM DO COMBATE
     // ========================================================
 
     if (
@@ -216,15 +242,36 @@ export class CombatActionEngine {
       )
     ) {
 
-      nextState = {
+      return {
 
-        ...nextState,
+        combat:
+          combatResult,
 
-        finished: true,
+        state: {
+
+          ...nextState,
+
+          finished:
+            true,
+
+          activeParticipantId:
+            null,
+
+        },
 
       }
 
     }
+
+
+    // ========================================================
+    // AVANÇAR PARA O PRÓXIMO TURNO
+    // ========================================================
+
+    nextState =
+      CombatTurnEngine.nextTurn(
+        nextState,
+      )
 
 
     // ========================================================
