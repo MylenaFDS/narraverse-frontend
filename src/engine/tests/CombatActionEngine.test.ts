@@ -63,14 +63,19 @@ function createCharacter(
       },
 
       {
+
         id: id * 10 + 2,
 
         value: "16",
 
         field: {
+
           id: id * 10 + 2,
+
           name: "Força",
+
           field_type: "number",
+
         },
 
       },
@@ -100,7 +105,8 @@ function createContext(): WorldContext {
 
     factions: [],
 
-    profile: {} as WorldContext["profile"],
+    profile:
+      {} as WorldContext["profile"],
 
     inventory: [],
 
@@ -165,11 +171,12 @@ describe(
             "resolve",
           )
           .mockReturnValue({
+
             attackerId: 1,
 
-defenderId: 2,
+            defenderId: 2,
 
-action: "attack",
+            action: "attack",
 
             probability: 75,
 
@@ -231,9 +238,13 @@ action: "attack",
             createContext(),
             state,
             {
+
               attacker,
+
               defender,
+
               action: "attack",
+
             },
           )
 
@@ -278,11 +289,12 @@ action: "attack",
             "resolve",
           )
           .mockReturnValue({
+
             attackerId: 1,
 
-defenderId: 2,
+            defenderId: 2,
 
-action: "attack",
+            action: "attack",
 
             probability: 20,
 
@@ -344,9 +356,13 @@ action: "attack",
             createContext(),
             state,
             {
+
               attacker,
+
               defender,
+
               action: "attack",
+
             },
           )
 
@@ -391,11 +407,12 @@ action: "attack",
             "resolve",
           )
           .mockReturnValue({
+
             attackerId: 1,
 
-defenderId: 2,
+            defenderId: 2,
 
-action: "attack",
+            action: "attack",
 
             probability: 100,
 
@@ -406,7 +423,9 @@ action: "attack",
             modifiers: [],
 
             consequences: [
+
               "O ataque foi um sucesso crítico.",
+
             ],
 
             success: true,
@@ -459,9 +478,13 @@ action: "attack",
             createContext(),
             state,
             {
+
               attacker,
+
               defender,
+
               action: "attack",
+
             },
           )
 
@@ -503,11 +526,12 @@ action: "attack",
             "resolve",
           )
           .mockReturnValue({
+
             attackerId: 1,
 
-defenderId: 2,
+            defenderId: 2,
 
-action: "attack",
+            action: "attack",
 
             probability: 100,
 
@@ -569,9 +593,13 @@ action: "attack",
             createContext(),
             state,
             {
+
               attacker,
+
               defender,
+
               action: "attack",
+
             },
           )
 
@@ -637,19 +665,20 @@ action: "attack",
           )
 
 
-        const defeatedState: CombatState = {
+        const defeatedState:
+          CombatState = {
 
-          ...state,
+            ...state,
 
-          participants: [
+            participants: [
 
-            defeatedAttacker,
+              defeatedAttacker,
 
-            state.participants[1],
+              state.participants[1],
 
-          ],
+            ],
 
-        }
+          }
 
 
         expect(() =>
@@ -657,9 +686,13 @@ action: "attack",
             createContext(),
             defeatedState,
             {
+
               attacker,
+
               defender,
+
               action: "attack",
+
             },
           ),
         ).toThrow(
@@ -698,13 +731,14 @@ action: "attack",
           )
 
 
-        const finishedState: CombatState = {
+        const finishedState:
+          CombatState = {
 
-          ...state,
+            ...state,
 
-          finished: true,
+            finished: true,
 
-        }
+          }
 
 
         expect(() =>
@@ -712,9 +746,13 @@ action: "attack",
             createContext(),
             finishedState,
             {
+
               attacker,
+
               defender,
+
               action: "attack",
+
             },
           ),
         ).toThrow(
@@ -764,9 +802,13 @@ action: "attack",
             createContext(),
             state,
             {
+
               attacker,
+
               defender: outsider,
+
               action: "attack",
+
             },
           ),
         ).toThrow(
@@ -776,6 +818,229 @@ action: "attack",
       },
     )
 
+
+    // ========================================================
+    // AVANÇO DO TURNO
+    // ========================================================
+
+    it(
+      "deve avançar para o próximo participante após o ataque",
+      () => {
+
+        vi
+          .spyOn(
+            CombatEngine,
+            "resolve",
+          )
+          .mockReturnValue({
+
+            attackerId: 1,
+
+            defenderId: 2,
+
+            action: "attack",
+
+            probability: 75,
+
+            damage: 6,
+
+            criticalChance: 5,
+
+            modifiers: [],
+
+            consequences: [],
+
+            success: true,
+
+            outcome:
+              "success",
+
+            attackRoll: {
+
+              expression:
+                "1d20+3",
+
+              rolls: [15],
+
+              modifier: 3,
+
+              total: 18,
+
+              difficulty: 15,
+
+              margin: 3,
+
+            },
+
+          })
+
+
+        const attacker =
+          createCharacter(
+            1,
+            "Atacante",
+          )
+
+        const defender =
+          createCharacter(
+            2,
+            "Defensor",
+          )
+
+
+        const state =
+          createCombatState(
+            attacker,
+            defender,
+          )
+
+
+        const result =
+          CombatActionEngine.execute(
+            createContext(),
+            state,
+            {
+
+              attacker,
+
+              defender,
+
+              action: "attack",
+
+            },
+          )
+
+
+        expect(
+          result.state.finished,
+        ).toBe(false)
+
+
+        expect(
+          result.state.activeParticipantId,
+        ).toBe(defender.id)
+
+      },
+    )
+
+
+    // ========================================================
+    // BLOQUEAR AÇÃO FORA DO TURNO
+    // ========================================================
+
+    it(
+      "não deve permitir que o mesmo atacante aja novamente no mesmo turno",
+      () => {
+
+        vi
+          .spyOn(
+            CombatEngine,
+            "resolve",
+          )
+          .mockReturnValue({
+
+            attackerId: 1,
+
+            defenderId: 2,
+
+            action: "attack",
+
+            probability: 75,
+
+            damage: 6,
+
+            criticalChance: 5,
+
+            modifiers: [],
+
+            consequences: [],
+
+            success: true,
+
+            outcome:
+              "success",
+
+            attackRoll: {
+
+              expression:
+                "1d20+3",
+
+              rolls: [15],
+
+              modifier: 3,
+
+              total: 18,
+
+              difficulty: 15,
+
+              margin: 3,
+
+            },
+
+          })
+
+
+        const attacker =
+          createCharacter(
+            1,
+            "Atacante",
+          )
+
+        const defender =
+          createCharacter(
+            2,
+            "Defensor",
+          )
+
+
+        const state =
+          createCombatState(
+            attacker,
+            defender,
+          )
+
+
+        const firstResult =
+          CombatActionEngine.execute(
+            createContext(),
+            state,
+            {
+
+              attacker,
+
+              defender,
+
+              action: "attack",
+
+            },
+          )
+
+
+        expect(
+          firstResult.state.activeParticipantId,
+        ).toBe(defender.id)
+
+
+        expect(() =>
+          CombatActionEngine.execute(
+            createContext(),
+            firstResult.state,
+            {
+
+              attacker,
+
+              defender,
+
+              action: "attack",
+
+            },
+          ),
+        ).toThrow(
+          "Não é o turno do atacante.",
+        )
+
+      },
+    )
 
   },
 )

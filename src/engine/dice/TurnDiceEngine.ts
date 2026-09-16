@@ -1,47 +1,31 @@
-// src/engine/dice/TurnDiceEngine.ts
-
 import {
   DiceEngine,
   type DiceResult,
 } from "./DiceEngine"
-
 
 // ============================================================
 // TIPOS
 // ============================================================
 
 export interface TurnDiceRoll {
-
   expression: string
-
   rolls: number[]
-
   modifier: number
-
   total: number
-
 }
-
 
 export interface TurnDiceResult {
-
   originalText: string
-
   processedText: string
-
   rolls: TurnDiceRoll[]
-
   hasRolls: boolean
-
 }
-
 
 // ============================================================
 // ENGINE
 // ============================================================
 
 export class TurnDiceEngine {
-
 
   // ==========================================================
   // REGEX
@@ -52,24 +36,17 @@ export class TurnDiceEngine {
    *
    * Exemplos aceitos:
    *
-   * 1d20
-   * 1d20+5
-   * 1d20-2
-   * 2d6
-   * 3d8+4
-   * 2D20
-   *
-   * A rolagem precisa estar entre [[ ]].
-   *
-   * Exemplos:
-   *
    * [[1d20]]
    * [[1d20+5]]
-   * [[2d6+3]]
+   * [[1d20-2]]
+   * [[2d6]]
+   * [[3d8+4]]
+   * [[2D20]]
+   *
+   * A rolagem precisa estar entre [[ ]].
    */
   private static readonly DICE_PATTERN =
     /\[\[\s*(\d+d\d+(?:[+-]\d+)?)\s*\]\]/gi
-
 
   // ==========================================================
   // RESOLVER TURNO
@@ -82,24 +59,13 @@ export class TurnDiceEngine {
     const rolls: TurnDiceRoll[] = []
 
     if (!text.trim()) {
-
       return {
-
-        originalText:
-          text,
-
-        processedText:
-          text,
-
+        originalText: text,
+        processedText: text,
         rolls,
-
-        hasRolls:
-          false,
-
+        hasRolls: false,
       }
-
     }
-
 
     const processedText =
       text.replace(
@@ -114,69 +80,44 @@ export class TurnDiceEngine {
               expression,
             )
 
-
-          // ================================================
+          // ==================================================
           // EXPRESSÃO INVÁLIDA
-          // ================================================
+          // ==================================================
 
           if (
             result.rolls.length === 0
           ) {
-
             return fullMatch
-
           }
 
-
-          // ================================================
+          // ==================================================
           // REGISTRA ROLAGEM
-          // ================================================
+          // ==================================================
 
           rolls.push({
-
-            expression:
-              result.expression,
-
-            rolls:
-              result.rolls,
-
-            modifier:
-              result.modifier,
-
-            total:
-              result.total,
-
+            expression: result.expression,
+            rolls: result.rolls,
+            modifier: result.modifier,
+            total: result.total,
           })
 
-
-          // ================================================
+          // ==================================================
           // TEXTO RESULTANTE
-          // ================================================
+          // ==================================================
 
           return this.formatResult(
             result,
           )
-
         },
       )
 
-
     return {
-
-      originalText:
-        text,
-
+      originalText: text,
       processedText,
-
       rolls,
-
-      hasRolls:
-        rolls.length > 0,
-
+      hasRolls: rolls.length > 0,
     }
-
   }
-
 
   // ==========================================================
   // ROLAGEM DIRETA
@@ -189,40 +130,24 @@ export class TurnDiceEngine {
     const normalized =
       expression.trim()
 
-
     const result =
       DiceEngine.roll(
         normalized,
       )
 
-
     if (
       result.rolls.length === 0
     ) {
-
       return null
-
     }
-
 
     return {
-
-      expression:
-        result.expression,
-
-      rolls:
-        result.rolls,
-
-      modifier:
-        result.modifier,
-
-      total:
-        result.total,
-
+      expression: result.expression,
+      rolls: result.rolls,
+      modifier: result.modifier,
+      total: result.total,
     }
-
   }
-
 
   // ==========================================================
   // VERIFICAR SE EXISTE ROLAGEM
@@ -233,18 +158,20 @@ export class TurnDiceEngine {
   ): boolean {
 
     if (!text.trim()) {
-
       return false
-
     }
 
+    // Usa uma nova regex para evitar
+    // problemas de lastIndex causados
+    // pela flag global.
+    const regex =
+      new RegExp(
+        this.DICE_PATTERN.source,
+        "i",
+      )
 
-    return this.DICE_PATTERN.test(
-      text,
-    )
-
+    return regex.test(text)
   }
-
 
   // ==========================================================
   // EXTRAIR EXPRESSÕES
@@ -255,11 +182,8 @@ export class TurnDiceEngine {
   ): string[] {
 
     if (!text.trim()) {
-
       return []
-
     }
-
 
     const expressions: string[] = []
 
@@ -269,30 +193,22 @@ export class TurnDiceEngine {
         "gi",
       )
 
-
     let match:
       RegExpExecArray | null
-
 
     while (
       (match = regex.exec(text)) !== null
     ) {
 
       if (match[1]) {
-
         expressions.push(
           match[1],
         )
-
       }
-
     }
 
-
     return expressions
-
   }
-
 
   // ==========================================================
   // RESOLVER TODAS AS ROLAGENS
@@ -307,9 +223,7 @@ export class TurnDiceEngine {
         text,
       )
 
-
     const results: TurnDiceRoll[] = []
-
 
     for (
       const expression of expressions
@@ -320,22 +234,15 @@ export class TurnDiceEngine {
           expression,
         )
 
-
       if (result) {
-
         results.push(
           result,
         )
-
       }
-
     }
 
-
     return results
-
   }
-
 
   // ==========================================================
   // FORMATAR RESULTADO
@@ -350,33 +257,24 @@ export class TurnDiceEngine {
         ", ",
       )
 
-
     let modifier = ""
-
 
     if (
       result.modifier > 0
     ) {
-
       modifier =
         ` + ${result.modifier}`
-
     } else if (
       result.modifier < 0
     ) {
-
       modifier =
         ` - ${Math.abs(result.modifier)}`
-
     }
-
 
     return (
       `🎲 [${result.expression}: ` +
       `${rolls}${modifier} = ` +
       `${result.total}]`
     )
-
   }
-
 }

@@ -4,6 +4,13 @@ import {
   type TurnDiceRoll,
 } from "./TurnDiceEngine"
 
+import {
+  DiceResolver,
+} from "./DiceResolver"
+
+import type {
+  DiceCheckResult,
+} from "./DiceTypes"
 
 // ============================================================
 // TIPOS
@@ -110,7 +117,22 @@ export class TurnDiceIntegrationEngine {
     }
 
   }
+  
+    // ==========================================================
+  // RESOLVER TESTE
+  // ==========================================================
 
+  static resolveCheck(
+    expression: string,
+    difficulty: number,
+  ): DiceCheckResult {
+
+    return DiceResolver.resolve(
+      expression,
+      difficulty,
+    )
+
+  }
 
   // ==========================================================
   // DESCRIÇÃO DAS ROLAGENS
