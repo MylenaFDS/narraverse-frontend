@@ -31,7 +31,17 @@ import AssistantModal from "../Assistant/AssistantModal"
 import {
   TurnDiceIntegrationEngine,
 } from "../../engine/dice/TurnDiceIntegrationEngine"
+import {
+  TurnActionIntegrationEngine,
+} from "../../engine/action/TurnActionIntegrationEngine"
 
+import type {
+  ActionExecutionResult,
+} from "../../engine/action/ActionExecutionEngine"
+
+import type {
+  CombatState,
+} from "../../engine/combat/CombatState"
 
 type Props = {
   rpgId: number
@@ -61,6 +71,130 @@ function getAvatarColor(name: string) {
   return colors[index]
 }
 
+function formatActionExecutionContent(
+  originalText: string,
+  execution: ActionExecutionResult,
+): string {
+  const result = execution.result
+
+  let narrative = originalText
+
+  if (execution.request.expression) {
+    narrative = narrative
+      .replace(
+        /\[\[\s*\d+d\d+(?:[+-]\d+)?\s*\]\]/i,
+        "",
+      )
+      .replace(
+        /\b\d+d\d+(?:[+-]\d+)?\b/i,
+        "",
+      )
+  }
+
+  const details: string[] = []
+
+  // Resultado real de combate
+  if (result.combatResult) {
+  const combat = result.combatResult.combat
+  const roll = combat.attackRoll
+
+    const modifierText =
+      roll.modifier > 0
+        ? ` + ${roll.modifier}`
+        : roll.modifier < 0
+          ? ` - ${Math.abs(roll.modifier)}`
+          : ""
+
+    const outcomeLabels: Record<string, string> = {
+      critical_success: "sucesso crítico",
+      success: "sucesso",
+      partial_success: "sucesso parcial",
+      failure: "falha",
+      critical_failure: "falha crítica",
+    }
+
+    const outcome =
+      outcomeLabels[combat.outcome] ??
+      combat.outcome
+
+    details.push(
+      `🎲 Ataque ${roll.expression}: ` +
+      `${roll.rolls.join(", ")}` +
+      `${modifierText} = ${roll.total} ` +
+      `(Defesa ${roll.difficulty}; ${outcome})`,
+    )
+
+    details.push(
+      `⚔️ Dano aplicado: ${combat.damage}.`,
+    )
+  } else if (result.dice) {
+    // Resultado de testes que não são ataques
+    const dice = result.dice
+
+    const modifierText =
+      dice.modifier > 0
+        ? ` + ${dice.modifier}`
+        : dice.modifier < 0
+          ? ` - ${Math.abs(dice.modifier)}`
+          : ""
+
+    const outcomeLabels: Record<string, string> = {
+      critical_success: "sucesso crítico",
+      success: "sucesso",
+      partial_success: "sucesso parcial",
+      failure: "falha",
+      critical_failure: "falha crítica",
+    }
+
+    const outcome =
+      outcomeLabels[dice.outcome] ??
+      dice.outcome
+
+    details.push(
+      `🎲 ${dice.expression}: ` +
+      `${dice.rolls.join(", ")}` +
+      `${modifierText} = ${dice.total} ` +
+      `(Dificuldade ${dice.difficulty}; ${outcome})`,
+    )
+  }
+
+  details.push(result.description)
+
+  // Exibir HP do defensor no estado retornado pelo combate
+  const state = result.combatState
+  const targetId = execution.request.target?.id
+
+  if (state && targetId !== undefined) {
+    const defender = state.participants.find(
+      participant =>
+        participant.character.id === targetId,
+    )
+
+    if (defender) {
+      details.push(
+        `❤️ HP de ${defender.character.name}: ` +
+        `${defender.currentHP}/${defender.maxHP}`,
+      )
+
+      if (defender.defeated) {
+        details.push(
+          `☠️ ${defender.character.name} foi derrotado.`,
+        )
+      }
+    }
+
+    if (state.finished) {
+      details.push("🏁 O combate foi encerrado.")
+    }
+  }
+
+  return [
+    narrative.trim(),
+    details.join("\n"),
+  ]
+    .filter(Boolean)
+    .join("\n\n")
+}
 
 export default function Turns({
   rpgId,
@@ -91,6 +225,9 @@ export default function Turns({
 
   const [selectedCharacterId, setSelectedCharacterId] =
     useState<number | null>(null)
+
+    const [combatState, setCombatState] =
+  useState<CombatState | null>(null)
 
   // ============================================================
   // AUTOCOMPLETE
@@ -193,7 +330,6 @@ export default function Turns({
           turnsData,
           allChars,
           myChars,
-          _sheetFields,
           loreData,
           timelineCategoriesData,
         ] = await Promise.all([
@@ -625,60 +761,126 @@ export default function Turns({
 
   }
 
+function processTurnText(
+  text: string,
+) {
 
+  const actor =
+    myCharacters.find(
+      character =>
+        character.id === selectedCharacterId,
+    )
+
+  if (actor) {
+
+    const actionExecution =
+      TurnActionIntegrationEngine.process({
+
+        text,
+
+        actor,
+
+        characters:
+          allCharacters,
+
+        npcs:
+          allCharacters.filter(
+            character =>
+              character.is_npc,
+          ),
+
+        lore,
+
+        recentTurns:
+          turns,
+
+        combatState: combatState ?? undefined,
+
+      })
+
+    if (actionExecution) {
+      if (actionExecution.result.combatState) {
+  setCombatState(
+    actionExecution.result.combatState,
+  )
+}
+      return {
+
+        processedContent:
+          formatActionExecutionContent(
+            text,
+            actionExecution,
+          ),
+
+        actionExecution,
+
+        diceResult: null,
+
+      }
+
+    }
+
+  }
+
+  // Fallback para texto narrativo comum
+  // ou ações ainda não resolvidas pelo novo motor.
+  const diceResult =
+    TurnDiceIntegrationEngine.process(
+      text,
+    )
+
+  return {
+
+    processedContent:
+      diceResult.processedText,
+
+    actionExecution: null,
+
+    diceResult,
+
+  }
+
+}
   // ============================================================
   // ENVIO DO TURNO
   // ============================================================
 
   async function handleSendTurn() {
 
-    if (!newTurn.trim()) return
+  if (!newTurn.trim()) return
 
+  const processing =
+    processTurnText(newTurn)
 
-    // ==========================================================
-    // PROCESSA DADOS
-    // ==========================================================
+  console.log(
+    "🎲 Processamento do turno:",
+    processing.actionExecution ??
+      processing.diceResult,
+  )
 
-    const diceResult =
-      TurnDiceIntegrationEngine.process(
-        newTurn,
-      )
+  await createTurn(
+    rpgId,
+    {
+      content:
+        processing.processedContent,
 
+      reply_to_turn_id:
+        null,
 
-    const processedContent =
-      diceResult.processedText
+      mentioned_characters:
+        mentions,
 
+      character_id:
+        selectedCharacterId ??
+        undefined,
+    },
+  )
 
-    console.log(
-      "🎲 Resultado das rolagens:",
-      diceResult,
-    )
+  setNewTurn("")
 
+  setMentions([])
 
-    await createTurn(
-      rpgId,
-      {
-        content:
-          processedContent,
-
-        reply_to_turn_id:
-          null,
-
-        mentioned_characters:
-          mentions,
-
-        character_id:
-          selectedCharacterId ??
-          undefined,
-      }
-    )
-
-
-    setNewTurn("")
-
-    setMentions([])
-
-  }
+}
 
 
   // ============================================================
@@ -686,79 +888,64 @@ export default function Turns({
   // ============================================================
 
   async function handleSendReply(
-    parentId: number,
+  parentId: number,
+) {
+
+  if (!replyContent.trim()) return
+
+  const parentTurn =
+    turns.find(
+      turn =>
+        turn.id === parentId,
+    )
+
+  if (
+    !parentTurn ||
+    !canReply(parentTurn)
   ) {
 
-    if (!replyContent.trim()) return
-
-
-    const parentTurn =
-      turns.find(
-        (t) =>
-          t.id === parentId
-      )
-
-
-    if (
-      !parentTurn ||
-      !canReply(parentTurn)
-    ) {
-
-      alert(
-        "Você não pode responder este turno."
-      )
-
-      return
-
-    }
-
-
-    // ==========================================================
-    // PROCESSA DADOS DA RESPOSTA
-    // ==========================================================
-
-    const diceResult =
-      TurnDiceIntegrationEngine.process(
-        replyContent,
-      )
-
-
-    const processedContent =
-      diceResult.processedText
-
-
-    console.log(
-      "🎲 Resultado das rolagens da resposta:",
-      diceResult,
+    alert(
+      "Você não pode responder este turno.",
     )
 
-
-    await createTurn(
-      rpgId,
-      {
-        content:
-          processedContent,
-
-        reply_to_turn_id:
-          parentId,
-
-        mentioned_characters:
-          mentions,
-
-        character_id:
-          selectedCharacterId ??
-          undefined,
-      }
-    )
-
-
-    setReplyContent("")
-
-    setReplyTo(null)
-
-    setMentions([])
+    return
 
   }
+
+  const processing =
+    processTurnText(replyContent)
+
+  console.log(
+    "🎲 Processamento da resposta:",
+    processing.actionExecution ??
+      processing.diceResult,
+  )
+
+  await createTurn(
+    rpgId,
+    {
+      content:
+        processing.processedContent,
+
+      reply_to_turn_id:
+        parentId,
+
+      mentioned_characters:
+        mentions,
+
+      character_id:
+        selectedCharacterId ??
+        undefined,
+    },
+  )
+
+  setReplyContent("")
+
+  setReplyTo(null)
+
+  setMentions([])
+
+}
 
 
   // ============================================================
