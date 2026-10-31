@@ -89,34 +89,51 @@ export class TurnActionIntegrationEngine {
   ): ActionExecutionResult | null {
 
     // ========================================================
-    // 1. PREPARAR OS PERSONAGENS
-    // ========================================================
+// 1. PREPARAR OS PERSONAGENS
+// ========================================================
 
-    const characters =
-      params.characters.some(
-        character =>
-          character.id === params.actor.id,
-      )
-        ? params.characters
-        : [
-            params.actor,
-            ...params.characters,
-          ]
+const characters =
+  params.characters.some(
+    character =>
+      character.id === params.actor.id,
+  )
+    ? params.characters
+    : [
+        params.actor,
+        ...params.characters,
+      ]
 
 
-    // ========================================================
-    // 2. RECONHECER A AÇÃO
-    // ========================================================
+// ========================================================
+// 2. REUNIR PERSONAGENS E NPCs
+// ========================================================
+
+const availableCharacters =
+  Array.from(
+    new Map(
+      [
+        ...characters,
+        ...(params.npcs ?? []),
+      ].map(
+        character => [
+          character.id,
+          character,
+        ]),
+    ).values(),
+  )
 
     const request =
-      ActionParser.parseIfRecognized(
-        params.text,
-        params.actor,
-        {
-          characters,
-          difficulty: params.difficulty,
-        },
-      )
+  ActionParser.parseIfRecognized(
+    params.text,
+    params.actor,
+    {
+      characters:
+        availableCharacters,
+
+      difficulty:
+        params.difficulty,
+    },
+  )
 
     // Texto puramente narrativo continua fora
     // do motor de ações.
