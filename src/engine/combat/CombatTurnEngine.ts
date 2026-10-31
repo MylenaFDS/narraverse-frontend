@@ -4,6 +4,7 @@ import {
   type CombatState,
 } from "./CombatState"
 
+import { CharacterStatsEngine } from "../CharacterStatsEngine"
 
 // ============================================================
 // RESULTADO DA INICIATIVA
@@ -78,45 +79,15 @@ export class CombatTurnEngine {
   // ==========================================================
 
   private static getDexterity(
-    participant: CombatParticipantState,
-  ): number {
+  participant: CombatParticipantState,
+): number {
 
-    const value =
-      participant.character.sheet_values
-        ?.find(
-          sheetValue => {
+  return CharacterStatsEngine
+    .getDexterity(
+      participant.character,
+    ).modifier
 
-            const name =
-              sheetValue.field.name
-                .trim()
-                .toLowerCase()
-
-            return (
-              name === "destreza" ||
-              name === "dexterity" ||
-              name === "agilidade"
-            )
-
-          },
-        )
-        ?.value
-
-    const dexterity =
-      Number(value)
-
-    if (
-      Number.isNaN(dexterity)
-    ) {
-
-      return 0
-
-    }
-
-    return Math.floor(
-      (dexterity - 10) / 2,
-    )
-
-  }
+}
 
 
   // ==========================================================
