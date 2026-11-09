@@ -1,59 +1,34 @@
-import type { Character } from "../../types/character"
 
+import type { Character } from "../../types/character"
 
 // ============================================================
 // ESTADO DE UM PARTICIPANTE
 // ============================================================
 
 export interface CombatParticipantState {
-
   character: Character
-
   currentHP: number
-
   maxHP: number
-
   defeated: boolean
-
 }
-
 
 // ============================================================
 // ESTADO DO COMBATE
 // ============================================================
 
 export interface CombatState {
-
   participants: CombatParticipantState[]
-
-  /**
-   * IDs dos personagens na ordem em que agirão.
-   *
-   * Exemplo:
-   *
-   * [3, 1, 2]
-   *
-   * significa:
-   *
-   * personagem 3 → personagem 1 → personagem 2
-   */
   initiativeOrder: number[]
-
   round: number
-
   activeParticipantId: number | null
-
   finished: boolean
-
 }
-
 
 // ============================================================
 // ENGINE DO ESTADO
 // ============================================================
 
 export class CombatStateEngine {
-
 
   // ==========================================================
   // CRIAR PARTICIPANTE
@@ -64,29 +39,15 @@ export class CombatStateEngine {
     maxHP: number,
   ): CombatParticipantState {
 
-    const hp =
-      Math.max(
-        1,
-        maxHP,
-      )
+    const hp = Math.max(0, maxHP)
 
     return {
-
       character,
-
-      currentHP:
-        hp,
-
-      maxHP:
-        hp,
-
-      defeated:
-        false,
-
+      currentHP: hp,
+      maxHP: hp,
+      defeated: hp <= 0,
     }
-
   }
-
 
   // ==========================================================
   // CRIAR COMBATE
@@ -96,30 +57,32 @@ export class CombatStateEngine {
     participants: CombatParticipantState[],
   ): CombatState {
 
-    return {
+    const aliveParticipants =
+      participants.filter(
+        participant => !participant.defeated,
+      )
 
+    const finished =
+      aliveParticipants.length <= 1
+
+    return {
       participants,
 
       initiativeOrder:
-        participants.map(
-          participant =>
-            participant.character.id,
+        aliveParticipants.map(
+          participant => participant.character.id,
         ),
 
-      round:
-        1,
+      round: 1,
 
       activeParticipantId:
-        participants[0]?.character.id ??
-        null,
+        finished
+          ? null
+          : aliveParticipants[0].character.id,
 
-      finished:
-        participants.length <= 1,
-
+      finished,
     }
-
   }
-
 
   // ==========================================================
   // PARTICIPANTES VIVOS
@@ -130,12 +93,9 @@ export class CombatStateEngine {
   ): CombatParticipantState[] {
 
     return state.participants.filter(
-      participant =>
-        !participant.defeated,
+      participant => !participant.defeated,
     )
-
   }
-
 
   // ==========================================================
   // APLICAR DANO
@@ -147,10 +107,7 @@ export class CombatStateEngine {
   ): CombatParticipantState {
 
     const safeDamage =
-      Math.max(
-        0,
-        damage,
-      )
+      Math.max(0, Number.isFinite(damage) ? damage : 0)
 
     const currentHP =
       Math.max(
@@ -159,18 +116,11 @@ export class CombatStateEngine {
       )
 
     return {
-
       ...participant,
-
       currentHP,
-
-      defeated:
-        currentHP <= 0,
-
+      defeated: currentHP <= 0,
     }
-
   }
-
 
   // ==========================================================
   // VERIFICAR FIM DO COMBATE
@@ -181,13 +131,9 @@ export class CombatStateEngine {
   ): boolean {
 
     return (
-      this.getAliveParticipants(
-        state,
-      ).length <= 1
+      this.getAliveParticipants(state).length <= 1
     )
-
   }
-
 
   // ==========================================================
   // AVANÇAR RODADA
@@ -197,33 +143,17 @@ export class CombatStateEngine {
     state: CombatState,
   ): CombatState {
 
-    if (
-      this.isFinished(state)
-    ) {
-
+    if (this.isFinished(state)) {
       return {
-
         ...state,
-
-        finished:
-          true,
-
-        activeParticipantId:
-          null,
-
+        finished: true,
+        activeParticipantId: null,
       }
-
     }
 
     return {
-
       ...state,
-
-      round:
-        state.round + 1,
-
+      round: state.round + 1,
     }
-
   }
-
 }

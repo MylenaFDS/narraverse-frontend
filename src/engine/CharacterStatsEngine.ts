@@ -1,3 +1,4 @@
+
 import type { Character } from "../types/character"
 
 import {
@@ -39,19 +40,24 @@ export class CharacterStatsEngine {
 
     for (const field of fieldNames) {
 
+      const hasField =
+        CharacterSheetEngine.hasField(
+          character,
+          field,
+        )
+
+      if (!hasField) {
+        continue
+      }
+
       const value =
         CharacterSheetEngine.getNumber(
           character,
           field,
         )
 
-      if (
-        typeof value === "number" &&
-        !Number.isNaN(value)
-      ) {
-
+      if (Number.isFinite(value)) {
         return value
-
       }
 
     }
@@ -261,35 +267,35 @@ export class CharacterStatsEngine {
   // ==========================================================
 
   static getAttackModifier(
-  character: Character,
-): number {
+    character: Character,
+  ): number {
 
-  const attackField =
-    (character.sheet_values ?? []).find(
-      (item) =>
-        item.field.name === "Ataque",
-    )
-
-  if (attackField) {
-
-    const attack =
-      Number(
-        attackField.value,
+    const attackField =
+      (character.sheet_values ?? []).find(
+        (item) =>
+          item.field.name === "Ataque",
       )
 
-    if (!Number.isNaN(attack)) {
+    if (attackField) {
 
-      return attack
+      const attack =
+        Number(
+          attackField.value,
+        )
+
+      if (!Number.isNaN(attack)) {
+
+        return attack
+
+      }
 
     }
 
+    return this.getStrength(
+      character,
+    ).modifier
+
   }
-
-  return this.getStrength(
-    character,
-  ).modifier
-
-}
 
 
   // ==========================================================
@@ -304,38 +310,38 @@ export class CharacterStatsEngine {
   // ==========================================================
 
   static getDefense(
-  character: Character,
-): number {
+    character: Character,
+  ): number {
 
-  const defenseField =
-    (character.sheet_values ?? []).find(
-      (item) =>
-        item.field.name === "Defesa",
-    )
-
-  if (defenseField) {
-
-    const defense =
-      Number(
-        defenseField.value,
+    const defenseField =
+      (character.sheet_values ?? []).find(
+        (item) =>
+          item.field.name === "Defesa",
       )
 
-    if (!Number.isNaN(defense)) {
+    if (defenseField) {
 
-      return defense
+      const defense =
+        Number(
+          defenseField.value,
+        )
+
+      if (!Number.isNaN(defense)) {
+
+        return defense
+
+      }
 
     }
 
+    return (
+      10 +
+      this.getDexterity(
+        character,
+      ).modifier
+    )
+
   }
-
-  return (
-    10 +
-    this.getDexterity(
-      character,
-    ).modifier
-  )
-
-}
 
 
   // ==========================================================

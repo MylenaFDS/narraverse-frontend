@@ -31,47 +31,46 @@ export class CombatTurnEngine {
   // ==========================================================
 
   static rollInitiative(
-    state: CombatState,
-  ): CombatInitiative[] {
+  state: CombatState,
+): CombatInitiative[] {
 
-    const initiatives =
-      state.participants
-        .filter(
-          participant =>
-            !participant.defeated,
-        )
-        .map(
-          participant => {
+  const initiatives =
+    state.participants
+      .filter(
+        participant => !participant.defeated,
+      )
+      .map(
+        (participant, index) => {
 
-            const dexterity =
-              this.getDexterity(
-                participant,
-              )
+          const dexterity =
+            this.getDexterity(participant)
 
-            const roll =
-              Math.floor(
-                Math.random() * 20,
-              ) + 1
+          const roll =
+            Math.floor(
+              Math.random() * 20,
+            ) + 1
 
-            return {
+          return {
+            characterId: participant.character.id,
+            roll: roll + dexterity,
+            originalOrder: index,
+          }
+        },
+      )
 
-              characterId:
-                participant.character.id,
-
-              roll:
-                roll + dexterity,
-
-            }
-
-          },
-        )
-
-    return initiatives.sort(
+  return initiatives
+    .sort(
       (a, b) =>
-        b.roll - a.roll,
+        b.roll - a.roll ||
+        a.originalOrder - b.originalOrder,
     )
-
-  }
+    .map(
+      ({ characterId, roll }) => ({
+        characterId,
+        roll,
+      }),
+    )
+}
 
 
   // ==========================================================

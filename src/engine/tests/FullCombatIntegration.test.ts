@@ -845,4 +845,133 @@ describe("FullCombatIntegration", () => {
   },
 )
 
+it(
+  "não deve incluir participantes derrotados na iniciativa",
+  () => {
+
+    const hero = createCharacter(
+      1,
+      "Herói",
+      { Destreza: "14" },
+    )
+
+    const enemy = createCharacter(
+      2,
+      "Goblin",
+      { Destreza: "10" },
+    )
+
+    const state = createCombatState([
+      hero,
+      enemy,
+    ])
+
+    const stateWithDefeated = {
+      ...state,
+      participants: state.participants.map(
+        participant =>
+          participant.character.id === enemy.id
+            ? {
+                ...participant,
+                currentHP: 0,
+                defeated: true,
+              }
+            : participant,
+      ),
+    }
+
+    const initiatives =
+      CombatTurnEngine.rollInitiative(
+        stateWithDefeated,
+      )
+
+    expect(initiatives).toHaveLength(1)
+
+    expect(
+      initiatives.map(item => item.characterId),
+    ).toEqual([hero.id])
+  },
+)
+
+it(
+  "deve utilizar o modificador padrão quando o personagem não possui Destreza",
+  () => {
+
+    const hero = createCharacter(
+      1,
+      "Herói",
+      {},
+    )
+
+    const state = createCombatState([
+      hero,
+    ])
+
+    vi.spyOn(Math, "random")
+      .mockReturnValue(0.5)
+
+    const initiatives =
+      CombatTurnEngine.rollInitiative(state)
+
+    expect(initiatives).toHaveLength(1)
+
+    // Destreza padrão = 10
+    // Modificador = 0
+    // Rolagem de 11 a 20: resultado 11
+    expect(initiatives[0].roll).toBe(11)
+
+    vi.restoreAllMocks()
+  },
+)
+
+it(
+  "deve preservar a ordem original quando houver empate na iniciativa",
+  () => {
+
+    const hero = createCharacter(
+      1,
+      "Herói",
+      { Destreza: "10" },
+    )
+
+    const goblin = createCharacter(
+      2,
+      "Goblin",
+      { Destreza: "10" },
+    )
+
+    const orc = createCharacter(
+      3,
+      "Orc",
+      { Destreza: "10" },
+    )
+
+    const state = createCombatState([
+      hero,
+      goblin,
+      orc,
+    ])
+
+    vi.spyOn(Math, "random")
+      .mockReturnValue(0.5)
+
+    const initiatives =
+      CombatTurnEngine.rollInitiative(state)
+
+    expect(
+      initiatives.map(item => item.characterId),
+    ).toEqual([
+      hero.id,
+      goblin.id,
+      orc.id,
+    ])
+
+    expect(
+      initiatives.map(item => item.roll),
+    ).toEqual([11, 11, 11])
+
+    vi.restoreAllMocks()
+  },
+)
+
 })
