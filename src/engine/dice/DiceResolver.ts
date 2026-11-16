@@ -45,76 +45,42 @@ export class DiceResolver {
     let outcome: DiceOutcome
 
     // ==========================================
-    // CRÍTICOS
-    // ==========================================
+// CRÍTICOS
+// ==========================================
 
-    const isSingleD20 =
-      roll.rolls.length === 1 &&
-      /^1d20([+-]\d+)?$/i.test(
-        expression,
-      )
+const isSingleD20 =
+  roll.rolls.length === 1 &&
+  /^1d20([+-]\d+)?$/i.test(expression)
 
-    if (
-      isSingleD20 &&
-      roll.rolls[0] === 1
-    ) {
+if (isSingleD20 && roll.rolls[0] === 1) {
+  outcome = "critical_failure"
+} else if (isSingleD20 && roll.rolls[0] === 20) {
+  outcome = "critical_success"
+}
 
-      outcome =
-        "critical_failure"
+// ==========================================
+// FALHA
+// ==========================================
 
-    } else if (
-      isSingleD20 &&
-      roll.rolls[0] === 20
-    ) {
+else if (margin <= -5) {
+  outcome = "failure"
+}
 
-      outcome =
-        "critical_success"
+// ==========================================
+// SUCESSO PARCIAL
+// ==========================================
 
-    }
+else if (margin < 0) {
+  outcome = "partial_success"
+}
 
-    // ==========================================
-    // FALHA
-    // ==========================================
+// ==========================================
+// SUCESSO NORMAL
+// ==========================================
 
-    else if (margin <= -5) {
-
-      outcome =
-        "failure"
-
-    }
-
-    // ==========================================
-    // SUCESSO PARCIAL
-    // ==========================================
-
-    else if (margin < 0) {
-
-      outcome =
-        "partial_success"
-
-    }
-
-    // ==========================================
-    // SUCESSO CRÍTICO
-    // ==========================================
-
-    else if (margin >= 10) {
-
-      outcome =
-        "critical_success"
-
-    }
-
-    // ==========================================
-    // SUCESSO NORMAL
-    // ==========================================
-
-    else {
-
-      outcome =
-        "success"
-
-    }
+else {
+  outcome = "success"
+}
 
     return {
 

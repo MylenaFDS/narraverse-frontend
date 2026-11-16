@@ -567,7 +567,7 @@ describe("CombatEngine", () => {
     expect(
       spy,
     ).toHaveBeenCalledWith(
-      "1d20-5",
+      "1d20+0",
       10,
     )
 

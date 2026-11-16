@@ -402,10 +402,14 @@ export class CombatEngine {
     // REGRAS
     // ========================================================
 
-    RulesEngine.applyAttackRules(
-      attack,
-      defense,
-    )
+    const adjusted =
+  RulesEngine.applyAttackRules(
+    attack,
+    defense,
+  )
+
+const finalAttack = adjusted.attack
+const finalDefense = adjusted.defense
 
 
     // ========================================================
@@ -413,10 +417,10 @@ export class CombatEngine {
     // ========================================================
 
     const probability =
-      this.calculateProbability(
-        attack,
-        defense,
-      )
+  this.calculateProbability(
+    finalAttack,
+    finalDefense,
+  )
 
 
     // ========================================================
@@ -424,9 +428,9 @@ export class CombatEngine {
     // ========================================================
 
     const damage =
-      this.calculateBaseDamage(
-        attack,
-      )
+  this.calculateBaseDamage(
+    finalAttack,
+  )
 
 
     // ========================================================
@@ -548,15 +552,24 @@ export class CombatEngine {
         defender,
       )
 
+      const adjusted =
+  RulesEngine.applyAttackRules(
+    attack,
+    defense,
+  )
+
+const finalAttack = adjusted.attack
+const finalDefense = adjusted.defense
+
 
     // ========================================================
     // EXPRESSÃO
     // ========================================================
 
     const expression =
-      this.buildAttackExpression(
-        attack,
-      )
+  this.buildAttackExpression(
+    finalAttack,
+  )
 
 
     // ========================================================
@@ -566,7 +579,7 @@ export class CombatEngine {
     const attackRoll =
       DiceResolver.resolve(
         expression,
-        defense,
+        finalDefense,
       )
 
 

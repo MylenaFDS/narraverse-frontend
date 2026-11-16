@@ -19,6 +19,9 @@ import type {
   WorldContext,
 } from "../context/ContextEngine"
 
+import {
+  CombatStateEngine,
+} from "../combat/CombatState"
 
 // ============================================================
 // HELPERS
@@ -81,6 +84,46 @@ function createCharacterWithAttribute(
   } as Character
 
 }
+
+function createCombatCharacter(
+  id: number,
+  name: string,
+  attack = "10",
+  defense = "10",
+  hp = "20",
+): Character {
+  return {
+    id,
+    name,
+    sheet_values: [
+      {
+        field: {
+          id: id * 10 + 1,
+          name: "Ataque",
+          field_type: "number",
+        },
+        value: attack,
+      },
+      {
+        field: {
+          id: id * 10 + 2,
+          name: "Defesa",
+          field_type: "number",
+        },
+        value: defense,
+      },
+      {
+        field: {
+          id: id * 10 + 3,
+          name: "HP",
+          field_type: "number",
+        },
+        value: hp,
+      },
+    ],
+  } as Character
+}
+
 
 
 // ============================================================
@@ -1201,7 +1244,214 @@ describe(
 
       },
     )
+    
+    // ============================================================
+// INTEGRAÇÃO COM COMBATE
+// ============================================================
 
+describe("Integração com combate", () => {
+  it("deve resolver ataque, aplicar dano e avançar o turno", () => {
+    vi.spyOn(Math, "random").mockReturnValue(0.5)
+
+    const attacker = createCombatCharacter(
+      1,
+      "Aragorn",
+    )
+
+    const defender = createCombatCharacter(
+      2,
+      "Orc",
+    )
+
+    const combatState = CombatStateEngine.create([
+      CombatStateEngine.createParticipant(attacker, 20),
+      CombatStateEngine.createParticipant(defender, 20),
+    ])
+
+    const request: ActionRequest = {
+      type: "attack",
+      actor: attacker,
+      target: defender,
+      combatState,
+    }
+
+    const result = ActionEngine.execute(
+      createContext(),
+      request,
+    )
+
+    console.log(
+  "Resultado do combate:",
+  result.combatResult?.combat,
+)
+
+    expect(result.success).toBe(true)
+    expect(result.requiresRoll).toBe(true)
+    expect(result.combatResult).toBeDefined()
+    expect(result.combatState).toBeDefined()
+
+    const updatedDefender =
+      result.combatState?.participants.find(
+        (participant) =>
+          participant.character.id === defender.id,
+      )
+
+    expect(updatedDefender?.currentHP).toBe(15)
+    expect(updatedDefender?.defeated).toBe(false)
+
+    expect(
+      result.combatState?.activeParticipantId,
+    ).toBe(defender.id)
+
+    expect(result.combatState?.finished).toBe(false)
+
+    // O estado original não deve ser alterado.
+    const originalDefender =
+      combatState.participants.find(
+        (participant) =>
+          participant.character.id === defender.id,
+      )
+
+    expect(originalDefender?.currentHP).toBe(20)
+
+    vi.restoreAllMocks()
+  })
+
+  it("deve derrotar o defensor e encerrar o combate", () => {
+    vi.spyOn(Math, "random").mockReturnValue(0.999)
+
+    const attacker = createCombatCharacter(
+      1,
+      "Aragorn",
+    )
+
+    const defender = createCombatCharacter(
+      2,
+      "Goblin",
+      "10",
+      "10",
+      "6",
+    )
+
+    const combatState = CombatStateEngine.create([
+      CombatStateEngine.createParticipant(attacker, 20),
+      CombatStateEngine.createParticipant(defender, 6),
+    ])
+
+    const result = ActionEngine.execute(
+      createContext(),
+      {
+        type: "attack",
+        actor: attacker,
+        target: defender,
+        combatState,
+      },
+    )
+    console.log(
+  "Resultado do combate:",
+  result.combatResult?.combat,
+)
+
+    expect(result.combatResult?.combat.outcome).toBe(
+  "critical_success",
+)
+
+expect(result.combatResult?.combat.damage).toBe(10)
+
+    const defeatedDefender =
+      result.combatState?.participants.find(
+        (participant) =>
+          participant.character.id === defender.id,
+      )
+
+    expect(defeatedDefender?.currentHP).toBe(0)
+    expect(defeatedDefender?.defeated).toBe(true)
+
+    expect(result.combatState?.finished).toBe(true)
+    expect(result.combatState?.activeParticipantId).toBeNull()
+
+    vi.restoreAllMocks()
+  })
+
+  it("deve rejeitar ataque quando não for o turno do atacante", () => {
+    const attacker = createCombatCharacter(
+      1,
+      "Aragorn",
+    )
+
+    const defender = createCombatCharacter(
+      2,
+      "Orc",
+    )
+
+    const combatState = CombatStateEngine.create([
+      CombatStateEngine.createParticipant(attacker, 20),
+      CombatStateEngine.createParticipant(defender, 20),
+    ])
+
+    const stateWithDifferentTurn = {
+      ...combatState,
+      activeParticipantId: defender.id,
+    }
+
+    expect(() =>
+      ActionEngine.execute(
+        createContext(),
+        {
+          type: "attack",
+          actor: attacker,
+          target: defender,
+          combatState: stateWithDifferentTurn,
+        },
+      ),
+    ).toThrow("Não é o turno do atacante.")
+  })
+
+  it("deve rejeitar ataque de personagem derrotado", () => {
+    const attacker = createCombatCharacter(
+      1,
+      "Aragorn",
+    )
+
+    const defender = createCombatCharacter(
+      2,
+      "Orc",
+    )
+
+    const defeatedAttacker =
+      CombatStateEngine.applyDamage(
+        CombatStateEngine.createParticipant(attacker, 20),
+        20,
+      )
+
+    const defenderState =
+      CombatStateEngine.createParticipant(defender, 20)
+
+    const combatState = {
+      participants: [
+        defeatedAttacker,
+        defenderState,
+      ],
+      initiativeOrder: [attacker.id, defender.id],
+      round: 1,
+      activeParticipantId: attacker.id,
+      finished: false,
+    }
+
+    expect(() =>
+      ActionEngine.execute(
+        createContext(),
+        {
+          type: "attack",
+          actor: attacker,
+          target: defender,
+          combatState,
+        },
+      ),
+    ).toThrow("O atacante está derrotado.")
+  })
+})
   },
+  
 )
 
