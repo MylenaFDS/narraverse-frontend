@@ -44,6 +44,9 @@ import {
   type CombatState,
 } from "../combat/CombatState"
 
+import {
+  CombatTurnEngine,
+} from "../combat/CombatTurnEngine"
 
 // ============================================================
 // PARÂMETROS
@@ -256,9 +259,9 @@ const availableCharacters =
               )
 
             const initialHP =
-              Number.isFinite(hp)
-                ? Math.max(1, Math.floor(hp))
-                : 100
+  Number.isFinite(hp)
+    ? Math.max(0, Math.floor(hp))
+    : 100
 
             return CombatStateEngine.createParticipant(
               character,
@@ -268,10 +271,15 @@ const availableCharacters =
           },
         )
 
-        request.combatState =
-          CombatStateEngine.create(
-            participants,
-          )
+        const initialState =
+  CombatStateEngine.create(
+    participants,
+  )
+
+request.combatState =
+  CombatTurnEngine.start(
+    initialState,
+  )
 
       }
 

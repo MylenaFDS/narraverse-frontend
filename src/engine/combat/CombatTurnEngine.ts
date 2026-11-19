@@ -125,28 +125,16 @@ export class CombatTurnEngine {
 
     }
 
-    if (
-      alive.length === 1
-    ) {
-
-      return {
-
-        ...state,
-
-        initiativeOrder:
-          [
-            alive[0].character.id,
-          ],
-
-        activeParticipantId:
-          alive[0].character.id,
-
-        finished:
-          true,
-
-      }
-
-    }
+    if (alive.length === 1) {
+  return {
+    ...state,
+    initiativeOrder: [
+      alive[0].character.id,
+    ],
+    activeParticipantId: null,
+    finished: true,
+  }
+}
 
     const initiatives =
       this.rollInitiative(
