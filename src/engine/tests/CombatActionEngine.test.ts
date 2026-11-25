@@ -1,4 +1,5 @@
 import {
+  afterEach,
   describe,
   expect,
   it,
@@ -151,6 +152,10 @@ function createCombatState(
 // ============================================================
 // TESTES
 // ============================================================
+
+afterEach(() => {
+  vi.restoreAllMocks()
+})
 
 describe(
   "CombatActionEngine",

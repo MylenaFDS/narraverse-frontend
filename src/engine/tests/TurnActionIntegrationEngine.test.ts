@@ -1,3 +1,4 @@
+
 import {
   afterEach,
   describe,
@@ -163,41 +164,124 @@ describe(
       },
     )
 
+
     it(
-  "inicia e resolve um ataque sem estado de combate prévio",
-  () => {
-    const actor = createCharacter()
+      "inicia e resolve um ataque sem estado de combate prévio",
+      () => {
 
-    const target = {
-      ...createCharacter(),
-      id: 2,
-      name: "Orc",
-      is_npc: true,
-    }
+        vi.spyOn(
+          Math,
+          "random",
+        )
+          .mockReturnValueOnce(0.9) // Aragorn vence a iniciativa
+          .mockReturnValueOnce(0.1) // Orc
+          .mockReturnValue(0.5)     // Rolagem do ataque
 
-    const result =
-      TurnActionIntegrationEngine.process({
-        text: "Aragorn ataca Orc.",
-        actor,
-        characters: [actor, target],
-        lore: [],
-      })
+        const actor =
+          createCharacter()
 
-    expect(result).not.toBeNull()
+        const target = {
+          ...createCharacter(),
+          id: 2,
+          name: "Orc",
+          is_npc: true,
+        }
 
-    expect(
-      result?.request.combatState?.participants,
-    ).toHaveLength(2)
+        const result =
+          TurnActionIntegrationEngine.process({
+            text: "Aragorn ataca Orc.",
+            actor,
+            characters: [actor, target],
+            lore: [],
+          })
 
-    expect(
-      result?.result.combatResult,
-    ).toBeDefined()
+        expect(result).not.toBeNull()
 
-    expect(
-      result?.result.combatState,
-    ).toBeDefined()
-  },
-)
+        expect(
+          result?.request.combatState?.participants,
+        ).toHaveLength(2)
+
+        expect(
+          result?.result.combatResult,
+        ).toBeDefined()
+
+        expect(
+          result?.result.combatState,
+        ).toBeDefined()
+
+        expect(
+          result?.result.success,
+        ).toBe(true)
+
+      },
+    )
+
+
+    it(
+      "deve preservar o combate quando o atacante perde a iniciativa",
+      () => {
+
+        vi.spyOn(
+          Math,
+          "random",
+        )
+          .mockReturnValueOnce(0.1) // Aragorn
+          .mockReturnValueOnce(0.9) // Orc
+
+        const actor =
+          createCharacter()
+
+        const target = {
+          ...createCharacter(),
+          id: 2,
+          name: "Orc",
+          is_npc: true,
+        }
+
+        const result =
+          TurnActionIntegrationEngine.process({
+            text: "Aragorn ataca Orc.",
+            actor,
+            characters: [actor, target],
+            lore: [],
+          })
+
+        expect(result).not.toBeNull()
+
+        // O Orc deve começar o combate.
+        expect(
+          result?.result.combatState?.activeParticipantId,
+        ).toBe(2)
+
+        // O combate continua ativo.
+        expect(
+          result?.result.combatState?.finished,
+        ).toBe(false)
+
+        // O ataque de Aragorn não deve ser executado.
+        expect(
+          result?.result.success,
+        ).toBe(false)
+
+        expect(
+          result?.result.combatResult,
+        ).toBeUndefined()
+
+        // Nenhum participante deve ter recebido dano.
+        expect(
+          result?.result.combatState?.participants
+            .find(p => p.character.id === 1)
+            ?.currentHP,
+        ).toBe(20)
+
+        expect(
+          result?.result.combatState?.participants
+            .find(p => p.character.id === 2)
+            ?.currentHP,
+        ).toBe(20)
+
+      },
+    )
 
   },
 )

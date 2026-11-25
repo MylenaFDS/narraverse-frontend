@@ -1,3 +1,4 @@
+
 import type {
   Character,
 } from "../../types/character"
@@ -48,6 +49,7 @@ import {
   CombatTurnEngine,
 } from "../combat/CombatTurnEngine"
 
+
 // ============================================================
 // PARÂMETROS
 // ============================================================
@@ -86,57 +88,58 @@ export interface TurnActionIntegrationParams {
 
 export class TurnActionIntegrationEngine {
 
-
   static process(
     params: TurnActionIntegrationParams,
   ): ActionExecutionResult | null {
 
     // ========================================================
-// 1. PREPARAR OS PERSONAGENS
-// ========================================================
+    // 1. PREPARAR OS PERSONAGENS
+    // ========================================================
 
-const characters =
-  params.characters.some(
-    character =>
-      character.id === params.actor.id,
-  )
-    ? params.characters
-    : [
-        params.actor,
-        ...params.characters,
-      ]
+    const characters =
+      params.characters.some(
+        character =>
+          character.id === params.actor.id,
+      )
+        ? params.characters
+        : [
+            params.actor,
+            ...params.characters,
+          ]
 
 
-// ========================================================
-// 2. REUNIR PERSONAGENS E NPCs
-// ========================================================
+    // ========================================================
+    // 2. REUNIR PERSONAGENS E NPCs
+    // ========================================================
 
-const availableCharacters =
-  Array.from(
-    new Map(
-      [
-        ...characters,
-        ...(params.npcs ?? []),
-      ].map(
-        character => [
-          character.id,
-          character,
-        ]),
-    ).values(),
-  )
+    const availableCharacters =
+      Array.from(
+        new Map(
+          [
+            ...characters,
+            ...(params.npcs ?? []),
+          ].map(
+            character => [
+              character.id,
+              character,
+            ]),
+        ).values(),
+      )
+
 
     const request =
-  ActionParser.parseIfRecognized(
-    params.text,
-    params.actor,
-    {
-      characters:
-        availableCharacters,
+      ActionParser.parseIfRecognized(
+        params.text,
+        params.actor,
+        {
+          characters:
+            availableCharacters,
 
-      difficulty:
-        params.difficulty,
-    },
-  )
+          difficulty:
+            params.difficulty,
+        },
+      )
+
 
     // Texto puramente narrativo continua fora
     // do motor de ações.
@@ -175,8 +178,8 @@ const availableCharacters =
             participant.character.id === targetId,
         )
 
-      // Um personagem derrotado não pode iniciar
-      // outro ataque a partir do mesmo estado.
+
+      // Um personagem derrotado não pode atacar.
       if (actorParticipant?.defeated) {
 
         return this.failedExecution(
@@ -187,8 +190,11 @@ const availableCharacters =
 
       }
 
-      // Reutilizar o combate atual quando os dois
-      // personagens já participam dele.
+
+      // ------------------------------------------------------
+      // REUTILIZAR O COMBATE ATUAL
+      // ------------------------------------------------------
+
       if (
         existingState &&
         !existingState.finished
@@ -210,6 +216,7 @@ const availableCharacters =
         request.combatState =
           existingState
 
+
         // Respeitar a ordem dos turnos existente.
         if (
           existingState.activeParticipantId !== actorId
@@ -225,8 +232,10 @@ const availableCharacters =
 
       } else {
 
-        // Não reiniciar um combate já encerrado
-        // contra os mesmos participantes.
+        // ----------------------------------------------------
+        // NÃO REINICIAR UM COMBATE ENCERRADO
+        // ----------------------------------------------------
+
         if (
           existingState?.finished &&
           actorParticipant &&
@@ -241,10 +250,11 @@ const availableCharacters =
 
         }
 
-        // Iniciar um estado temporário para o novo
-        // encontro. O atacante fica primeiro para
-        // permitir a resolução da ação que iniciou
-        // o combate nesta primeira etapa.
+
+        // ----------------------------------------------------
+        // CRIAR OS PARTICIPANTES
+        // ----------------------------------------------------
+
         const participants = [
           params.actor,
           request.target,
@@ -259,9 +269,9 @@ const availableCharacters =
               )
 
             const initialHP =
-  Number.isFinite(hp)
-    ? Math.max(0, Math.floor(hp))
-    : 100
+              Number.isFinite(hp)
+                ? Math.max(0, Math.floor(hp))
+                : 100
 
             return CombatStateEngine.createParticipant(
               character,
@@ -271,15 +281,48 @@ const availableCharacters =
           },
         )
 
-        const initialState =
-  CombatStateEngine.create(
-    participants,
-  )
 
-request.combatState =
-  CombatTurnEngine.start(
-    initialState,
-  )
+        // ----------------------------------------------------
+        // CRIAR O ESTADO E CALCULAR A INICIATIVA
+        // ----------------------------------------------------
+
+        const initialState =
+          CombatStateEngine.create(
+            participants,
+          )
+
+        request.combatState =
+          CombatTurnEngine.start(
+            initialState,
+          )
+
+      }
+
+    }
+
+
+    // ========================================================
+    // 3.1. VERIFICAR SE O ATACANTE PODE AGIR
+    // ========================================================
+
+    if (
+      request.type === "attack" &&
+      request.combatState
+    ) {
+
+      const canAct =
+        CombatTurnEngine.canAct(
+          request.combatState,
+          params.actor.id,
+        )
+
+      if (!canAct) {
+
+        return this.failedExecution(
+          request,
+          "Não é o turno deste personagem.",
+          request.combatState,
+        )
 
       }
 

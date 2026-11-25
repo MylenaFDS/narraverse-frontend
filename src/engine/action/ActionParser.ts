@@ -272,16 +272,26 @@ if (
       this.matches(
         text,
         [
-          "investiga",
-          "investigar",
-          "examina",
-          "examinar",
-          "procura pistas",
-          "procurar pistas",
-          "observa atentamente",
-          "analisa",
-          "analisar",
-        ],
+  // Terceira pessoa e infinitivo
+  "investiga",
+  "investigar",
+  "examina",
+  "examinar",
+  "procura pistas",
+  "procurar pistas",
+  "observa atentamente",
+  "analisa",
+  "analisar",
+
+  // Primeira pessoa
+  "investigo",
+  "examino",
+  "procuro pistas",
+  "observo atentamente",
+  "analiso",
+  "inspeciono",
+  "verifico",
+],
       )
     ) {
 

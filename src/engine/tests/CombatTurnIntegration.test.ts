@@ -1193,8 +1193,8 @@ describe(
 
 
         expect(
-          started.activeParticipantId,
-        ).toBe(1)
+  started.activeParticipantId,
+).toBeNull()
 
 
         expect(
