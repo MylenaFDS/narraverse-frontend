@@ -1,5 +1,5 @@
-import type { Character } from "../../types/character"
 
+import type { Character } from "../../types/character"
 import type { WorldContext } from "../context/ContextEngine"
 
 import {
@@ -17,37 +17,28 @@ import {
   CombatTurnEngine,
 } from "./CombatTurnEngine"
 
+import {
+  CombatStartEngine,
+} from "./CombatStartEngine"
 
 // ============================================================
 // PARTICIPANTE DA AÇÃO
 // ============================================================
 
 export interface CombatActionInput {
-
   attacker: Character
-
   defender: Character
-
-  action:
-    | "attack"
-    | "spell"
-    | "skill"
-
+  action: "attack" | "spell" | "skill"
 }
-
 
 // ============================================================
 // RESULTADO DA AÇÃO
 // ============================================================
 
 export interface CombatActionResult {
-
   combat: CombatResult
-
   state: CombatState
-
 }
-
 
 // ============================================================
 // ENGINE DE AÇÕES DE COMBATE
@@ -55,30 +46,21 @@ export interface CombatActionResult {
 
 export class CombatActionEngine {
 
-
-  // ==========================================================
-  // EXECUTAR AÇÃO
-  // ==========================================================
-
   static execute(
     context: WorldContext,
     state: CombatState,
     input: CombatActionInput,
   ): CombatActionResult {
 
-
     // ========================================================
     // VERIFICAR COMBATE ENCERRADO
     // ========================================================
 
     if (state.finished) {
-
       throw new Error(
         "O combate já foi encerrado.",
       )
-
     }
-
 
     // ========================================================
     // LOCALIZAR PARTICIPANTES
@@ -87,98 +69,99 @@ export class CombatActionEngine {
     const attacker =
       state.participants.find(
         participant =>
-          participant.character.id ===
-          input.attacker.id,
+          participant.character.id === input.attacker.id,
       )
-
 
     const defender =
       state.participants.find(
         participant =>
-          participant.character.id ===
-          input.defender.id,
+          participant.character.id === input.defender.id,
       )
 
-
     if (!attacker) {
-
       throw new Error(
         "Atacante não participa deste combate.",
       )
-
     }
 
-
     if (!defender) {
-
       throw new Error(
         "Defensor não participa deste combate.",
       )
-
     }
-
 
     // ========================================================
     // VERIFICAR DERROTA
     // ========================================================
 
     if (attacker.defeated) {
-
       throw new Error(
         "O atacante está derrotado.",
       )
-
     }
-
 
     if (defender.defeated) {
-
       throw new Error(
-        "O defensor já está derrotado.",
+        "O defensor já foi derrotado.",
       )
-
     }
 
-
     // ========================================================
-    // VERIFICAR TURNO
+    // VERIFICAR TURNO OU ABERTURA
     // ========================================================
 
-    if (
-      !CombatTurnEngine.canAct(
-        state,
-        attacker.character.id,
-      )
-    ) {
+    const isOpening =
+      state.phase === "opening"
 
-      throw new Error(
-        "Não é o turno do atacante.",
-      )
+    if (isOpening) {
+
+      const openingOrder =
+        state.openingOrder ?? []
+
+      const isOpeningParticipant =
+        openingOrder.includes(
+          attacker.character.id,
+        )
+
+      if (
+        !isOpeningParticipant ||
+        state.activeParticipantId !== attacker.character.id
+      ) {
+        throw new Error(
+          "Não é a vez do atacante na abertura.",
+        )
+      }
+
+    } else {
+
+      if (
+        !CombatTurnEngine.canAct(
+          state,
+          attacker.character.id,
+        )
+      ) {
+        throw new Error(
+          "Não é o turno do atacante.",
+        )
+      }
 
     }
-
 
     // ========================================================
     // CRIAR AÇÃO DE COMBATE
     // ========================================================
 
     const combatAction: CombatAction = {
-
       attacker: {
-        character:
-          attacker.character,
+        character: attacker.character,
       },
 
       defender: {
-        character:
-          defender.character,
+        character: defender.character,
       },
 
-      action:
-        input.action,
-
+      action: input.action,
     }
-
 
     // ========================================================
     // RESOLVER COMBATE
@@ -189,7 +172,6 @@ export class CombatActionEngine {
         context,
         combatAction,
       )
-
 
     // ========================================================
     // APLICAR DANO
@@ -203,91 +185,66 @@ export class CombatActionEngine {
             participant.character.id !==
             defender.character.id
           ) {
-
             return participant
-
           }
-
 
           return CombatStateEngine.applyDamage(
             participant,
             combatResult.damage,
           )
-
         },
       )
 
-
     // ========================================================
-    // NOVO ESTADO
+    // CRIAR NOVO ESTADO
     // ========================================================
 
-    let nextState: CombatState = {
-
+    const nextState: CombatState = {
       ...state,
-
-      participants:
-        updatedParticipants,
-
+      participants: updatedParticipants,
     }
-
 
     // ========================================================
     // VERIFICAR FIM DO COMBATE
     // ========================================================
 
     if (
-      CombatStateEngine.isFinished(
-        nextState,
-      )
+      CombatStateEngine.isFinished(nextState)
     ) {
-
       return {
-
-        combat:
-          combatResult,
+        combat: combatResult,
 
         state: {
-
           ...nextState,
-
-          finished:
-            true,
-
-          activeParticipantId:
-            null,
-
+          phase: "finished",
+          finished: true,
+          activeParticipantId: null,
+          openingOrder: [],
+          openingIndex: 0,
         },
-
       }
-
     }
 
-
     // ========================================================
-    // AVANÇAR PARA O PRÓXIMO TURNO
+    // AVANÇAR ABERTURA OU TURNO NORMAL
     // ========================================================
 
-    nextState =
-      CombatTurnEngine.nextTurn(
-        nextState,
-      )
-
+    const advancedState =
+      isOpening
+        ? CombatStartEngine.advanceOpening(
+            nextState,
+          )
+        : CombatTurnEngine.nextTurn(
+            nextState,
+          )
 
     // ========================================================
     // RETORNAR
     // ========================================================
 
     return {
-
-      combat:
-        combatResult,
-
-      state:
-        nextState,
-
+      combat: combatResult,
+      state: advancedState,
     }
-
   }
-
 }

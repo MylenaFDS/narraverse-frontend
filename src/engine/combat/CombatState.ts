@@ -13,6 +13,15 @@ export interface CombatParticipantState {
 }
 
 // ============================================================
+// FASES DO COMBATE
+// ============================================================
+
+export type CombatPhase =
+  | "opening"
+  | "initiative"
+  | "finished"
+
+// ============================================================
 // ESTADO DO COMBATE
 // ============================================================
 
@@ -22,6 +31,14 @@ export interface CombatState {
   round: number
   activeParticipantId: number | null
   finished: boolean
+
+  // Controle da fase de abertura
+  // Opcionais para preservar compatibilidade
+  // com estados criados anteriormente.
+
+  phase?: CombatPhase
+  openingOrder?: number[]
+  openingIndex?: number
 }
 
 // ============================================================
@@ -81,6 +98,14 @@ export class CombatStateEngine {
           : aliveParticipants[0].character.id,
 
       finished,
+
+      phase:
+        finished
+          ? "finished"
+          : "initiative",
+
+      openingOrder: [],
+      openingIndex: 0,
     }
   }
 
@@ -95,6 +120,107 @@ export class CombatStateEngine {
     return state.participants.filter(
       participant => !participant.defeated,
     )
+  }
+
+  // ==========================================================
+  // INICIAR FASE DE ABERTURA
+  // ==========================================================
+
+  static startOpening(
+    state: CombatState,
+    participantIds: number[],
+  ): CombatState {
+
+    if (state.finished || this.isFinished(state)) {
+      return {
+        ...state,
+        phase: "finished",
+        finished: true,
+        activeParticipantId: null,
+        openingOrder: [],
+        openingIndex: 0,
+      }
+    }
+
+    const aliveIds = new Set(
+      this.getAliveParticipants(state).map(
+        participant => participant.character.id,
+      ),
+    )
+
+    const openingOrder = [
+      ...new Set(
+        participantIds.filter(
+          id => aliveIds.has(id),
+        ),
+      ),
+    ]
+
+    if (openingOrder.length === 0) {
+      return {
+        ...state,
+        phase: "initiative",
+        openingOrder: [],
+        openingIndex: 0,
+      }
+    }
+
+    return {
+      ...state,
+      phase: "opening",
+      openingOrder,
+      openingIndex: 0,
+      activeParticipantId: openingOrder[0],
+      finished: false,
+    }
+  }
+
+  // ==========================================================
+  // AVANÇAR FASE DE ABERTURA
+  // ==========================================================
+
+  static advanceOpening(
+    state: CombatState,
+  ): CombatState {
+
+    if (state.phase !== "opening") {
+      return state
+    }
+
+    const aliveIds = new Set(
+      this.getAliveParticipants(state).map(
+        participant => participant.character.id,
+      ),
+    )
+
+    const remainingOrder =
+      (state.openingOrder ?? []).filter(
+        id => aliveIds.has(id),
+      )
+
+    const currentIndex =
+      remainingOrder.findIndex(
+        id => id === state.activeParticipantId,
+      )
+
+    const nextIndex = currentIndex + 1
+
+    if (nextIndex >= remainingOrder.length) {
+      return {
+        ...state,
+        phase: "initiative",
+        openingOrder: [],
+        openingIndex: 0,
+        activeParticipantId: null,
+      }
+    }
+
+    return {
+      ...state,
+      openingOrder: remainingOrder,
+      openingIndex: nextIndex,
+      activeParticipantId: remainingOrder[nextIndex],
+    }
   }
 
   // ==========================================================
@@ -146,6 +272,7 @@ export class CombatStateEngine {
     if (this.isFinished(state)) {
       return {
         ...state,
+        phase: "finished",
         finished: true,
         activeParticipantId: null,
       }
